@@ -250,6 +250,8 @@ extern Tree *mkmatch(Tree *subj, Tree *cases) {
 	Tree *sass = treecons2(mk(nAssign, mk(nWord, varname), subj), NULL);
 	Tree *svar = mk(nVar, mk(nWord, varname));
 	Tree *matches = NULL;
+	Tree *cmdelse = cases->CAR;
+	cases = cases->CDR;
 	for (; cases != NULL; cases = cases->CDR) {
 		Tree *pattlist = cases->CAR->CAR;
 		Tree *cmd = cases->CAR->CDR;
@@ -261,6 +263,8 @@ extern Tree *mkmatch(Tree *subj, Tree *cases) {
 		);
 		matches = treeappend(matches, match);
 	}
+	if (cmdelse != NULL)
+		matches = treeconsend2(matches, cmdelse);
 	matches = thunkify(prefix("if", matches));
 	return mk(nLocal, sass, matches);
 }

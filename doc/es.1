@@ -804,17 +804,15 @@ has a
 .Cr match
 command that can simplify things:
 .Ds
-.Cr "match \fIsubject\fP ("
-.Cr "  \fIpattern1\fP            {action1}"
-.Cr "  (\fIpattern2 pattern3\fP) {action2}"
-.Cr "  (\fIpattern4 pattern5 pattern6\fP) {"
-.Cr "    action3"
-.Cr "  }"
-.Cr "  ..."
-.Cr "  * {"
-.Cr "    throw error example no matching patterns"
-.Cr "  }"
-.Cr ")"
+.Cr "match \fIsubject pattern1\fP {"
+.Cr "  action1"
+.Cr "} (\fIpattern2 pattern3\fP) {"
+.Cr "  action2"
+.Cr "} (\fIpattern4 pattern5 pattern6\fP) {"
+.Cr "  action3"
+.Cr "} {"
+.Cr "  throw error example no matching patterns"
+.Cr "}"
 .De
 .PP
 The behavior is the same as an
@@ -829,13 +827,12 @@ For example, the match command and the if command below are equivalent:
 .Cr "               bp = biff plop"
 .Cr "               bw = bam boom wham"
 
-.Cr "match $sound (          if {~ $sound $bc} {"
-.Cr "  $bc {result 3}          result 3"
-.Cr "  ($bp $bw *ow) {}      } {~ $sound $bp $bw *ow} {"
-.Cr "  * {                   } {"
-.Cr "    false                 false"
-.Cr "  }                     }"
-.Cr ")"
+.Cr "match $sound $bc {      if {~ $sound $bc} {"
+.Cr "  result 3                result 3"
+.Cr "} ($bp $bw *ow) {       } {~ $sound $bp $bw *ow} {"
+.Cr "} {                     } {"
+.Cr "  false                   false"
+.Cr "}                       }"
 .De
 .SS "Pattern Extraction"
 The double-tilde
