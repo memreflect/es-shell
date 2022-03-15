@@ -821,7 +821,23 @@ command with multiple
 .Cr ~
 commands and command blocks as arguments, and each list of patterns is
 evaluated in the order presented.
-For example, the match command and the if command below are equivalent:
+.PP
+The general syntax of the
+.Cr match
+command is:
+.Ds
+.Cr "match \fIsubject\fP [\fIpattern-list command\fP]... [\fIotherwise\fP]"
+.De
+.PP
+If \fIotherwise\fP is the only argument, then it will be executed since
+there are no patterns to compare to \fIsubject\fP.
+That is, it is equivalent to
+.Ds
+.Ic otherwise
+.De
+.PP
+As an example showcasing how similar it is to the if command with tilde (~)
+operands, the match command and the if command below are equivalent:
 .Ds
 .Cr "               bc = bang crack"
 .Cr "               bp = biff plop"

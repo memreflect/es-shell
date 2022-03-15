@@ -241,6 +241,10 @@ extern Tree *mkmatch(Tree *subj, Tree *cases) {
 	 */
 	if (cases == NULL)
 		return thunkify(NULL);
+	Tree *cmdelse = cases->CAR;
+	cases = cases->CDR;
+	if (cases == NULL)
+		return cmdelse;
 	/*
 	 * Prevent backquote substitution in the subject from executing
 	 * repeatedly by assigning it to a temporary variable and using that
@@ -250,8 +254,6 @@ extern Tree *mkmatch(Tree *subj, Tree *cases) {
 	Tree *sass = treecons2(mk(nAssign, mk(nWord, varname), subj), NULL);
 	Tree *svar = mk(nVar, mk(nWord, varname));
 	Tree *matches = NULL;
-	Tree *cmdelse = cases->CAR;
-	cases = cases->CDR;
 	for (; cases != NULL; cases = cases->CDR) {
 		Tree *pattlist = cases->CAR->CAR;
 		Tree *cmd = cases->CAR->CDR;

@@ -71,6 +71,7 @@ cmd	:		%prec LET		{ $$ = NULL; }
 	| MATCH word matcher			{ $$ = mkmatch($2, $3); }
 
 matcher	:				{ $$ = NULL; }
+	| word				{ $$ = treecons(thunkify($1), NULL); }
 	| mexprs			{ $$ = treecons(NULL, $1); }
 	| mexprs word			{ $$ = treecons(thunkify($2), $1); }
 
