@@ -40,11 +40,9 @@ extern void rl_reset_terminal(char *);
 extern char *rl_basic_word_break_characters;
 extern char *rl_completer_quote_characters;
 
-#if ABUSED_GETENV
 static char *stdgetenv(const char *);
 static char *esgetenv(const char *);
 static char *(*realgetenv)(const char *) = stdgetenv;
-#endif
 #endif
 
 
@@ -223,7 +221,6 @@ static char *callreadline(char *prompt) {
 	return r;
 }
 
-#if ABUSED_GETENV
 
 /* getenv -- fake version of getenv for readline (or other libraries) */
 static char *esgetenv(const char *name) {
@@ -279,7 +276,7 @@ stdgetenv(name)
 }
 
 char *
-getenv(char *name)
+getenv(const char *name)
 {
 	return realgetenv(name);
 }
@@ -290,7 +287,6 @@ initgetenv(void)
 	realgetenv = esgetenv;
 }
 
-#endif /* ABUSED_GETENV */
 
 #endif	/* READLINE */
 

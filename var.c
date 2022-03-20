@@ -137,7 +137,7 @@ extern List *varlookup(const char *name, Binding *bp) {
 
 extern List *varlookup2(char *name1, char *name2, Binding *bp) {
 	Var *var;
-	
+
 	for (; bp != NULL; bp = bp->next)
 		if (streq2(bp->name, name1, name2))
 			return bp->defn;
@@ -234,7 +234,7 @@ extern void varpush(Push *push, char *name, List *defn) {
 
 extern void varpop(Push *push) {
 	Var *var;
-	
+
 	assert(pushlist == push);
 	assert(rootlist == &push->defnroot);
 	assert(rootlist->next == &push->nameroot);
@@ -285,7 +285,7 @@ static void mkenv0(void *dummy, char *key, void *value) {
 		env = newenv;
 	}
 }
-	
+
 extern Vector *mkenv(void) {
 	if (isdirty || rebound) {
 		env->count = envmin;
@@ -348,10 +348,8 @@ extern void initvars(void) {
 	vars = mkdict();
 	noexport = NULL;
 	env = mkvector(10);
-#if ABUSED_GETENV
-# if READLINE
+#if READLINE
 	initgetenv();
-# endif
 #endif
 }
 
@@ -407,6 +405,15 @@ static void importvar(char *name0, char *value) {
 	vardef(name, NULL, defn);
 	RefEnd2(defn, name);
 }
+
+#if READLINE
+extern void sh_set_lines_and_columns(int lines, int columns) {
+	extern int rl_forced_update_display(void);
+	vardef("LINES", NULL, mklist(mkstr(str("%d", lines)), NULL));
+	vardef("COLUMNS", NULL, mklist(mkstr(str("%d", columns)), NULL));
+	rl_forced_update_display();
+}
+#endif
 
 
 /* initenv -- load variables from the environment */

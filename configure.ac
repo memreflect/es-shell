@@ -96,24 +96,6 @@ AC_FUNC_WAIT3
 AC_CHECK_FUNCS(strerror strtol lstat setrlimit sigrelse sighold sigaction \
 sysconf setsid sigsetjmp)
 
-AC_CACHE_CHECK(for an abused getenv, es_cv_abused_getenv,
-AC_RUN_IFELSE([AC_LANG_SOURCE([[
-changequote(,)
-char *foo = 0;
-char *foov[] = { "-a", "-bfoo", "bar" };
-int fooc = (sizeof(foov) / sizeof(foov[0]));
-
-int getenv() { return *foo; }
-int main() { while (-1 != getopt(fooc, foov, "ab:")); exit(0); }
-changequote([,])
-]])],[es_cv_abused_getenv=no],[es_cv_abused_getenv=yes
-AC_DEFINE([ABUSED_GETENV], [1], [Is getenv called by crt*.o or getopt?])],[]))
-
-if test "$es_cv_abused_getenv" = yes
-then
-	rm -f core conftest.core
-fi
-
 dnl Check to see if you can assign to a va_list
 AC_CACHE_CHECK(whether assignment to va_list ok?, es_cv_assign_va_list,
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#ifndef HAVE_STDARG_H
@@ -128,7 +110,7 @@ fi
 
 dnl check for a u_quad_t or something like that
 AC_CACHE_CHECK(for rlimit type ..., es_cv_rlimit_t,
-AC_CMDSTDOUT_CPP(es_cv_rlimit_t, 
+AC_CMDSTDOUT_CPP(es_cv_rlimit_t,
 grep rlim_cur | sed -e 's/rlim_cur.*//' -e 's/^ //g' -e 's/^	//g' -e q,
 [#ifdef HAVE_SETRLIMIT
 # include <sys/resource.h>
@@ -138,8 +120,8 @@ AC_CACHE_CHECK(for files to extract signal information from,
 es_cv_sigfiles,
 AC_CMDSTDOUT_CPP(es_cv_sigfiles,
 [changequote(,)
-egrep '^#[ 	]+1[	 ]+' | sed 's/.*"\(.*\)".*/\1/' |sort -u |  
-grep '^/' |tr '\012' ' ' 
+egrep '^#[ 	]+1[	 ]+' | sed 's/.*"\(.*\)".*/\1/' |sort -u |
+grep '^/' |tr '\012' ' '
 changequote([,])],
 [#include <signal.h>], /usr/include/signal.h))
 

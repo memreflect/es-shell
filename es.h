@@ -197,6 +197,9 @@ extern Vector *mkenv(void);
 extern void setnoexport(List *list);
 extern void addtolist(void *arg, char *key, void *value);
 extern List *listvars(Boolean internal);
+#if READLINE
+extern void sh_set_lines_and_columns(int lines, int columns);
+#endif
 
 typedef struct Push Push;
 extern Push *pushlist;
@@ -285,6 +288,9 @@ extern void sethistory(char *file);
 extern Boolean isinteractive(void);
 extern void initinput(void);
 extern void resetparser(void);
+#if READLINE
+extern void initgetenv(void);
+#endif
 
 extern List *runfd(int fd, const char *name, int flags);
 extern List *runstring(const char *str, const char *name, int flags);
@@ -495,7 +501,7 @@ extern List *raised(List *e);
 		_localhandler.up = tophandler; \
 		tophandler = &_localhandler; \
 		if (!setjmp(_localhandler.label)) {
-	
+
 #define CatchException(e) \
 			pophandler(&_localhandler); \
 		} else { \
