@@ -408,7 +408,12 @@ static void importvar(char *name0, char *value) {
 
 #if READLINE
 extern int setenv(const char *name, const char *value, int overwrite) {
-	Ref(char *, envname, str(ENV_DECODE, name));
+	Ref(char *, envname, NULL);
+	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+	envname = str(ENV_DECODE, name);
 	if (!overwrite && varlookup(envname, NULL) != NULL) {
 		RefPop(envname);
 		return 0;
@@ -418,13 +423,27 @@ extern int setenv(const char *name, const char *value, int overwrite) {
 	return 0;
 }
 extern int unsetenv(const char *name) {
+	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
+		errno = EINVAL;
+		return -1;
+	}
 	vardef(str(ENV_DECODE, name), NULL, NULL);
 	return 0;
 }
 extern int putenv(char *envstr) {
-	char *envp[] = {envstr, NULL};
-	initenv(envp, FALSE);
-	return 0;
+	size_t n = strcspn(envstr, "=");
+	char *envname;
+	int status;
+	if (n == 0 || envstr[n] != '=') {
+		/* null variable name or missing '=' char */
+		errno = EINVAL;
+		return -1;
+	}
+	envname = ealloc(n);
+	memcpy(envname, envstr, n);
+	status = setenv(envname, envstr+n+1, 1);
+	efree(envname);
+	return status;
 }
 #endif
 
