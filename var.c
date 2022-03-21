@@ -359,7 +359,7 @@ static void importvar(char *name0, char *value) {
 
 	Ref(char *, name, name0);
 	Ref(List *, defn, NULL);
-	defn = fsplit(sep, mklist(mkstr(value + 1), NULL), FALSE);
+	defn = fsplit(sep, mklist(mkstr(value), NULL), FALSE);
 
 	if (strchr(value, ENV_ESCAPE) != NULL) {
 		List *list;
@@ -407,11 +407,19 @@ static void importvar(char *name0, char *value) {
 }
 
 #if READLINE
-extern void sh_set_lines_and_columns(int lines, int columns) {
-	extern int rl_forced_update_display(void);
-	vardef("LINES", NULL, mklist(mkstr(str("%d", lines)), NULL));
-	vardef("COLUMNS", NULL, mklist(mkstr(str("%d", columns)), NULL));
-	rl_forced_update_display();
+extern int setenv(const char *name, const char *value, int overwrite) {
+	(void)overwrite;
+	importvar((char*)name, (char*)value);
+	return 0;
+}
+extern int unsetenv(const char *name) {
+	vardef(str(ENV_DECODE, name), NULL, NULL);
+	return 0;
+}
+extern int putenv(char *envstr) {
+	char *envp[] = {envstr, NULL};
+	initenv(envp, FALSE);
+	return 0;
 }
 #endif
 
@@ -444,7 +452,7 @@ extern void initenv(char **envp, Boolean protected) {
 		name = str(ENV_DECODE, buf);
 		if (!protected
 		    || (!hasprefix(name, "fn-") && !hasprefix(name, "set-")))
-			importvar(name, eq);
+			importvar(name, eq+1);
 	}
 
 	envmin = env->count;

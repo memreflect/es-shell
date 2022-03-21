@@ -197,9 +197,6 @@ extern Vector *mkenv(void);
 extern void setnoexport(List *list);
 extern void addtolist(void *arg, char *key, void *value);
 extern List *listvars(Boolean internal);
-#if READLINE
-extern void sh_set_lines_and_columns(int lines, int columns);
-#endif
 
 typedef struct Push Push;
 extern Push *pushlist;
