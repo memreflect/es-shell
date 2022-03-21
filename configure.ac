@@ -16,11 +16,10 @@ rm -f conftest*
 ])
 
 
-use_readline=yes
-use_editline=no
-
 AC_ARG_WITH(readline,
---with-readline		Use GNU Readline, use_readline=yes)
+[AS_HELP_STRING([--with-readline], [Use GNU Readline @<:@default: auto@:>@])],
+[],
+[with_readline=auto])
 
 AC_CANONICAL_HOST
 
@@ -60,18 +59,14 @@ dnl Checks for libraries.
 
 AC_CHECK_LIB(sun, getpwuid)
 
-if test "$use_readline" = yes || test "$use_editline" = yes
+if test "$with_readline" != no
 then
-	AC_CHECK_LIB(terminfo, main)
-	AC_CHECK_LIB(termcap, main)
-	if test "$use_readline" = yes
-	then
-		AC_CHECK_LIB(readline, readline)
-	elif test "$use_editline" = yes
-	then
-		AC_CHECK_LIB(edit, readline)
-	fi
-
+	AC_SEARCH_LIBS(tputs, [terminfo tinfo termcap])
+	AC_CHECK_LIB(readline, readline,
+		     [],
+		     [if test "$with_readline" = yes
+		      then AC_MSG_FAILURE([unable to locate readline library])
+		      fi])
 fi
 
 
@@ -128,7 +123,7 @@ fi
 
 dnl check for a u_quad_t or something like that
 AC_CACHE_CHECK(for rlimit type ..., es_cv_rlimit_t,
-AC_CMDSTDOUT_CPP(es_cv_rlimit_t, 
+AC_CMDSTDOUT_CPP(es_cv_rlimit_t,
 grep rlim_cur | sed -e 's/rlim_cur.*//' -e 's/^ //g' -e 's/^	//g' -e q,
 [#ifdef HAVE_SETRLIMIT
 # include <sys/resource.h>
@@ -138,8 +133,8 @@ AC_CACHE_CHECK(for files to extract signal information from,
 es_cv_sigfiles,
 AC_CMDSTDOUT_CPP(es_cv_sigfiles,
 [changequote(,)
-egrep '^#[ 	]+1[	 ]+' | sed 's/.*"\(.*\)".*/\1/' |sort -u |  
-grep '^/' |tr '\012' ' ' 
+egrep '^#[ 	]+1[	 ]+' | sed 's/.*"\(.*\)".*/\1/' |sort -u |
+grep '^/' |tr '\012' ' '
 changequote([,])],
 [#include <signal.h>], /usr/include/signal.h))
 
