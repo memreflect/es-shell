@@ -23,11 +23,8 @@ rm -f conftest*
 
 AC_CANONICAL_HOST
 
-case "$host" in
-	*sun5* | *solaris2*)
-		AC_DEFINE(SOLARIS, [], [Are we Solaris?])
-	;;
-esac
+AS_CASE(["$host"],
+        [*sun5*|*solaris2*], [AC_DEFINE([SOLARIS], [1], [Are we Solaris?])])
 
 dnl saved_CFLAGS="$CFLAGS"
 
@@ -37,26 +34,27 @@ AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_PROG_YACC
 
-dnl CFLAGS="$CFLAGS $saved_CFLAGS"
-
-dnl ----------------------------
-dnl CHECK FOR /dev/fd FILESYSTEM
-dnl ----------------------------
-AC_CACHE_CHECK(for /dev/fd filesystem, es_cv_sys_dev_fd,
-[test -d /dev/fd && es_cv_sys_dev_fd=yes || es_cv_sys_dev_fd=no])
-if test $es_cv_sys_dev_fd = yes; then
-  AC_DEFINE(HAVE_DEV_FD, [1], [Do you have a /dev/fd/ directory?])
-fi
+# Check for /dev/fd filesystem
+AC_CACHE_CHECK([for /dev/fd filesystem], [es_cv_sys_dev_fd],
+               [AS_IF([test -d /dev/fd],
+                      [AS_VAR_SET([es_cv_sys_dev_fd], [yes])],
+                      [AS_VAR_SET([es_cv_sys_dev_fd], [no])])])
+AS_VAR_IF([es_cv_sys_dev_fd], [yes],
+          [AC_DEFINE([HAVE_DEV_FD], [1],
+                     [Do you have a /dev/fd/ directory?])])
 
 AC_SYS_INTERPRETER
-if test "$ac_cv_sys_interpreter" = yes
-then
-	AC_DEFINE(KERNEL_POUNDBANG, [1], [Does your kernel support #!?])
-fi
-
+AS_VAR_IF([ac_cv_sys_interpreter], [yes],
+          [AC_DEFINE([KERNEL_POUNDBANG], [1],
+                     [Does your kernel support #!?])])
 
 dnl Checks for libraries.
-AC_CHECK_LIB(sun, getpwuid)
+AC_SEARCH_LIBS([getpwuid], [sun])
+AS_CASE(["$ac_cv_search_getpwuid"],
+        [no],              [],
+        ["none required"], [],
+        [AC_DEFINE([HAVE_LIBSUN], [1],
+                   [Define to 1 if you have the 'sun' library (-lsun).])])
 ES_READLINE
 
 dnl Checks for header files.
@@ -93,8 +91,8 @@ AS_VAR_IF([es_cv_noreturn], [yes],
 dnl Checks for library functions.
 AC_FUNC_MMAP
 AC_FUNC_WAIT3
-AC_CHECK_FUNCS(strerror strtol lstat setrlimit sigrelse sighold sigaction \
-sysconf setsid sigsetjmp)
+AC_CHECK_FUNCS([lstat setrlimit setsid strerror strtol sysconf])
+AC_CHECK_FUNCS([sigaction sighold sigrelse sigsetjmp])
 
 AC_CACHE_CHECK(for files to extract signal information from,
 es_cv_sigfiles,
