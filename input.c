@@ -32,14 +32,6 @@ static char *history;
 static int historyfd = -1;
 
 #if READLINE
-extern char *readline(char *);
-extern void add_history(char *);
-extern int read_history(char *);
-extern void stifle_history(int);
-extern void rl_reset_terminal(char *);
-extern char *rl_basic_word_break_characters;
-extern char *rl_completer_quote_characters;
-
 static char *stdgetenv(const char *);
 static char *esgetenv(const char *);
 static char *(*realgetenv)(const char *) = stdgetenv;
@@ -116,7 +108,7 @@ extern void sethistory(char *file) {
 		close(historyfd);
 		historyfd = -1;
 	}
-#if READLINE
+#if READLINE_HISTORY
 	/* Attempt to populate readline history with new history file. */
 	stifle_history(50000); /* Keep memory usage within sane-ish bounds. */
 	read_history(file);
@@ -221,7 +213,6 @@ static char *callreadline(char *prompt) {
 	return r;
 }
 
-
 /* getenv -- fake version of getenv for readline (or other libraries) */
 static char *esgetenv(const char *name) {
 	List *value = varlookup(name, NULL);
@@ -286,8 +277,6 @@ initgetenv(void)
 {
 	realgetenv = esgetenv;
 }
-
-
 #endif	/* READLINE */
 
 /* fdfill -- fill input buffer by reading from a file descriptor */
@@ -303,8 +292,10 @@ static int fdfill(Input *in) {
 
 			nread = 0;
 		else {
+#if READLINE_HISTORY
 			if (*rlinebuf != '\0')
 				add_history(rlinebuf);
+#endif
 			nread = strlen(rlinebuf) + 1;
 			if (in->buflen < (unsigned int)nread) {
 				while (in->buflen < (unsigned int)nread)
@@ -593,6 +584,7 @@ extern void initinput(void) {
 
 #if READLINE
 	rl_basic_word_break_characters=" \t\n\\'`$><=;|&{()}";
-		rl_completer_quote_characters="'";
+	rl_readline_name = "es";
+	rl_completer_quote_characters="'";
 #endif
 }

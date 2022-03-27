@@ -186,9 +186,27 @@
 # define SYSV_SIGNALS 1
 #endif
 
-#if HAVE_LIBREADLINE
+#if HAVE_READLINE
+# include <stdio.h>
+# if HAVE_READLINE_READLINE_H
+#  include <readline/readline.h>
+# elif HAVE_READLINE_H
+#  include <readline.h>
+# else
+#  invalid configuration -- readline.h
+# endif
 # define READLINE 1
-#endif
+# if HAVE_READLINE_HISTORY
+#  if HAVE_READLINE_HISTORY_H
+#   include <readline/history.h>
+#  elif HAVE_HISTORY_H
+#   include <history.h>
+#  else
+#   invalid configuration -- history.h
+#  endif
+#  define READLINE_HISTORY 1
+# endif /* HAVE_READLINE_HISTORY */
+#endif /* HAVE_READLINE */
 
 /* NeXT defaults */
 

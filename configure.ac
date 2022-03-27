@@ -1,12 +1,14 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
+AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_HEADER([config.h])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([access.c])
-AC_CONFIG_HEADER(config.h)
-
 
 dnl AC_CMDSTDOUT_CPP(variable, command, headers)
 AC_DEFUN([AC_CMDSTDOUT_CPP],
-[cat > conftest.$ac_ext <<EOF
+[AC_REQUIRE([AC_PROG_CPP])
+cat > conftest.$ac_ext <<EOF
 [#]line __oline__ "configure"
 #include "confdefs.h"
 [$3]
@@ -15,11 +17,6 @@ $1=`(eval "$ac_cpp conftest.$ac_ext") 2>&AS_MESSAGE_LOG_FD | $2`
 rm -f conftest*
 ])
 
-
-AC_ARG_WITH(readline,
-[AS_HELP_STRING([--with-readline], [Use GNU Readline @<:@default: auto@:>@])],
-[],
-[with_readline=auto])
 
 AC_CANONICAL_HOST
 
@@ -58,24 +55,14 @@ fi
 dnl Checks for libraries.
 
 AC_CHECK_LIB(sun, getpwuid)
-
-if test "$with_readline" != no
-then
-	AC_SEARCH_LIBS(tputs, [terminfo tinfo termcap])
-	AC_CHECK_LIB(readline, readline,
-		     [],
-		     [if test "$with_readline" = yes
-		      then AC_MSG_FAILURE([unable to locate readline library])
-		      fi])
-fi
-
+ES_READLINE
+ES_READLINE_HISTORY
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h sys/ioctl.h sys/time.h unistd.h memory.h stdarg.h sys/cdefs.h)
-
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
