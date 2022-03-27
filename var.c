@@ -137,7 +137,7 @@ extern List *varlookup(const char *name, Binding *bp) {
 
 extern List *varlookup2(char *name1, char *name2, Binding *bp) {
 	Var *var;
-	
+
 	for (; bp != NULL; bp = bp->next)
 		if (streq2(bp->name, name1, name2))
 			return bp->defn;
@@ -234,7 +234,7 @@ extern void varpush(Push *push, char *name, List *defn) {
 
 extern void varpop(Push *push) {
 	Var *var;
-	
+
 	assert(pushlist == push);
 	assert(rootlist == &push->defnroot);
 	assert(rootlist->next == &push->nameroot);
@@ -285,7 +285,7 @@ static void mkenv0(void *dummy, char *key, void *value) {
 		env = newenv;
 	}
 }
-	
+
 extern Vector *mkenv(void) {
 	if (isdirty || rebound) {
 		env->count = envmin;
@@ -348,10 +348,8 @@ extern void initvars(void) {
 	vars = mkdict();
 	noexport = NULL;
 	env = mkvector(10);
-#if ABUSED_GETENV
-# if READLINE
+#if READLINE
 	initgetenv();
-# endif
 #endif
 }
 
@@ -361,7 +359,7 @@ static void importvar(char *name0, char *value) {
 
 	Ref(char *, name, name0);
 	Ref(List *, defn, NULL);
-	defn = fsplit(sep, mklist(mkstr(value + 1), NULL), FALSE);
+	defn = fsplit(sep, mklist(mkstr(value), NULL), FALSE);
 
 	if (strchr(value, ENV_ESCAPE) != NULL) {
 		List *list;
@@ -408,6 +406,47 @@ static void importvar(char *name0, char *value) {
 	RefEnd2(defn, name);
 }
 
+#if READLINE
+extern int setenv(const char *name, const char *value, int overwrite) {
+	Ref(char *, envname, NULL);
+	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+	envname = str(ENV_DECODE, name);
+	if (!overwrite && varlookup(envname, NULL) != NULL) {
+		RefPop(envname);
+		return 0;
+	}
+	importvar(envname, (char*)value);
+	RefEnd(envname);
+	return 0;
+}
+extern int unsetenv(const char *name) {
+	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+	vardef(str(ENV_DECODE, name), NULL, NULL);
+	return 0;
+}
+extern int putenv(char *envstr) {
+	size_t n = strcspn(envstr, "=");
+	char *envname;
+	int status;
+	if (n == 0 || envstr[n] != '=') {
+		/* null variable name or missing '=' char */
+		errno = EINVAL;
+		return -1;
+	}
+	envname = ealloc(n);
+	memcpy(envname, envstr, n);
+	status = setenv(envname, envstr+n+1, 1);
+	efree(envname);
+	return status;
+}
+#endif
+
 
 /* initenv -- load variables from the environment */
 extern void initenv(char **envp, Boolean protected) {
@@ -437,7 +476,7 @@ extern void initenv(char **envp, Boolean protected) {
 		name = str(ENV_DECODE, buf);
 		if (!protected
 		    || (!hasprefix(name, "fn-") && !hasprefix(name, "set-")))
-			importvar(name, eq);
+			importvar(name, eq+1);
 	}
 
 	envmin = env->count;

@@ -285,6 +285,9 @@ extern void sethistory(char *file);
 extern Boolean isinteractive(void);
 extern void initinput(void);
 extern void resetparser(void);
+#if READLINE
+extern void initgetenv(void);
+#endif
 
 extern List *runfd(int fd, const char *name, int flags);
 extern List *runstring(const char *str, const char *name, int flags);
@@ -495,7 +498,7 @@ extern List *raised(List *e);
 		_localhandler.up = tophandler; \
 		tophandler = &_localhandler; \
 		if (!setjmp(_localhandler.label)) {
-	
+
 #define CatchException(e) \
 			pophandler(&_localhandler); \
 		} else { \
