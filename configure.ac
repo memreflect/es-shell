@@ -92,14 +92,6 @@ then
 	AC_DEFINE(NO_VA_LIST_ASSIGN, [1], [NO_VA_LIST_ASSIGN])
 fi
 
-dnl check for a u_quad_t or something like that
-AC_CACHE_CHECK(for rlimit type ..., es_cv_rlimit_t,
-AC_CMDSTDOUT_CPP(es_cv_rlimit_t,
-grep rlim_cur | sed -e 's/rlim_cur.*//' -e 's/^ //g' -e 's/^	//g' -e q,
-[#ifdef HAVE_SETRLIMIT
-# include <sys/resource.h>
-#endif],long))
-
 AC_CACHE_CHECK(for files to extract signal information from,
 es_cv_sigfiles,
 AC_CMDSTDOUT_CPP(es_cv_sigfiles,
@@ -110,8 +102,6 @@ changequote([,])],
 [#include <signal.h>], /usr/include/signal.h))
 
 AC_SUBST(SIGFILES, $es_cv_sigfiles)
-
-AC_DEFINE_UNQUOTED(LIMIT_T, $es_cv_rlimit_t, [What type are your limits?])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
