@@ -62,16 +62,17 @@ OFILES	= access.o closure.o conv.o dict.o eval.o except.o fd.o gc.o glob.o \
 	  prim-ctl.o prim-etc.o prim-io.o prim-sys.o prim.o print.o proc.o \
 	  sigmsgs.o signal.o split.o status.o str.o syntax.o term.o token.o \
 	  tree.o util.o var.o vec.o version.o y.tab.o
-OTHER	= Makefile parse.y mksignal
-GEN	= esdump y.tab.c y.tab.h y.output token.h sigmsgs.c initial.c
-
-SIGFILES = @SIGFILES@
+OTHER	= Makefile parse.y
+GEN	= esdump mksignal y.tab.c y.tab.h y.output token.h sigmsgs.c initial.c
 
 es	: ${OFILES} initial.o
 	${CC} -o es ${CFLAGS} ${LDFLAGS} ${OFILES} initial.o ${LIBS}
 
 esdump	: ${OFILES} dump.o
 	${CC} -o esdump ${CFLAGS} ${LDFLAGS} ${OFILES} dump.o ${LIBS}
+
+mksignal	: mksignal.o
+	${CC} -o $@ ${CFLAGS} ${LDFLAGS} mksignal.o
 
 .c.o:
 	${CC} -c -o $@ ${CFLAGS} ${CPPFLAGS} $<
@@ -109,8 +110,8 @@ token.h : y.tab.h
 initial.c : esdump $(srcdir)/initial.es
 	./esdump < $(srcdir)/initial.es > initial.c
 
-sigmsgs.c : mksignal $(SIGFILES)
-	sh $(srcdir)/mksignal $(SIGFILES) > sigmsgs.c
+sigmsgs.c : mksignal $(srcdir)/mksignal.c
+	./mksignal > sigmsgs.c
 
 config.h  : config.h.in
 	./configure
@@ -133,6 +134,7 @@ heredoc.o : heredoc.c es.h config.h stdenv.h gc.h input.h syntax.h
 list.o : list.c es.h config.h stdenv.h gc.h
 main.o : main.c es.h config.h stdenv.h
 match.o : match.c es.h config.h stdenv.h
+mksignal.o : mksignal.c sigmsgs.h
 open.o : open.c es.h config.h stdenv.h
 opt.o : opt.c es.h config.h stdenv.h
 prim.o : prim.c es.h config.h stdenv.h prim.h

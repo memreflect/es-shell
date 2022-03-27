@@ -163,7 +163,7 @@ extern void initsignals(Boolean interactive, Boolean allowdumps) {
 	for (sig = 0; sig < nsignals; sig++)
 		if (signals[sig].sig < 1 || NSIG <= signals[sig].sig)
 			panic(
-				"initsignals: bad signal in sigmsgs.c: %s (see mksignal)",
+				"initsignals: bad signal in sigmsgs.c: %s (see mksignal.c)",
 				signals[sig].name
 			);
 

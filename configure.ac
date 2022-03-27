@@ -8,19 +8,6 @@ AC_CONFIG_SRCDIR([access.c])
 m4_pattern_forbid([^_?ES_])
 m4_pattern_forbid([^_es_])
 
-dnl AC_CMDSTDOUT_CPP(variable, command, headers)
-AC_DEFUN([AC_CMDSTDOUT_CPP],
-[AC_REQUIRE([AC_PROG_CPP])
-cat > conftest.$ac_ext <<EOF
-[#]line __oline__ "configure"
-#include "confdefs.h"
-[$3]
-EOF
-$1=`(eval "$ac_cpp conftest.$ac_ext") 2>&AS_MESSAGE_LOG_FD | $2`
-rm -f conftest*
-])
-
-
 AC_CANONICAL_HOST
 
 AS_CASE(["$host"],
@@ -98,17 +85,6 @@ AC_FUNC_MMAP
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS([lstat setrlimit setsid strerror strtol sysconf])
 AC_CHECK_FUNCS([sigaction sighold sigrelse sigsetjmp])
-
-AC_CACHE_CHECK(for files to extract signal information from,
-es_cv_sigfiles,
-AC_CMDSTDOUT_CPP(es_cv_sigfiles,
-[changequote(,)
-egrep '^#[ 	]+1[	 ]+' | sed 's/.*"\(.*\)".*/\1/' |sort -u |
-grep '^/' |tr '\012' ' '
-changequote([,])],
-[#include <signal.h>], /usr/include/signal.h))
-
-AC_SUBST(SIGFILES, $es_cv_sigfiles)
 
 # Check for va_copy or __va_copy
 # If C99 or newer, then we assume va_copy is available.  Otherwise, we test for
