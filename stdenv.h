@@ -1,9 +1,6 @@
 /* stdenv.h -- set up an environment we can use ($Revision: 1.3 $) */
 
 #include "esconfig.h"
-#ifdef HAVE_SYS_CDEFS_H
-# include <sys/cdefs.h>
-#endif
 
 /*
  * type qualifiers
@@ -31,15 +28,7 @@
 #include <string.h>
 #include <stddef.h>
 
-#if HAVE_MEMORY_H
-#include <memory.h>
-#endif
-
-#if HAVE_STDARG_H
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #include <errno.h>
 #include <setjmp.h>
@@ -60,19 +49,8 @@
 #endif
 
 #if REQUIRE_DIRENT
-#if HAVE_DIRENT_H
 #include <dirent.h>
 typedef struct dirent Dirent;
-#else
-#include <sys/dir.h>
-typedef struct direct Dirent;
-#endif
-/* prototypes for XXXdir functions. comment out if necessary */
-#if !HPUX
-extern DIR *opendir(const char *);
-extern Dirent *readdir(DIR *);
-/*extern int closedir(DIR *);*/
-#endif
 #endif
 
 #if REQUIRE_PWD
@@ -90,17 +68,7 @@ typedef volatile void noreturn;
 typedef void noreturn;
 #endif
 
-#if STDC_HEADERS
-# include <stdlib.h>
-#else
-extern noreturn exit(int);
-extern noreturn abort(void);
-extern long strtol(const char *num, char **end, int base);
-extern void *qsort(
-	void *base, size_t nmemb, size_t size,
-	int (*compar)(const void *, const void *)
-);
-#endif /* !STDC_HEADERS */
+#include <stdlib.h>
 
 #include <sys/wait.h>
 #include <time.h>
@@ -120,7 +88,7 @@ extern void *qsort(
 /* setjmp */
 
 #if defined sigsetjmp || HAVE_SIGSETJMP
-/* under linux, sigsetjmp and setjmp are both macros 
+/* under linux, sigsetjmp and setjmp are both macros
  * -- need to undef setjmp to avoid problems
  */
 # ifdef setjmp
@@ -151,13 +119,8 @@ extern void *qsort(
 #define	NOP			do {} while (0)
 #endif
 
-#if REISER_CPP
-#define CONCAT(a,b)	a/**/b
-#define STRING(s)	"s"
-#else
 #define CONCAT(a,b)	a ## b
 #define STRING(s)	#s
-#endif
 
 
 /*
@@ -169,38 +132,24 @@ extern void *qsort(
 typedef enum { FALSE, TRUE } Boolean;
 
 
-#if USE_SIG_ATOMIC_T
 typedef volatile sig_atomic_t Atomic;
-#else
-typedef volatile int Atomic;
-#endif
-
-typedef GETGROUPS_T gidset_t;
+typedef gid_t gidset_t;
 
 
 /*
  * variable argument lists
  */
 
-#if HAVE_STDARG_H
-
 #define	VARARGS				, ...
 #define	VARARGS1(t1, v1)		(t1 v1, ...)
 #define	VARARGS2(t1, v1, t2, v2)	(t1 v1, t2 v2, ...)
-#define	VA_START(ap, v)			va_start(ap, v)
 
-#else	/* !HAVE_STDARG_H */
-
-#define	VARARGS
-#define	VARARGS1(t1, v1)		(v1, va_alist) t1 v1; va_dcl
-#define	VARARGS2(t1, v1, t2, v2)	(v1, v2, va_alist) t1 v1; t2 v2; va_dcl
-#define	VA_START(ap, var)		va_start(ap)
-
-/* __va_* are defined by the compiler */
-#define va_start(ap)		__va_start(ap)
-#define va_copy(dest, src)	__va_copy(dest, src)
-#define va_end(ap)		__va_end(ap)
-
+#if !HAVE_VA_COPY
+# if HAVE___VA_COPY
+#  define va_copy(dest, src)	__va_copy(dest, src)
+# else
+#  define va_copy(dest, src)	memcpy(&dest, &src, sizeof(src))
+# endif
 #endif
 
 

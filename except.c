@@ -24,7 +24,7 @@ extern noreturn throw(List *e) {
 	assert(e != NULL);
 	assert(handler != NULL);
 	tophandler = handler->up;
-	
+
 	while (pushlist != handler->pushlist) {
 		rootlist = &pushlist->defnroot;
 		varpop(pushlist);
@@ -47,7 +47,7 @@ extern noreturn fail VARARGS2(const char *, from, const char *, fmt) {
 	char *s;
 	va_list args;
 
-	VA_START(args, fmt);
+	va_start(args, fmt);
 	s = strv(fmt, args);
 	va_end(args);
 

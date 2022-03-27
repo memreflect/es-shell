@@ -56,41 +56,19 @@ fi
 
 
 dnl Checks for libraries.
-
 AC_CHECK_LIB(sun, getpwuid)
 ES_READLINE
 
 dnl Checks for header files.
-AC_HEADER_DIRENT
-AC_HEADER_STDC
-AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(fcntl.h limits.h sys/ioctl.h sys/time.h unistd.h memory.h stdarg.h sys/cdefs.h)
+AC_CHECK_HEADERS([fcntl.h unistd.h sys/ioctl.h sys/time.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_UID_T
-AC_TYPE_SIZE_T
 
 dnl Checks for library functions.
-AC_TYPE_GETGROUPS
-AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MMAP
-
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS(strerror strtol lstat setrlimit sigrelse sighold sigaction \
 sysconf setsid sigsetjmp)
-
-dnl Check to see if you can assign to a va_list
-AC_CACHE_CHECK(whether assignment to va_list ok?, es_cv_assign_va_list,
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#ifndef HAVE_STDARG_H
-choke me
-#else
-#include <stdarg.h>
-#endif]], [[va_list first, second; first = second; return 0;]])],[es_cv_assign_va_list=yes],[es_cv_assign_va_list=no]))
-if test "$es_cv_assign_va_list" = no
-then
-	AC_DEFINE(NO_VA_LIST_ASSIGN, [1], [NO_VA_LIST_ASSIGN])
-fi
 
 AC_CACHE_CHECK(for files to extract signal information from,
 es_cv_sigfiles,
@@ -102,6 +80,47 @@ changequote([,])],
 [#include <signal.h>], /usr/include/signal.h))
 
 AC_SUBST(SIGFILES, $es_cv_sigfiles)
+
+# Check for va_copy or __va_copy
+#
+# If neither is found, check whether a compiler has a flag to
+# enable C99 mode.  AC_PROG_CC_C99 will also check for va_copy.
+# If that fails, then we have neither.
+AC_CACHE_CHECK([for va_copy], [es_cv_va_copy],
+               [AC_COMPILE_IFELSE(
+                 [AC_LANG_SOURCE(
+                   [[#include <stdarg.h>]]
+                   [[void foo(va_list ap) {]]
+                   [[   va_list apsave;]]
+                   [[   va_copy(apsave, ap);]]
+                   [[   va_end(apsave);]]
+                   [[}]])],
+                 [AS_VAR_SET([es_cv_va_copy], [yes])],
+                 [AS_VAR_SET([es_cv_va_copy], [no])])])
+AS_VAR_IF([es_cv_va_copy], [no],
+          [AC_CACHE_CHECK([for __va_copy], [es_cv___va_copy],
+                          [AC_COMPILE_IFELSE(
+                            [AC_LANG_SOURCE(
+                              [[#include <stdarg.h>]]
+                              [[void foo(va_list ap) {]]
+                              [[   va_list apsave;]]
+                              [[   __va_copy(apsave, ap);]]
+                              [[   va_end(apsave);]]
+                              [[}]])],
+                            [AS_VAR_SET([es_cv___va_copy], [yes])],
+                            [AS_VAR_SET([es_cv___va_copy], [no])])])])
+AS_IF([test "$es_cv_va_copy:$es_cv___va_copy" = "no:no"],
+      [AS_VAR_COPY([es_save_CC], [CC])
+      AS_VAR_COPY([es_save_CFLAGS], [CFLAGS])
+      AC_PROG_CC_C99([AS_VAR_SET([es_cv_va_copy], [yes])],
+                     [AS_VAR_COPY([CC], [es_save_CC])
+                     AS_VAR_COPY([CFLAGS], [es_save_CFLAGS])])])
+AS_VAR_IF([es_cv_va_copy], [yes],
+          [AC_DEFINE([HAVE_VA_COPY], [1],
+                     [Define to 1 if you have va_copy.])],
+          [AS_VAR_IF([es_cv___va_copy], [yes],
+                     [AC_DEFINE([HAVE___VA_COPY], [1],
+                                [Define to 1 if you have __va_copy.])])])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

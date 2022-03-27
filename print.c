@@ -265,18 +265,14 @@ extern int printfmt(Format *format, const char *fmt) {
 
 extern int fmtprint VARARGS2(Format *, format, const char *, fmt) {
 	int n = -format->flushed;
-#if NO_VA_LIST_ASSIGN
 	va_list saveargs;
 
-	memcpy(saveargs, format->args, sizeof(va_list));
-#else
-	va_list saveargs = format->args;
-#endif
-
-	VA_START(format->args, fmt);
+	va_copy(saveargs, format->args);
+	va_start(format->args, fmt);
 	n += printfmt(format, fmt);
 	va_end(format->args);
 	va_copy(format->args, saveargs);
+	va_end(saveargs);
 
 	return n + format->flushed;
 }
@@ -316,7 +312,7 @@ static void fdprint(Format *format, int fd, const char *fmt) {
 
 extern int fprint VARARGS2(int, fd, const char *, fmt) {
 	Format format;
-	VA_START(format.args, fmt);
+	va_start(format.args, fmt);
 	fdprint(&format, fd, fmt);
 	va_end(format.args);
 	return format.flushed;
@@ -324,7 +320,7 @@ extern int fprint VARARGS2(int, fd, const char *, fmt) {
 
 extern int print VARARGS1(const char *, fmt) {
 	Format format;
-	VA_START(format.args, fmt);
+	va_start(format.args, fmt);
 	fdprint(&format, 1, fmt);
 	va_end(format.args);
 	return format.flushed;
@@ -332,7 +328,7 @@ extern int print VARARGS1(const char *, fmt) {
 
 extern int eprint VARARGS1(const char *, fmt) {
 	Format format;
-	VA_START(format.args, fmt);
+	va_start(format.args, fmt);
 	fdprint(&format, 2, fmt);
 	va_end(format.args);
 	return format.flushed;
@@ -341,7 +337,7 @@ extern int eprint VARARGS1(const char *, fmt) {
 extern noreturn panic VARARGS1(const char *, fmt) {
 	Format format;
 	gcdisable();
-	VA_START(format.args, fmt);
+	va_start(format.args, fmt);
 	eprint("es panic: ");
 	fdprint(&format, 2, fmt);
 	va_end(format.args);

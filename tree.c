@@ -12,7 +12,7 @@ extern Tree *mk VARARGS1(NodeKind, t) {
 	Tree *n;
 
 	gcdisable();
-	VA_START(ap, t);
+	va_start(ap, t);
 	switch (t) {
 	    default:
 		panic("mk: bad node kind %d", t);
@@ -80,7 +80,7 @@ static size_t Tree1Scan(void *p) {
 	    case nCall: case nThunk: case nVar:
 		n->u[0].p = forward(n->u[0].p);
 		break;
-	} 
+	}
 	return offsetof(Tree, u[1]);
 }
 
@@ -95,6 +95,6 @@ static size_t Tree2Scan(void *p) {
 		break;
 	    default:
 		panic("Tree2Scan: bad node kind %d", n->kind);
-	} 
+	}
 	return offsetof(Tree, u[2]);
 }

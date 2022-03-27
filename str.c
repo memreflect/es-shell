@@ -20,12 +20,8 @@ extern char *strv(const char *fmt, va_list args) {
 
 	gcdisable();
 	buf = openbuffer(0);
+	va_copy(format.args, args);
 	format.u.p	= buf;
-#if NO_VA_LIST_ASSIGN
-	memcpy(format.args, args, sizeof(va_list));
-#else
-	format.args	= args;
-#endif
 	format.buf	= buf->str;
 	format.bufbegin	= buf->str;
 	format.bufend	= buf->str + buf->len;
@@ -35,6 +31,7 @@ extern char *strv(const char *fmt, va_list args) {
 	printfmt(&format, fmt);
 	fmtputc(&format, '\0');
 	gcenable();
+	va_end(format.args);
 
 	return sealbuffer(format.u.p);
 }
@@ -43,7 +40,7 @@ extern char *strv(const char *fmt, va_list args) {
 extern char *str VARARGS1(const char *, fmt) {
 	char *s;
 	va_list args;
-	VA_START(args, fmt);
+	va_start(args, fmt);
 	s = strv(fmt, args);
 	va_end(args);
 	return s;
@@ -69,7 +66,7 @@ static void mprint_grow(Format *format, size_t more) {
 extern char *mprint VARARGS1(const char *, fmt) {
 	Format format;
 	format.u.n = 1;
-	VA_START(format.args, fmt);
+	va_start(format.args, fmt);
 
 	format.buf	= ealloc(PRINT_ALLOCSIZE);
 	format.bufbegin	= format.buf;
