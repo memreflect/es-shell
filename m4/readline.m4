@@ -64,52 +64,60 @@ AS_VAR_IF([es_cv_readline_lib], [no],
 # <readline.h> or <readline/readline.h> should be included.
 #
 # The relevant libraries will be added to LIBS for linking.
+#
+# Additionally, this macro uses AC_ARG_WITH to add a configure option
+# --with-readline to disable or require readline.  The default is `auto' to
+# automatically detect whether it is available or not.  `check' is also
+# accepted as an equivalent alternative to `auto'.
 AC_DEFUN([ES_READLINE],
 [AC_ARG_WITH([readline],
   [AS_HELP_STRING(
     [--with-readline],
     [enable line editing with readline @<:@auto@:>@])],
   [],
-  [with_readline=auto])
-AS_VAR_IF([with_readline], [no],
-  [],
-  [AC_REQUIRE([_ES_READLINE_LIB])
-  AC_REQUIRE([_ES_READLINE_H])
-  AC_CACHE_CHECK([whether readline is available], [es_cv_readline],
-    [AS_VAR_SET([es_cv_readline], [no])
-    AS_CASE(["$es_cv_readline_lib"],
-      [no], [],
-      [-lreadline|-ledit|-leditline],
-          [AS_CASE(["$es_cv_readline_h"],
-            [no], [],
-            [readline.h|readline/readline.h],
-                [AS_VAR_SET([es_cv_readline], [yes])],
-            [AS_VAR_SET([es_cv_readline], [error-h])])],
-      [AS_VAR_SET([es_cv_readline], [error-lib])])])
-  AS_CASE(["$es_cv_readline"],
-    [error-lib],
+  [AS_VAR_SET([with_readline], [auto])])
+AS_CASE(["$with_readline"],
+  [no], [AS_VAR_SET([es_cv_readline], [no])],
+  [check|auto|yes],
+      [_ES_READLINE_LIB
+      _ES_READLINE_H
+      AC_CACHE_CHECK([whether readline is available], [es_cv_readline],
+        [AS_VAR_SET([es_cv_readline], [no])
+        AS_CASE(["$es_cv_readline_lib"],
+          [no], [],
+          [-lreadline|-ledit|-leditline],
+              [AS_CASE(["$es_cv_readline_h"],
+                [no], [],
+                [readline.h|readline/readline.h],
+                    [AS_VAR_SET([es_cv_readline], [yes])],
+                [AS_VAR_SET([es_cv_readline], [error-h])])],
+          [AS_VAR_SET([es_cv_readline], [error-lib])])])
+      AS_CASE(["$es_cv_readline"],
+        [error-lib],
+            [AC_MSG_ERROR(
+              [unexpected value for cache variable -- $es_cv_readline_lib])],
+        [error-h],
+            [AC_MSG_ERROR(
+              [unexpected value for cache variable -- $es_cv_readline_h])],
+        [no],
+            [AS_VAR_IF([with_readline], [yes],
+              [AC_MSG_FAILURE([readline not available])])],
+        [yes],
+            [AC_DEFINE([HAVE_READLINE], [1],
+              [Define to 1 if readline is available.])
+            AS_CASE(["$es_cv_readline_h"],
+              [readline.h],
+                  [AC_DEFINE([HAVE_READLINE_H], [1],
+                    [Define to 1 if <readline.h> should be included.])],
+              [readline/readline.h],
+                  [AC_DEFINE([HAVE_READLINE_READLINE_H], [1],
+                    [Define to 1 if <readline/readline.h> should be included.])],
+              [AC_MSG_ERROR(
+                [unexpected way to include readline.h -- $es_cv_readline_h])])],
         [AC_MSG_ERROR(
-          [unexpected value for cache variable -- $es_cv_readline_lib])],
-    [error-h],
-        [AC_MSG_ERROR(
-          [unexpected value for cache variable -- $es_cv_readline_h])],
-    [no],
-        [AS_VAR_IF([with_readline], [yes],
-          [AC_MSG_FAILURE([readline not available])])],
-    [yes],
-        [AC_DEFINE([HAVE_READLINE], [1],
-          [Define to 1 if readline is available.])
-        AS_CASE(["$es_cv_readline_h"],
-          [readline.h],
-              [AC_DEFINE([HAVE_READLINE_H], [1],
-                [Define to 1 if <readline.h> should be included.])],
-          [readline/readline.h],
-              [AC_DEFINE([HAVE_READLINE_READLINE_H], [1],
-                [Define to 1 if <readline/readline.h> should be included.])],
-          [AC_MSG_ERROR(
-            [unexpected way to include readline.h -- $es_cv_readline_h])])],
-    [AC_MSG_ERROR(
-      [unexpected value for cache varaible -- $es_cv_readline])])])
+          [unexpected value for cache variable -- $es_cv_readline])])],
+  [AC_MSG_ERROR(
+    [invalid argument to --with-readline -- $with_readline])])
 ])dnl ES_READLINE
 
 # ES_READLINE_HISTORY
