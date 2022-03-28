@@ -2,6 +2,8 @@
 
 #include "es.h"
 
+#include <sys/wait.h>
+
 /* TODO: the rusage code for the time builtin really needs to be cleaned up */
 
 #if HAVE_WAIT3
