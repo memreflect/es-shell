@@ -1,4 +1,4 @@
-/* es.h -- definitions for higher order shell ($Revision: 1.2 $) */
+/* es.h -- definitions for higher order shell */
 
 #include "config.h"
 #include "stdenv.h"
@@ -359,7 +359,7 @@ extern int eopen(char *name, OpenKind k);
 
 /* version.c */
 
-extern const char * const version;
+extern const char version[];
 
 
 /* gc.c -- see gc.h for more */

@@ -1,4 +1,4 @@
-/* prim-etc.c -- miscellaneous primitives ($Revision: 1.2 $) */
+/* prim-etc.c -- miscellaneous primitives */
 
 #include "es.h"
 #include "prim.h"

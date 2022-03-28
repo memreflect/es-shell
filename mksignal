@@ -1,5 +1,5 @@
 #! /bin/sh
-# mksignal -- generate es's internal signal table from signal.h ($Revision: 1.1.1.1 $)
+# mksignal -- generate es's internal signal table from signal.h
 
 echo '#include "es.h"'
 echo '#include "sigmsgs.h"'
@@ -61,7 +61,7 @@ sed -n '
 		mesg["SIGWINCH"]	= "window size changed"
 		mesg["SIGXCPU"]		= "exceeded CPU time limit"
 		mesg["SIGXFSZ"]		= "exceeded file size limit"
-		
+
 		# these signals are dubious, but we may as well provide clean messages
 		# for them.  most of them occur on only one system, or, more likely,
 		# are duplicates of one of the previous messages.
@@ -106,10 +106,10 @@ sed -n '
 		ignore["SIGRTMIN"]	= 1
 		ignore["SIGSETS"]	= 1
 		ignore["SIGSTKSZ"]	= 1
-		
+
 		# upper to lowercase translation table:  can someone give me an easier
 		# way to do this that works in ancient versions of awk?
-		
+
 		for (i = 65; i <= 90; i++)	# 'A' to 'Z'
 			uppertolower[sprintf("%c", i)] = sprintf("%c", i + 32)
 

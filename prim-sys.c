@@ -1,4 +1,4 @@
-/* prim-sys.c -- system call primitives ($Revision: 1.2 $) */
+/* prim-sys.c -- system call primitives */
 
 #include "es.h"
 #include "prim.h"

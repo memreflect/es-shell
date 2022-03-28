@@ -1,4 +1,4 @@
-/* config.h -- es(1) configuration parameters ($Revision: 1.1.1.1 $) */
+/* config.h -- es(1) configuration parameters */
 
 /*
  * Compile time options

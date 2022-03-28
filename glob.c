@@ -1,4 +1,4 @@
-/* glob.c -- wildcard matching ($Revision: 1.1.1.1 $) */
+/* glob.c -- wildcard matching */
 
 #include "es.h"
 #include "gc.h"

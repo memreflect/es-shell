@@ -1,4 +1,4 @@
-/* access.c -- access testing and path searching ($Revision: 1.2 $) */
+/* access.c -- access testing and path searching */
 
 #include "es.h"
 #include "prim.h"

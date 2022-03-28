@@ -1,4 +1,4 @@
-/* parse.y -- grammar for es ($Revision: 1.2 $) */
+/* parse.y -- grammar for es */
 
 %{
 /* Some yaccs insist on including stdlib.h */

@@ -1,4 +1,4 @@
-/* proc.c -- process control system calls ($Revision: 1.2 $) */
+/* proc.c -- process control system calls */
 
 #include "es.h"
 
