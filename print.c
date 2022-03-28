@@ -263,7 +263,7 @@ extern int printfmt(Format *format, const char *fmt) {
  * the public entry points
  */
 
-extern int fmtprint VARARGS2(Format *, format, const char *, fmt) {
+extern int fmtprint(Format * format, const char * fmt, ...) {
 	int n = -format->flushed;
 	va_list saveargs;
 
@@ -310,7 +310,7 @@ static void fdprint(Format *format, int fd, const char *fmt) {
 	gcenable();
 }
 
-extern int fprint VARARGS2(int, fd, const char *, fmt) {
+extern int fprint(int fd, const char * fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
 	fdprint(&format, fd, fmt);
@@ -318,7 +318,7 @@ extern int fprint VARARGS2(int, fd, const char *, fmt) {
 	return format.flushed;
 }
 
-extern int print VARARGS1(const char *, fmt) {
+extern int print(const char * fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
 	fdprint(&format, 1, fmt);
@@ -326,7 +326,7 @@ extern int print VARARGS1(const char *, fmt) {
 	return format.flushed;
 }
 
-extern int eprint VARARGS1(const char *, fmt) {
+extern int eprint(const char * fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
 	fdprint(&format, 2, fmt);
@@ -334,7 +334,7 @@ extern int eprint VARARGS1(const char *, fmt) {
 	return format.flushed;
 }
 
-extern noreturn panic VARARGS1(const char *, fmt) {
+extern noreturn panic(const char * fmt, ...) {
 	Format format;
 	gcdisable();
 	va_start(format.args, fmt);

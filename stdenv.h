@@ -140,10 +140,6 @@ typedef gid_t gidset_t;
  * variable argument lists
  */
 
-#define	VARARGS				, ...
-#define	VARARGS1(t1, v1)		(t1 v1, ...)
-#define	VARARGS2(t1, v1, t2, v2)	(t1 v1, t2 v2, ...)
-
 #if !HAVE_VA_COPY
 # if HAVE___VA_COPY
 #  define va_copy(dest, src)	__va_copy(dest, src)

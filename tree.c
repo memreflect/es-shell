@@ -7,7 +7,7 @@ DefineTag(Tree1, static);
 DefineTag(Tree2, static);
 
 /* mk -- make a new node; used to generate the parse tree */
-extern Tree *mk VARARGS1(NodeKind, t) {
+extern Tree *mk(NodeKind t, ...) {
 	va_list ap;
 	Tree *n;
 
