@@ -1,9 +1,9 @@
 /* prim-etc.c -- miscellaneous primitives ($Revision: 1.2 $) */
 
-#define	REQUIRE_PWD	1
-
 #include "es.h"
 #include "prim.h"
+
+#include <pwd.h>
 
 PRIM(result) {
 	return list;

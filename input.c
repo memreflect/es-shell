@@ -53,11 +53,6 @@ static char *error = NULL;
 
 /* yyerror -- yacc error entry point */
 extern void yyerror(char *s) {
-#if sgi
-	/* this is so that trip.es works */
-	if (streq(s, "Syntax error"))
-		s = "syntax error";
-#endif
 	if (error == NULL)	/* first error is generally the most informative */
 		error = locate(input, s);
 }

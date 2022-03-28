@@ -1,9 +1,9 @@
 /* prim-sys.c -- system call primitives ($Revision: 1.2 $) */
 
-#define	REQUIRE_IOCTL	1
-
 #include "es.h"
 #include "prim.h"
+
+#include <sys/ioctl.h>
 
 #ifdef HAVE_SETRLIMIT
 # define BSD_LIMITS 1
