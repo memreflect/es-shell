@@ -41,7 +41,7 @@ static List *redir(List *(*rop)(int *fd, List *list), List *list, int evalflags)
 
 #define	REDIR(name)	static List *CONCAT(redir_,name)(int *srcfdp, List *list)
 
-static noreturn argcount(const char *s) {
+static _Noreturn void argcount(const char *s) {
 	fail(caller, "argument count: usage: %s", s);
 }
 
@@ -204,7 +204,7 @@ PRIM(pipe) {
 
 	for (;; list = list->next) {
 		int p[2], pid;
-		
+
 		pid = (list->next == NULL) ? efork(TRUE, FALSE) : pipefork(p, &inpipe);
 
 		if (pid == 0) {		/* child */
@@ -348,7 +348,7 @@ restart:
 
 PRIM(backquote) {
 	int pid, p[2], status;
-	
+
 	caller = "$&backquote";
 	if (list == NULL)
 		fail(caller, "usage: backquote separator command [args ...]");

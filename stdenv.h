@@ -10,6 +10,8 @@
  * protect the rest of es source from the dance of the includes
  */
 
+#include <sys/types.h>
+
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
@@ -23,15 +25,15 @@
 
 #include <unistd.h>
 
-#include <sys/types.h>
-
 typedef struct dirent Dirent;
 
-/* stdlib */
-#if __GNUC__
-typedef volatile void noreturn;
-#else
-typedef void noreturn;
+#if !HAVE__NORETURN
+# undef _Noreturn
+# if HAVE_NORETURN_ATTRIB
+#  define _Noreturn __attribute__((noreturn))
+# else
+#  define _Noreturn /* nothing */
+# endif
 #endif
 
 /*
@@ -83,7 +85,6 @@ typedef void noreturn;
 #undef FALSE
 #undef TRUE
 typedef enum { FALSE, TRUE } Boolean;
-
 
 typedef volatile sig_atomic_t Atomic;
 typedef gid_t gidset_t;

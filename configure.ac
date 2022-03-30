@@ -64,6 +64,32 @@ AC_CHECK_HEADERS([fcntl.h unistd.h sys/ioctl.h sys/time.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
+# Check for _Noreturn
+# Some implementations define _Noreturn to __attribute__((noreturn))
+# depending on the values of __GNUC__ and __GNUC_MINOR__.
+AC_CACHE_CHECK([whether _Noreturn is available], [es_cv_noreturn],
+               [AS_VAR_SET([es_cv_noreturn], [no])
+               AC_COMPILE_IFELSE(
+                 [AC_LANG_SOURCE([[_Noreturn void foo(void);]])],
+                 [AS_VAR_SET([es_cv_noreturn], [yes])],
+                 [AC_COMPILE_IFELSE(
+                   [AC_LANG_SOURCE([[#include <stdio.h>]])],
+                   [AS_VAR_SET([es_cv_noreturn], [yes])])])])
+AS_VAR_IF([es_cv_noreturn], [yes],
+          [AC_DEFINE([HAVE__NORETURN], [1],
+             [Define to 1 if you have _Noreturn functionality.])],
+          [AC_CACHE_CHECK(
+            [if the noreturn attribute is available],
+            [es_cv_attrib_noreturn],
+            [AS_VAR_SET([es_cv_attrib_noreturn], [no])
+            AC_COMPILE_IFELSE(
+              [AC_LANG_SOURCE([[#include <stdlib.h>
+                              __attribute__((noreturn)) void
+                              foo(void) {exit(0);}]])],
+              [AS_VAR_SET([es_cv_attrib_noreturn], [yes])])])
+          AS_VAR_IF([es_cv_attrib_noreturn], [yes],
+                    [AC_DEFINE([HAVE_NORETURN_ATTRIB], [1],
+                      [Define to 1 if you have the noreturn attribute.])])])
 dnl Checks for library functions.
 AC_FUNC_MMAP
 AC_FUNC_WAIT3
@@ -82,31 +108,34 @@ changequote([,])],
 AC_SUBST(SIGFILES, $es_cv_sigfiles)
 
 # Check for va_copy or __va_copy
-#
-# If neither is found, check whether a compiler has a flag to
-# enable C99 mode.  AC_PROG_CC_C99 will also check for va_copy.
+# If C11 features are available, then we assume va_copy is available as all
+# C implementations since C99 are required to have it.
+# If neither va_copy nor __va_copy is found, check whether a compiler has a
+# flag to enable C99 mode, which will also ensure va_copy is available.
 # If that fails, then we have neither.
 AC_CACHE_CHECK([for va_copy], [es_cv_va_copy],
-               [AC_COMPILE_IFELSE(
-                 [AC_LANG_SOURCE(
-                   [[#include <stdarg.h>]]
-                   [[void foo(va_list ap) {]]
-                   [[   va_list apsave;]]
-                   [[   va_copy(apsave, ap);]]
-                   [[   va_end(apsave);]]
-                   [[}]])],
-                 [AS_VAR_SET([es_cv_va_copy], [yes])],
-                 [AS_VAR_SET([es_cv_va_copy], [no])])])
+               [AS_VAR_IF([ac_cv_prog_cc_c11], [no],
+                 [AC_COMPILE_IFELSE(
+                   [AC_LANG_SOURCE(
+                     [[#include <stdarg.h>
+                     void foo(va_list ap) {
+                        va_list apsave;
+                        va_copy(apsave, ap);
+                        va_end(apsave);
+                     }]])],
+                   [AS_VAR_SET([es_cv_va_copy], [yes])],
+                   [AS_VAR_SET([es_cv_va_copy], [no])])],
+                 [AS_VAR_SET([es_cv_va_copy], [yes])])])
 AS_VAR_IF([es_cv_va_copy], [no],
           [AC_CACHE_CHECK([for __va_copy], [es_cv___va_copy],
                           [AC_COMPILE_IFELSE(
                             [AC_LANG_SOURCE(
-                              [[#include <stdarg.h>]]
-                              [[void foo(va_list ap) {]]
-                              [[   va_list apsave;]]
-                              [[   __va_copy(apsave, ap);]]
-                              [[   va_end(apsave);]]
-                              [[}]])],
+                              [[#include <stdarg.h>
+                              void foo(va_list ap) {
+                                 va_list apsave;
+                                 __va_copy(apsave, ap);
+                                 va_end(apsave);
+                              }]])],
                             [AS_VAR_SET([es_cv___va_copy], [yes])],
                             [AS_VAR_SET([es_cv___va_copy], [no])])])])
 AS_IF([test "$es_cv_va_copy:$es_cv___va_copy" = "no:no"],

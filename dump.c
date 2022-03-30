@@ -246,9 +246,9 @@ static void printheader(List *title) {
 	print("%s\n\n", PPSTRING(TreeTypes));
 }
 
-extern void runinitial(void) {
+extern _Noreturn void runinitial(void) {
 	List *title = runfd(0, "initial.es", 0);
-	
+
 	gcdisable();
 
 	cvars = mkdict();
