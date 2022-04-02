@@ -14,26 +14,25 @@ AS_VAR_IF([es_cv_readline_h], [no],
   [AC_CACHE_CHECK([for readline library], [es_cv_readline_lib],
     [AS_VAR_SET([es_cv_readline_lib], [no])
     AS_VAR_COPY([es_save_LIBS], [LIBS])
-    AS_FOR([es_lib], [[es_lib]],
+    AS_FOR([_es_lib], [es_lib],
       [readline edit editline],
-      [AS_FOR([es_tlib], [[es_tlib]],
+      [AS_FOR([_es_tlib], [es_tlib],
         ["" terminfo tinfo ncurses curses termcap],
         [AS_VAR_COPY([LIBS], [es_save_LIBS])
-        AS_VAR_APPEND([LIBS], [" -l[]es_lib[]"])
-        AS_IF([test -n es_tlib], [AS_VAR_APPEND([LIBS], [" -l[]es_tlib[]"])])
-        AC_LINK_IFELSE(
-          [AC_LANG_PROGRAM(
+        AS_VAR_APPEND([LIBS], [" -l[]_es_lib[]"])
+        AS_IF([test -n _es_tlib], [AS_VAR_APPEND([LIBS], [" -l[]_es_tlib[]"])])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM(
             [char *readline(const char *);],
             [(void)readline("; ");])],
-          [AS_VAR_SET([es_cv_readline_lib], [-l[]es_lib])
-          AS_IF([test -z es_tlib],
+          [AS_VAR_SET([es_cv_readline_lib], [-l[]_es_lib])
+          AS_IF([test -z _es_tlib],
             [AS_VAR_SET([es_cv_readline_termlib], ["none required"])],
-            [AS_VAR_SET([es_cv_readline_termlib], [-l[]es_tlib])])
+            [AS_VAR_SET([es_cv_readline_termlib], [-l[]_es_tlib])])
           break])])
       AS_VAR_IF([es_cv_readline_lib], [no], [], [break])])
     AS_VAR_IF([es_cv_readline_lib], [no],
       [AS_VAR_COPY([LIBS], [es_save_LIBS])])])])
-])dnl _ES_READLINE_LIB
+])# _ES_READLINE_LIB
 
 # _ES_READLINE_H
 # --------------
@@ -45,35 +44,33 @@ AS_VAR_IF([es_cv_readline_lib], [no],
   [AS_VAR_SET([es_cv_readline_h], [no])],
   [AC_CACHE_CHECK([for readline.h], [es_cv_readline_h],
     [AS_VAR_SET([es_cv_readline_h], [no])
-    AS_FOR([es_h], [[es_h]], [readline/readline.h readline.h],
-      [AC_COMPILE_IFELSE(
-        [AC_LANG_SOURCE(
-          [[#include <stdio.h>]]
-          [[#include <]es_h[>]])],
-        [AS_VAR_SET([es_cv_readline_h], [es_h])
+    AS_FOR([_es_h], [es_h], [readline/readline.h readline.h],
+      [AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <stdio.h>
+#include <]_es_h[>
+]])],
+        [AS_VAR_SET([es_cv_readline_h], [_es_h])
         break])])])])
-])dnl _ES_READLINE_H
+])# _ES_READLINE_H
 
 # ES_READLINE
 # -----------
 # Check whether readline is available.
 # Sets es_cv_readline to `yes' or `no'.
 #
-# Defines HAVE_READLINE if available and additionally defines
-# HAVE_READLINE_H or HAVE_READLINE_READLINE_H, depending on whether
-# <readline.h> or <readline/readline.h> should be included.
+# Defines HAVE_READLINE if available and additionally defines HAVE_READLINE_H or
+# HAVE_READLINE_READLINE_H, depending on whether <readline.h> or
+# <readline/readline.h> should be included.
 #
 # The relevant libraries will be added to LIBS for linking.
 #
 # Additionally, this macro uses AC_ARG_WITH to add a configure option
 # --with-readline to disable or require readline.  The default is `auto' to
-# automatically detect whether it is available or not.  `check' is also
-# accepted as an equivalent alternative to `auto'.
+# automatically detect whether it is available or not.  `check' is also accepted
+# as an equivalent alternative to `auto'.
 AC_DEFUN([ES_READLINE],
 [AC_ARG_WITH([readline],
-  [AS_HELP_STRING(
-    [--with-readline],
-    [enable line editing with readline @<:@auto@:>@])],
+  [AS_HELP_STRING([--with-readline],
+                  [enable line editing with readline @<:@auto@:>@])],
   [],
   [AS_VAR_SET([with_readline], [auto])])
 AS_CASE(["$with_readline"],
@@ -87,7 +84,8 @@ AS_CASE(["$with_readline"],
           [no], [],
           [-lreadline|-ledit|-leditline],
               [AS_CASE(["$es_cv_readline_h"],
-                [no], [],
+                [no],
+                    [],
                 [readline.h|readline/readline.h],
                     [AS_VAR_SET([es_cv_readline], [yes])],
                 [AS_VAR_SET([es_cv_readline], [error-h])])],
@@ -95,10 +93,10 @@ AS_CASE(["$with_readline"],
       AS_CASE(["$es_cv_readline"],
         [error-lib],
             [AC_MSG_ERROR(
-              [unexpected value for cache variable -- $es_cv_readline_lib])],
+              [unknown readline library -- $es_cv_readline_lib])],
         [error-h],
             [AC_MSG_ERROR(
-              [unexpected value for cache variable -- $es_cv_readline_h])],
+              [unexpected readline.h header -- $es_cv_readline_h])],
         [no],
             [AS_VAR_IF([with_readline], [yes],
               [AC_MSG_FAILURE([readline not available])])],
@@ -111,14 +109,12 @@ AS_CASE(["$with_readline"],
                     [Define to 1 if <readline.h> should be included.])],
               [readline/readline.h],
                   [AC_DEFINE([HAVE_READLINE_READLINE_H], [1],
-                    [Define to 1 if <readline/readline.h> should be included.])],
-              [AC_MSG_ERROR(
-                [unexpected way to include readline.h -- $es_cv_readline_h])])],
+                    [Define to 1 if <readline/readline.h> should be included.])])],
         [AC_MSG_ERROR(
           [unexpected value for cache variable -- $es_cv_readline])])],
   [AC_MSG_ERROR(
     [invalid argument to --with-readline -- $with_readline])])
-])dnl ES_READLINE
+])# ES_READLINE
 
 # ES_READLINE_HISTORY
 # -------------------
@@ -135,26 +131,26 @@ AS_CASE(["$es_cv_readline"],
       [AC_CACHE_CHECK([for history.h @{:@readline@:}@],
         [es_cv_readline_history],
         [AS_VAR_SET([es_cv_readline_history], [no])
-        AS_FOR([es_h], [[es_h]], [readline/history.h history.h],
-          [AC_COMPILE_IFELSE(
-            [AC_LANG_PROGRAM(
-              [[#include <stdio.h>]]
-              [[#if !HAVE_READLINE]]
-              [[# readline should have been enabled]]
-              [[#elif HAVE_READLINE_READLINE_H]]
-              [[# include <readline/readline.h>]]
-              [[#elif HAVE_READLINE_H]]
-              [[# include <readline.h>]]
-              [[#else]]
-              [[# failed to find readline.h]]
-              [[#endif]]
-              [[#include <]es_h[>]],
-              [[add_history("foo");]])],
-            [AS_VAR_SET([es_cv_readline_history], [es_h])
+        AS_FOR([_es_h], [es_h], [readline/history.h history.h],
+          [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdio.h>
+#if !HAVE_READLINE
+# readline should have been enabled
+#elif HAVE_READLINE_READLINE_H
+# include <readline/readline.h>
+#elif HAVE_READLINE_H
+# include <readline.h>
+#else
+# failed to find readline.h
+#endif
+#include <]_es_h[>
+]],
+[[add_history("foo");]])],
+            [AS_VAR_SET([es_cv_readline_history], [_es_h])
             break])])])],
   [AC_MSG_ERROR([unexpected value for cache variable -- $es_cv_readline])])
 AS_CASE(["$es_cv_readline_history"],
-  [no], [],
+  [no],
+      [],
   [history.h],
       [AC_DEFINE([HAVE_HISTORY_H], [1],
         [Define to 1 if you should include <history.h> for history.])],
@@ -167,4 +163,4 @@ AS_VAR_IF([es_cv_readline_history], [no],
   [],
   [AC_DEFINE([HAVE_READLINE_HISTORY], [1],
     [Define to 1 if readline history is available.])])
-])dnl ES_READLINE_HISTORY
+])# ES_READLINE_HISTORY

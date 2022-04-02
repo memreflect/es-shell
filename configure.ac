@@ -5,6 +5,9 @@ AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([access.c])
 
+m4_pattern_forbid([^_?ES_])
+m4_pattern_forbid([^_es_])
+
 dnl AC_CMDSTDOUT_CPP(variable, command, headers)
 AC_DEFUN([AC_CMDSTDOUT_CPP],
 [AC_REQUIRE([AC_PROG_CPP])
