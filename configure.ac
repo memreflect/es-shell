@@ -24,7 +24,7 @@ rm -f conftest*
 AC_CANONICAL_HOST
 
 AS_CASE(["$host"],
-        [*sun5*|*solaris2*], [AC_DEFINE([SOLARIS], [1], [Are we Solaris?])])
+  [*sun5*|*solaris2*], [AC_DEFINE([SOLARIS], [1], [Are we Solaris?])])
 
 dnl saved_CFLAGS="$CFLAGS"
 
@@ -35,18 +35,18 @@ AC_PROG_MKDIR_P
 AC_PROG_YACC
 
 # Check for /dev/fd filesystem
-AC_CACHE_CHECK([for /dev/fd filesystem], [es_cv_sys_dev_fd],
-               [AS_IF([test -d /dev/fd],
-                      [AS_VAR_SET([es_cv_sys_dev_fd], [yes])],
-                      [AS_VAR_SET([es_cv_sys_dev_fd], [no])])])
-AS_VAR_IF([es_cv_sys_dev_fd], [yes],
-          [AC_DEFINE([HAVE_DEV_FD], [1],
-                     [Do you have a /dev/fd/ directory?])])
+AC_CACHE_CHECK(
+  [for /dev/fd filesystem],
+  [es_cv_sys_dev_fd],
+  [AS_IF([test -d /dev/fd],
+         [AS_VAR_SET([es_cv_sys_dev_fd], [yes])],
+         [AS_VAR_SET([es_cv_sys_dev_fd], [no])])])
+AS_VAR_IF([es_cv_sys_dev_fd],
+  [yes], [AC_DEFINE([HAVE_DEV_FD], [1], [Do you have a /dev/fd/ directory?])])
 
 AC_SYS_INTERPRETER
-AS_VAR_IF([ac_cv_sys_interpreter], [yes],
-          [AC_DEFINE([KERNEL_POUNDBANG], [1],
-                     [Does your kernel support #!?])])
+AS_VAR_IF([ac_cv_sys_interpreter],
+  [yes], [AC_DEFINE([KERNEL_POUNDBANG], [1], [Does your kernel support #!?])])
 
 dnl Checks for libraries.
 AC_SEARCH_LIBS([getpwuid], [sun])
@@ -62,32 +62,36 @@ AC_CHECK_HEADERS([fcntl.h unistd.h sys/ioctl.h sys/time.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
+ES_STDC_VERSION
+
 # Check for _Noreturn
-# Some implementations define _Noreturn to __attribute__((noreturn))
-# depending on the values of __GNUC__ and __GNUC_MINOR__.
-AC_CACHE_CHECK([whether _Noreturn is available], [es_cv_noreturn],
-               [AS_VAR_SET([es_cv_noreturn], [no])
-               AC_COMPILE_IFELSE(
-                 [AC_LANG_SOURCE([[_Noreturn void foo(void);]])],
-                 [AS_VAR_SET([es_cv_noreturn], [yes])],
-                 [AC_COMPILE_IFELSE(
-                   [AC_LANG_SOURCE([[#include <stdio.h>]])],
-                   [AS_VAR_SET([es_cv_noreturn], [yes])])])])
-AS_VAR_IF([es_cv_noreturn], [yes],
-          [AC_DEFINE([HAVE__NORETURN], [1],
-             [Define to 1 if you have _Noreturn functionality.])],
-          [AC_CACHE_CHECK(
-            [if the noreturn attribute is available],
-            [es_cv_attrib_noreturn],
-            [AS_VAR_SET([es_cv_attrib_noreturn], [no])
-            AC_COMPILE_IFELSE(
-              [AC_LANG_SOURCE([[#include <stdlib.h>
-                              __attribute__((noreturn)) void
-                              foo(void) {exit(0);}]])],
-              [AS_VAR_SET([es_cv_attrib_noreturn], [yes])])])
-          AS_VAR_IF([es_cv_attrib_noreturn], [yes],
-                    [AC_DEFINE([HAVE_NORETURN_ATTRIB], [1],
-                      [Define to 1 if you have the noreturn attribute.])])])
+# If C11 or newer, then we assume it is available.  Otherwise, we test for its
+# presence.  If it is not available, we check for GCC __attribute__((noreturn)).
+AC_CACHE_CHECK(
+  [for _Noreturn],
+  [es_cv_c_noreturn],
+  [AS_VAR_SET([es_cv_c_noreturn], [yes])
+  AS_VERSION_COMPARE([$es_stdc_version], [ES_STDC_C11],
+                     [AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <stdlib.h>
+#undef _Noreturn
+_Noreturn void foo(void) {exit(0);}]])],
+                                        [],
+                                        [AS_VAR_SET([es_cv_c_noreturn],
+                                                    [no])])])])
+AS_VAR_IF([es_cv_c_noreturn],
+  [yes], [AC_DEFINE([HAVE__NORETURN], [1],
+                    [Define to 1 if you have _Noreturn.])],
+  [AC_CACHE_CHECK([if the noreturn attribute is available],
+                  [es_cv_c_attribute_noreturn],
+                  [AS_VAR_SET([es_cv_c_attribute_noreturn], [no])
+                  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <stdlib.h>
+__attribute__((noreturn)) void foo(void) {exit(0);}]])],
+                                    [AS_VAR_SET([es_cv_c_attribute_noreturn],
+                                                [yes])])])
+  AS_VAR_IF([es_cv_c_attribute_noreturn],
+            [yes], [AC_DEFINE([HAVE_NORETURN_ATTRIBUTE], [1],
+                              [Define to 1 if you have the noreturn attribute.])])])
+
 dnl Checks for library functions.
 AC_FUNC_MMAP
 AC_FUNC_WAIT3
@@ -106,48 +110,41 @@ changequote([,])],
 AC_SUBST(SIGFILES, $es_cv_sigfiles)
 
 # Check for va_copy or __va_copy
-# If C11 features are available, then we assume va_copy is available as all
-# C implementations since C99 are required to have it.
-# If neither va_copy nor __va_copy is found, check whether a compiler has a
-# flag to enable C99 mode, which will also ensure va_copy is available.
-# If that fails, then we have neither.
-AC_CACHE_CHECK([for va_copy], [es_cv_va_copy],
-               [AS_VAR_IF([ac_cv_prog_cc_c11], [no],
-                 [AC_COMPILE_IFELSE(
-                   [AC_LANG_SOURCE(
-                     [[#include <stdarg.h>
-                     void foo(va_list ap) {
-                        va_list apsave;
-                        va_copy(apsave, ap);
-                        va_end(apsave);
-                     }]])],
-                   [AS_VAR_SET([es_cv_va_copy], [yes])],
-                   [AS_VAR_SET([es_cv_va_copy], [no])])],
-                 [AS_VAR_SET([es_cv_va_copy], [yes])])])
-AS_VAR_IF([es_cv_va_copy], [no],
-          [AC_CACHE_CHECK([for __va_copy], [es_cv___va_copy],
-                          [AC_COMPILE_IFELSE(
-                            [AC_LANG_SOURCE(
-                              [[#include <stdarg.h>
-                              void foo(va_list ap) {
-                                 va_list apsave;
-                                 __va_copy(apsave, ap);
-                                 va_end(apsave);
-                              }]])],
-                            [AS_VAR_SET([es_cv___va_copy], [yes])],
-                            [AS_VAR_SET([es_cv___va_copy], [no])])])])
-AS_IF([test "$es_cv_va_copy:$es_cv___va_copy" = "no:no"],
-      [AS_VAR_COPY([es_save_CC], [CC])
-      AS_VAR_COPY([es_save_CFLAGS], [CFLAGS])
-      AC_PROG_CC_C99([AS_VAR_SET([es_cv_va_copy], [yes])],
-                     [AS_VAR_COPY([CC], [es_save_CC])
-                     AS_VAR_COPY([CFLAGS], [es_save_CFLAGS])])])
-AS_VAR_IF([es_cv_va_copy], [yes],
-          [AC_DEFINE([HAVE_VA_COPY], [1],
-                     [Define to 1 if you have va_copy.])],
-          [AS_VAR_IF([es_cv___va_copy], [yes],
-                     [AC_DEFINE([HAVE___VA_COPY], [1],
-                                [Define to 1 if you have __va_copy.])])])
+# If C99 or newer, then we assume va_copy is available.  Otherwise, we test for
+# va_copy, then __va_copy.
+AC_CACHE_CHECK(
+  [for va_copy],
+  [es_cv_func_va_copy],
+  [AS_VAR_SET([es_cv_func_va_copy], [yes])
+  AS_VERSION_COMPARE([$es_stdc_version], [ES_STDC_C99],
+                     [AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <stdarg.h>
+void foo(va_list ap) {
+  va_list apsave;
+  va_copy(apsave, ap);
+  va_arg(ap, int);
+  va_end(apsave);
+}]])],
+                                        [],
+                                        [AS_VAR_SET([es_cv_func_va_copy],
+                                                    [no])])])])
+AS_VAR_IF([es_cv_func_va_copy],
+  [no], [AC_CACHE_CHECK([for __va_copy],
+                        [es_cv_func___va_copy],
+                        [AS_VAR_SET([es_cv_func___va_copy], [no])
+                        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <stdarg.h>
+void foo(va_list ap) {
+  va_list apsave;
+  __va_copy(apsave, ap);
+  va_arg(ap, int);
+  va_end(apsave);
+}]])],
+                                    [AS_VAR_SET([es_cv_func___va_copy],
+                                                [yes])])])])
+AS_VAR_IF([es_cv_func_va_copy],
+  [yes], [AC_DEFINE([HAVE_VA_COPY], [1], [Define to 1 if you have va_copy.])],
+  [AS_VAR_IF([es_cv_func___va_copy],
+             [yes], [AC_DEFINE([HAVE___VA_COPY], [1],
+                               [Define to 1 if you have __va_copy.])])])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

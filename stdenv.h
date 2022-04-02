@@ -29,7 +29,7 @@ typedef struct dirent Dirent;
 
 #if !HAVE__NORETURN
 # undef _Noreturn
-# if HAVE_NORETURN_ATTRIB
+# if HAVE_NORETURN_ATTRIBUTE
 #  define _Noreturn __attribute__((noreturn))
 # else
 #  define _Noreturn /* nothing */
