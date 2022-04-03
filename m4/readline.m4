@@ -1,6 +1,6 @@
 # ES_READLINE_LIB
 # ---------------
-# Use AC_SEARCH_LIBS to determine whether a readline library is available.
+# Act like AC_SEARCH_LIBS to determine whether a readline library is available.
 #
 # If one is found, ac_cv_search_readline_termlib is set to indicate if a
 # terminfo/termcap/curses library is necessary.  It may be set to
@@ -8,27 +8,36 @@
 #
 # This does not add the relevant libraries to LIBS.
 AC_DEFUN([ES_READLINE_LIB],
-[m4_define([_es_search_libs], [readline edit editline])
-AS_VAR_COPY([es_save_LIBS], [LIBS])
-AC_SEARCH_LIBS([readline], [_es_search_libs],
-               [AS_VAR_SET([ac_cv_search_readline_termlib],
-                           ["none required"])],
-               [AS_FOR([_es_tlib], [es_tlib],
-                       [terminfo tinfo ncurses curses termcap],
-                       [AS_VAR_COPY([LIBS], [es_save_LIBS])
-                       AS_UNSET([ac_cv_search_readline])
-                       AC_SEARCH_LIBS([readline],
-                                      [_es_search_libs],
-                                      [],
-                                      [],
-                                      [-l[]_es_tlib])
-                       AS_VAR_IF([ac_cv_search_readline],
-                                 [no], [],
-                                 [AS_VAR_SET([ac_cv_search_readline_termlib],
-                                             [-l[]_es_tlib])
-                                 break])])])
-AS_VAR_COPY([LIBS], [es_save_LIBS])
-m4_undefine([_es_search_libs])
+[AC_REQUIRE([AC_PROG_CC])
+AC_CACHE_CHECK([for readline], [ac_cv_search_readline],
+  [AS_VAR_SET([ac_cv_search_readline], [no])
+  AS_VAR_COPY([es_save_LIBS], [LIBS])
+  AS_FOR([_es_lib],
+         [es_lib],
+         [readline edit editline],
+         [AS_VAR_COPY([LIBS], [es_save_LIBS])
+         AS_VAR_APPEND([LIBS], [" -l[]_es_lib[]"])
+         AC_LINK_IFELSE([AC_LANG_CALL([], [readline])],
+                        [AS_VAR_SET([ac_cv_search_readline], [-l[]_es_lib])
+                        AS_VAR_SET([ac_cv_search_readline_termlib],
+                                   ["none required"])
+                        break],
+                        [AS_VAR_COPY([es_save_LIBS2], [LIBS])
+                        AS_FOR([_es_tlib],
+                               [es_tlib],
+                               [terminfo tinfo ncurses curses termcap],
+                               [AS_VAR_COPY([LIBS], [es_save_LIBS2])
+                               AS_VAR_APPEND([LIBS], [" -l[]_es_tlib[]"])
+                               AC_LINK_IFELSE([AC_LANG_CALL([], [readline])],
+                                              [AS_VAR_SET([ac_cv_search_readline],
+                                                          [-l[]_es_lib])
+                                              AS_VAR_SET([ac_cv_search_readline_termlib],
+                                                         [-l[]_es_tlib])
+                                              break])])
+                        AS_VAR_IF([ac_cv_search_readline],
+                                  [no], [],
+                                  [break])])])
+  AS_VAR_COPY([LIBS], [es_save_LIBS])])
 ])# ES_READLINE_LIB
 
 # ES_READLINE_H
@@ -47,11 +56,7 @@ AC_DEFUN([ES_READLINE_H],
 # This defines preprocessor macros indicating the header to include and also
 # defines HAVE_READLINE_HISTORY.
 AC_DEFUN([ES_READLINE_HISTORY],
-[AC_CHECK_HEADERS([readline/history.h], [], [AC_CHECK_HEADERS([history.h])])
-AS_CASE(["$ac_cv_header_readline_history_h:$ac_cv_header_history_h"],
-  [no:no], [],
-  [AC_DEFINE([HAVE_READLINE_HISTORY], [1],
-             [Define to 1 if readline history features are available.])])
+[AC_CHECK_HEADER([readline/history.h], [], [AC_CHECK_HEADER([history.h])])
 ])# ES_READLINE_HISTORY
 
 # ES_READLINE
@@ -105,6 +110,15 @@ AS_CASE(
                                          [" $ac_cv_search_readline_termlib"])])
                 AC_DEFINE([HAVE_READLINE], [1],
                           [Define to 1 if readline is available.])
-                ES_READLINE_HISTORY])],
+                ES_READLINE_HISTORY
+                AS_VAR_IF([ac_cv_header_readline_history_h],
+                          [no], [AS_VAR_IF([ac_cv_header_history_h],
+                                           [no], [],
+                                           [AC_CHECK_HEADERS([history.h])])],
+                          [AC_CHECK_HEADERS([readline/history.h])])
+                AS_CASE(["$ac_cv_header_readline_history_h:$ac_cv_header_history_h"],
+                        [no:no], [],
+                        [AC_DEFINE([HAVE_READLINE_HISTORY], [1],
+                                   [Define to 1 if readline history features are available.])])])],
   [AC_MSG_ERROR([invalid argument to --with-readline -- $with_readline])])
 ])# ES_READLINE
