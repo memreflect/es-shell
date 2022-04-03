@@ -9,7 +9,9 @@
 # This does not add the relevant libraries to LIBS.
 AC_DEFUN([ES_READLINE_LIB],
 [AC_REQUIRE([AC_PROG_CC])
-AC_CACHE_CHECK([for readline], [ac_cv_search_readline],
+AC_CACHE_CHECK(
+  [for readline],
+  [ac_cv_search_readline],
   [AS_VAR_SET([ac_cv_search_readline], [no])
   AS_VAR_COPY([es_save_LIBS], [LIBS])
   AS_FOR([_es_lib],
@@ -83,8 +85,7 @@ AC_DEFUN([ES_READLINE],
                   [enable line editing with readline @<:@auto@:>@])],
   [],
   [AS_VAR_SET([with_readline], [auto])])
-AS_CASE(
-  ["$with_readline"],
+AS_CASE(["$with_readline"],
   [no], [AS_VAR_SET([es_cv_readline], [no])],
   [check|auto|yes],
       [ES_READLINE_LIB
