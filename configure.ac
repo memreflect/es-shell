@@ -59,7 +59,6 @@ dnl Checks for libraries.
 
 AC_CHECK_LIB(sun, getpwuid)
 ES_READLINE
-ES_READLINE_HISTORY
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
