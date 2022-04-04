@@ -60,3 +60,15 @@ parse.y.  It is not clear to me why this is the case.  FSF's bison works
 fine.  This has not been `fixed' because it is not clear what is
 `broken'.  This may also be other dependencies that I do not
 understand.
+
+  More recent versions of Solaris have switched the default shell to ksh93.
+However, the legacy SunOS sh utility located at /usr/sunos/bin/sh does not
+understand many things, particularly command substitutions with $(...).  If
+you are using an older version of Solaris where this legacy shell is the
+default, or it is your default script interpreter for whatever reason, there may
+be parts of configure that fail.  To remedy the issue,  you'll need to specify
+an alternative shell to use for configuration.  For example, you might replace
+    $ ./configure
+with
+    $ CONFIG_SHELL=/usr/bin/ksh /usr/bin/ksh ./configure
+to use /usr/bin/ksh instead of /bin/sh.
