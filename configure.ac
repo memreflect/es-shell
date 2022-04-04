@@ -72,9 +72,8 @@ AC_CACHE_CHECK(
   [es_cv_c_noreturn],
   [AS_VAR_SET([es_cv_c_noreturn], [yes])
   AS_VERSION_COMPARE([$es_stdc_version], [ES_STDC_C11],
-                     [AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <stdlib.h>
-#undef _Noreturn
-_Noreturn void foo(void) {exit(0);}]])],
+                     [AC_COMPILE_IFELSE([AC_LANG_SOURCE([[_Noreturn void
+foo(void);]])],
                                         [],
                                         [AS_VAR_SET([es_cv_c_noreturn],
                                                     [no])])])])
