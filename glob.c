@@ -6,7 +6,7 @@
 #include "es.h"
 #include "gc.h"
 
-char QUOTED[] = "QUOTED", UNQUOTED[] = "RAW";
+const char *QUOTED = "QUOTED", *UNQUOTED = "RAW";
 
 /* hastilde -- true iff the first character is a ~ and it is not quoted */
 static Boolean hastilde(const char *s, const char *q) {
@@ -56,7 +56,7 @@ static List *dirmatch(const char *prefix, const char *dirname, const char *patte
 	 * opendir to handle a trailing slash.
 	 */
 	if (stat(dirname, &s) == -1 || (s.st_mode & S_IFMT) != S_IFDIR)
-		return NULL;	
+		return NULL;
 
 	if (!haswild(pattern, quote)) {
 		char *name = str("%s%s", prefix, pattern);
@@ -69,7 +69,7 @@ static List *dirmatch(const char *prefix, const char *dirname, const char *patte
 
 	dirp = opendir(dirname);
 	if (dirp == NULL)
-		return NULL;	
+		return NULL;
 	for (list = NULL, prevp = &list; (dp = readdir(dirp)) != NULL;)
 		if (match(dp->d_name, pattern, quote)
 		    && (!ishiddenfile(dp->d_name) || *pattern == '.')) {
@@ -95,7 +95,7 @@ static List *listglob(List *list, char *pattern, char *quote, size_t slashcount)
 
 		assert(list->term != NULL);
 		assert(!isclosure(list->term));
-		
+
 		dir = getstr(list->term);
 		dirlen = strlen(dir);
 		if (dirlen + slashcount + 1 >= prefixlen) {
@@ -175,7 +175,7 @@ static List *glob1(const char *pattern, const char *quote) {
 /* glob0 -- glob a list, (destructively) passing through entries we don't care about */
 static List *glob0(List *list, StrList *quote) {
 	List *result, **prevp, *expand1;
-	
+
 	for (result = NULL, prevp = &result; list != NULL; list = list->next, quote = quote->next) {
 		char *str;
 		if (
@@ -225,7 +225,7 @@ static char *expandhome(char *s, StrList *qp) {
 		Ref(char *, home, getstr(list->term));
 		if (c == '\0') {
 			string = home;
-			quote->str = QUOTED;
+			quote->str = (char *)QUOTED;
 		} else {
 			char *q;
 			size_t pathlen = strlen(string);
@@ -243,7 +243,7 @@ static char *expandhome(char *s, StrList *qp) {
 				memset(&q[homelen], 'r', pathlen - slash);
 				q[len] = '\0';
 			} else if (strchr(q, 'r') == NULL)
-				q = QUOTED;
+				q = (char *)QUOTED;
 			else {
 				q = gcalloc(len + 1, &StringTag);
 				memset(q, 'q', homelen);

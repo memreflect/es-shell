@@ -30,9 +30,9 @@ static char *qcat(const char *q1, const char *q2, Term *t1, Term *t2) {
 	assert(gcisblocked());
 
 	if (q1 == QUOTED && q2 == QUOTED)
-		return QUOTED;
+		return (char *)QUOTED;
 	if (q1 == UNQUOTED && q2 == UNQUOTED)
-		return UNQUOTED;
+		return (char *)UNQUOTED;
 
 	len1 = (q1 == QUOTED || q1 == UNQUOTED) ? strlen(getstr(t1)) : strlen(q1);
 	len2 = (q2 == QUOTED || q2 == UNQUOTED) ? strlen(getstr(t2)) : strlen(q2);
@@ -266,7 +266,7 @@ extern List *glom2(Tree *tree, Binding *binding, StrList **quotep) {
 		switch (tp->kind) {
 		case nWord:
 			list = mklist(mkterm(tp->u[0].s, NULL), NULL);
-			qlist = mkstrlist(UNQUOTED, NULL);
+			qlist = mkstrlist((char *)UNQUOTED, NULL);
 			tp = NULL;
 			break;
 		case nList:
@@ -288,7 +288,7 @@ extern List *glom2(Tree *tree, Binding *binding, StrList **quotep) {
 			list = glom1(tp, bp);
 			Ref(List *, lp, list);
 			for (; lp != NULL; lp = lp->next)
-				qlist = mkstrlist(QUOTED, qlist);
+				qlist = mkstrlist((char *)QUOTED, qlist);
 			RefEnd(lp);
 			tp = NULL;
 			break;
