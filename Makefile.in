@@ -43,7 +43,8 @@ MKDIR_P = @MKDIR_P@
 ## Bison is generating incorrect parsers.  So do not use, for now
 # YACC = @YACC@
 
-CFLAGS	= $(ADDCFLAGS) -I. -I$(srcdir) -W -Wall -Wno-implicit-fallthrough -Wno-cast-function-type -Wno-missing-field-initializers -Wno-unused-parameter -Wno-clobbered @CFLAGS@
+CPPFLAGS = $(ADDCPPFLAGS) -I. -I$(srcdir) @CPPFLAGS@
+CFLAGS	= $(ADDCFLAGS) -W -Wall -Wno-implicit-fallthrough -Wno-cast-function-type -Wno-missing-field-initializers -Wno-unused-parameter -Wno-clobbered @CFLAGS@
 LDFLAGS	= $(ADDLDFLAGS) @LDFLAGS@
 LIBS	= $(ADDLIBS) @LIBS@
 
@@ -67,17 +68,20 @@ GEN	= esdump y.tab.c y.tab.h y.output token.h sigmsgs.c initial.c
 SIGFILES = @SIGFILES@
 
 es	: ${OFILES} initial.o
-	${CC} -o es ${LDFLAGS} ${OFILES} initial.o ${LIBS}
+	${CC} -o es ${CFLAGS} ${LDFLAGS} ${OFILES} initial.o ${LIBS}
 
 esdump	: ${OFILES} dump.o
-	${CC} -o esdump ${LDFLAGS} ${OFILES} dump.o ${LIBS}
+	${CC} -o esdump ${CFLAGS} ${LDFLAGS} ${OFILES} dump.o ${LIBS}
+
+.c.o:
+	${CC} -c -o $@ ${CFLAGS} ${CPPFLAGS} $<
 
 clean	:
 	rm -f es ${OFILES} ${GEN} dump.o initial.o
 
 distclean:	clean
 	rm -f config.cache config.log config.h Makefile cscope.out tags TAGS core cs.out config.status ltmain.sh
-	rm -rf autom4te.cache 
+	rm -rf autom4te.cache
 
 MANIFEST:
 	find . -type f | sed s/..// > MANIFEST
@@ -114,39 +118,39 @@ config.h  : config.h.in
 
 # --- dependencies ---
 
-access.o : access.c es.h config.h stdenv.h prim.h 
-closure.o : closure.c es.h config.h stdenv.h gc.h 
-conv.o : conv.c es.h config.h stdenv.h print.h 
-dict.o : dict.c es.h config.h stdenv.h gc.h 
-eval.o : eval.c es.h config.h stdenv.h 
-except.o : except.c es.h config.h stdenv.h print.h 
-fd.o : fd.c es.h config.h stdenv.h 
-gc.o : gc.c es.h config.h stdenv.h gc.h 
-glob.o : glob.c es.h config.h stdenv.h gc.h 
-glom.o : glom.c es.h config.h stdenv.h gc.h 
-input.o : input.c es.h config.h stdenv.h input.h 
-heredoc.o : heredoc.c es.h config.h stdenv.h gc.h input.h syntax.h 
-list.o : list.c es.h config.h stdenv.h gc.h 
-main.o : main.c es.h config.h stdenv.h 
-match.o : match.c es.h config.h stdenv.h 
-open.o : open.c es.h config.h stdenv.h 
-opt.o : opt.c es.h config.h stdenv.h 
-prim.o : prim.c es.h config.h stdenv.h prim.h 
-prim-ctl.o : prim-ctl.c es.h config.h stdenv.h prim.h 
-prim-etc.o : prim-etc.c es.h config.h stdenv.h prim.h 
-prim-io.o : prim-io.c es.h config.h stdenv.h gc.h prim.h 
-prim-sys.o : prim-sys.c es.h config.h stdenv.h prim.h 
-print.o : print.c es.h config.h stdenv.h print.h 
-proc.o : proc.c es.h config.h stdenv.h prim.h 
-signal.o : signal.c es.h config.h stdenv.h sigmsgs.h 
-split.o : split.c es.h config.h stdenv.h gc.h 
-status.o : status.c es.h config.h stdenv.h term.h 
-str.o : str.c es.h config.h stdenv.h gc.h print.h 
-syntax.o : syntax.c es.h config.h stdenv.h input.h syntax.h token.h 
-term.o : term.c es.h config.h stdenv.h gc.h term.h 
-token.o : token.c es.h config.h stdenv.h input.h syntax.h token.h 
-tree.o : tree.c es.h config.h stdenv.h gc.h 
-util.o : util.c es.h config.h stdenv.h 
-var.o : var.c es.h config.h stdenv.h gc.h var.h term.h 
-vec.o : vec.c es.h config.h stdenv.h gc.h 
-version.o : version.c es.h config.h stdenv.h 
+access.o : access.c es.h config.h stdenv.h prim.h
+closure.o : closure.c es.h config.h stdenv.h gc.h
+conv.o : conv.c es.h config.h stdenv.h print.h
+dict.o : dict.c es.h config.h stdenv.h gc.h
+eval.o : eval.c es.h config.h stdenv.h
+except.o : except.c es.h config.h stdenv.h print.h
+fd.o : fd.c es.h config.h stdenv.h
+gc.o : gc.c es.h config.h stdenv.h gc.h
+glob.o : glob.c es.h config.h stdenv.h gc.h
+glom.o : glom.c es.h config.h stdenv.h gc.h
+input.o : input.c es.h config.h stdenv.h input.h
+heredoc.o : heredoc.c es.h config.h stdenv.h gc.h input.h syntax.h
+list.o : list.c es.h config.h stdenv.h gc.h
+main.o : main.c es.h config.h stdenv.h
+match.o : match.c es.h config.h stdenv.h
+open.o : open.c es.h config.h stdenv.h
+opt.o : opt.c es.h config.h stdenv.h
+prim.o : prim.c es.h config.h stdenv.h prim.h
+prim-ctl.o : prim-ctl.c es.h config.h stdenv.h prim.h
+prim-etc.o : prim-etc.c es.h config.h stdenv.h prim.h
+prim-io.o : prim-io.c es.h config.h stdenv.h gc.h prim.h
+prim-sys.o : prim-sys.c es.h config.h stdenv.h prim.h
+print.o : print.c es.h config.h stdenv.h print.h
+proc.o : proc.c es.h config.h stdenv.h prim.h
+signal.o : signal.c es.h config.h stdenv.h sigmsgs.h
+split.o : split.c es.h config.h stdenv.h gc.h
+status.o : status.c es.h config.h stdenv.h term.h
+str.o : str.c es.h config.h stdenv.h gc.h print.h
+syntax.o : syntax.c es.h config.h stdenv.h input.h syntax.h token.h
+term.o : term.c es.h config.h stdenv.h gc.h term.h
+token.o : token.c es.h config.h stdenv.h input.h syntax.h token.h
+tree.o : tree.c es.h config.h stdenv.h gc.h
+util.o : util.c es.h config.h stdenv.h
+var.o : var.c es.h config.h stdenv.h gc.h var.h term.h
+vec.o : vec.c es.h config.h stdenv.h gc.h
+version.o : version.c es.h config.h stdenv.h
