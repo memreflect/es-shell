@@ -185,6 +185,11 @@ extern void initsignals(Boolean interactive, Boolean allowdumps) {
 		else if (h == SIG_DFL || h == SIG_ERR)
 			sigeffect[sig] = sig_default;
 		else
+#ifdef __has_feature
+# if __has_feature(address_sanitizer)
+      if (sig == SIGKILL || sig == SIGFPE || sig == SIGBUS || sig == SIGSEGV) sigeffect[sig] = sig_default; else
+# endif
+#endif
 			panic(
 				"initsignals: bad incoming signal value for %s: %x",
 				signame(sig), h
