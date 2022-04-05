@@ -186,8 +186,10 @@ extern void initsignals(Boolean interactive, Boolean allowdumps) {
 			sigeffect[sig] = sig_default;
 		else
 #ifdef __has_feature
-# if __has_feature(address_sanitizer)
-      if (sig == SIGKILL || sig == SIGFPE || sig == SIGBUS || sig == SIGSEGV) sigeffect[sig] = sig_default; else
+# if __has_feature(address_sanitizer) || __has_feature(undefined_behavior_sanitizer)
+			if (sig == SIGKILL || sig == SIGFPE
+			|| sig == SIGBUS || sig == SIGSEGV)
+				sigeffect[sig] = sig_default; else
 # endif
 #endif
 			panic(
