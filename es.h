@@ -113,8 +113,8 @@ extern void undefer(int ticket);
 
 /* term.c */
 
+#define mkstr(str) (mkterm((str), NULL))
 extern Term *mkterm(char *str, Closure *closure);
-extern Term *mkstr(char *str);
 extern char *getstr(Term *term);
 extern Closure *getclosure(Term *term);
 extern Term *termcat(Term *t1, Term *t2);
@@ -173,7 +173,7 @@ extern List *glom2(Tree *tree, Binding *binding, StrList **quotep);
 
 /* glob.c */
 
-extern char QUOTED[], UNQUOTED[];
+extern const char *QUOTED, *UNQUOTED;
 extern List *glob(List *list, StrList *quote);
 extern Boolean haswild(const char *pattern, const char *quoting);
 

@@ -34,7 +34,7 @@ bindir	= @bindir@
 srcdir  = @srcdir@
 
 
-CC	= @CC@ $(CPPFLAGS)
+CC	= @CC@
 INSTALL	= @INSTALL@
 MKDIR_P = @MKDIR_P@
 SHELL	= /bin/sh
@@ -43,8 +43,8 @@ SHELL	= /bin/sh
 ## Bison is generating incorrect parsers.  So do not use, for now
 # YACC = @YACC@
 
-CFLAGS	= $(ADDCFLAGS) -I. -I$(srcdir) -W -Wall -Wno-implicit-fallthrough -Wno-cast-function-type -Wno-missing-field-initializers -Wno-unused-parameter -Wno-clobbered @CFLAGS@
-CPPFLAGS = $(ADDCPPFLAGS) @CPPFLAGS@
+CPPFLAGS = $(ADDCPPFLAGS) -I. -I$(srcdir) @CPPFLAGS@
+CFLAGS	= $(ADDCFLAGS) -W -Wall -Wno-implicit-fallthrough -Wno-cast-function-type -Wno-missing-field-initializers -Wno-unused-parameter -Wno-clobbered @CFLAGS@
 LDFLAGS	= $(ADDLDFLAGS) @LDFLAGS@
 LIBS	= $(ADDLIBS) @LIBS@
 
@@ -68,10 +68,13 @@ GEN	= esdump y.tab.c y.tab.h y.output token.h sigmsgs.c initial.c
 SIGFILES = @SIGFILES@
 
 es	: ${OFILES} initial.o
-	${CC} -o es ${LDFLAGS} ${OFILES} initial.o ${LIBS}
+	${CC} -o es ${CFLAGS} ${LDFLAGS} ${OFILES} initial.o ${LIBS}
 
 esdump	: ${OFILES} dump.o
-	${CC} -o esdump ${LDFLAGS} ${OFILES} dump.o ${LIBS}
+	${CC} -o esdump ${CFLAGS} ${LDFLAGS} ${OFILES} dump.o ${LIBS}
+
+.c.o:
+	${CC} -c -o $@ ${CFLAGS} ${CPPFLAGS} $<
 
 clean	:
 	rm -f es ${OFILES} ${GEN} dump.o initial.o
