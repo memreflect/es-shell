@@ -213,7 +213,8 @@ static char *callreadline(char *prompt) {
 	return r;
 }
 
-/* getenv -- fake version of getenv for readline (or other libraries) */
+
+/* esgetenv -- fake version of getenv for readline (or other libraries) */
 static char *esgetenv(const char *name) {
 	List *value = varlookup(name, NULL);
 	if (value == NULL)
@@ -246,8 +247,7 @@ static char *esgetenv(const char *name) {
 }
 
 static char *
-stdgetenv(name)
-	register const char *name;
+stdgetenv(const char *name)
 {
 	extern char **environ;
 	register int len;
