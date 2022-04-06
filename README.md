@@ -1,5 +1,8 @@
 [![CircleCI](https://circleci.com/gh/wryun/es-shell.svg?style=svg)](https://circleci.com/gh/wryun/es-shell)
 
+**This is a development branch with modifications that may need testing and
+should be considered unstable.**
+
 Es is an extensible shell. The language was derived from the Plan 9
 shell, rc, and was influenced by functional programming languages,
 such as Scheme, and the Tcl embeddable programming language. This
