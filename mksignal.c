@@ -39,13 +39,13 @@ Sigmsgs posix[] = {
     {SIGILL, "sigill", "illegal instruction"},
 #endif
 #ifdef SIGINT
-    {SIGINT, "sigint", "interrupted"},
+    {SIGINT, "sigint", ""},
 #endif
 #ifdef SIGKILL
     {SIGKILL, "sigkill", "killed"},
 #endif
 #ifdef SIGPIPE
-    {SIGPIPE, "sigpipe", "broken pipe"},
+    {SIGPIPE, "sigpipe", ""},
 #endif
 #ifdef SIGQUIT
     {SIGQUIT, "sigquit", "quit"},
