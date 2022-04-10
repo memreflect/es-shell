@@ -78,7 +78,7 @@ mksignal	: mksignal.o
 	${CC} -c -o $@ ${CFLAGS} ${CPPFLAGS} $<
 
 clean	:
-	rm -f es ${OFILES} ${GEN} dump.o initial.o
+	rm -f es ${OFILES} ${GEN} dump.o initial.o mksignal.o
 
 distclean:	clean
 	rm -f config.cache config.log config.h Makefile cscope.out tags TAGS core cs.out config.status ltmain.sh
