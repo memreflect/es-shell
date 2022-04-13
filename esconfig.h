@@ -1,4 +1,8 @@
-/* config.h -- es(1) configuration parameters */
+/* esconfig.h -- es(1) configuration parameters */
+#ifndef ES_ESCONFIG_H
+#define ES_ESCONFIG_H 1
+
+#include "config.h"
 
 /*
  * Compile time options
@@ -83,9 +87,6 @@
  *		that is, makes sure no characters other than c identifier
  *		characters appear in them.
  *
- *	READLINE
- *		true if es is being linked with editline or gnu readline.
- *
  *	REF_ASSERTIONS
  *		if this is on, assertions about the use of the Ref() macro
  *		will be checked at run-time.  this is only useful if you're
@@ -124,33 +125,9 @@
  *	please send new configurations to haahr@adobe.com and byron@netapp.com
  */
 
-#include "config.h"
-
 #if HAVE_SIGRELSE && HAVE_SIGHOLD
 # define SYSV_SIGNALS 1
 #endif
-
-#if HAVE_READLINE
-# include <stdio.h>
-# if HAVE_READLINE_READLINE_H
-#  include <readline/readline.h>
-# elif HAVE_READLINE_H
-#  include <readline.h>
-# else
-#  invalid configuration -- readline.h
-# endif
-# define READLINE 1
-# if HAVE_READLINE_HISTORY
-#  if HAVE_READLINE_HISTORY_H
-#   include <readline/history.h>
-#  elif HAVE_HISTORY_H
-#   include <history.h>
-#  else
-#   invalid configuration -- history.h
-#  endif
-#  define READLINE_HISTORY 1
-# endif /* HAVE_READLINE_HISTORY */
-#endif /* HAVE_READLINE */
 
 
 /*
@@ -201,10 +178,6 @@
 #define	PROTECT_ENV		1
 #endif
 
-#ifndef	READLINE
-#define	READLINE		0
-#endif
-
 #ifndef	REF_ASSERTIONS
 #define	REF_ASSERTIONS		0
 #endif
@@ -236,3 +209,5 @@
 #undef	SYSV_SIGNALS
 #define	SYSV_SIGNALS		0
 #endif
+
+#endif  /* !ES_ESCONFIG_H */

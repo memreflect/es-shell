@@ -348,7 +348,7 @@ extern void initvars(void) {
 	vars = mkdict();
 	noexport = NULL;
 	env = mkvector(10);
-#if READLINE
+#if HAVE_READLINE
 	initgetenv();
 #endif
 }
@@ -406,7 +406,7 @@ static void importvar(char *name0, char *value) {
 	RefEnd2(defn, name);
 }
 
-#if READLINE
+#if HAVE_READLINE
 extern int setenv(const char *name, const char *value, int overwrite) {
 	Ref(char *, envname, NULL);
 	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {

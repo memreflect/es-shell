@@ -1,6 +1,6 @@
 /* es.h -- definitions for higher order shell */
 
-#include "config.h"
+#include "esconfig.h"
 #include "stdenv.h"
 
 /*
@@ -285,7 +285,7 @@ extern void sethistory(char *file);
 extern Boolean isinteractive(void);
 extern void initinput(void);
 extern void resetparser(void);
-#if READLINE
+#if HAVE_READLINE
 extern void initgetenv(void);
 #endif
 
@@ -299,7 +299,7 @@ extern List *runstring(const char *str, const char *name, int flags);
 #define	run_printcmds		32	/* -x */
 #define	run_lisptrees		64	/* -L and defined(LISPTREES) */
 
-#if READLINE
+#if HAVE_READLINE
 extern Boolean resetterminal;
 #endif
 

@@ -31,7 +31,7 @@ Boolean resetterminal = FALSE;
 static char *history;
 static int historyfd = -1;
 
-#if READLINE
+#if HAVE_READLINE
 static char *stdgetenv(const char *);
 static char *esgetenv(const char *);
 static char *(*realgetenv)(const char *) = stdgetenv;
@@ -103,7 +103,7 @@ extern void sethistory(char *file) {
 		close(historyfd);
 		historyfd = -1;
 	}
-#if READLINE_HISTORY
+#if HAVE_READLINE_HISTORY
 	/* Attempt to populate readline history with new history file. */
 	stifle_history(50000); /* Keep memory usage within sane-ish bounds. */
 	read_history(file);
@@ -185,7 +185,7 @@ static int eoffill(Input *in) {
 	return EOF;
 }
 
-#if READLINE
+#if HAVE_READLINE
 /* callreadline -- readline wrapper */
 static char *callreadline(char *prompt) {
 	char *r;
@@ -272,7 +272,7 @@ initgetenv(void)
 {
 	realgetenv = esgetenv;
 }
-#endif	/* READLINE */
+#endif	/* HAVE_READLINE */
 
 /* fdfill -- fill input buffer by reading from a file descriptor */
 static int fdfill(Input *in) {
@@ -280,14 +280,14 @@ static int fdfill(Input *in) {
 	assert(in->buf == in->bufend);
 	assert(in->fd >= 0);
 
-#if READLINE
+#if HAVE_READLINE
 	if (in->runflags & run_interactive && in->fd == 0) {
 		char *rlinebuf = callreadline(prompt);
 		if (rlinebuf == NULL)
 
 			nread = 0;
 		else {
-#if READLINE_HISTORY
+#if HAVE_READLINE_HISTORY
 			if (*rlinebuf != '\0')
 				add_history(rlinebuf);
 #endif
@@ -342,7 +342,7 @@ extern Tree *parse(char *pr1, char *pr2) {
 	if (ISEOF(input))
 		throw(mklist(mkstr("eof"), NULL));
 
-#if READLINE
+#if HAVE_READLINE
 	prompt = (pr1 == NULL) ? "" : pr1;
 #else
 	if (pr1 != NULL)
@@ -577,7 +577,7 @@ extern void initinput(void) {
 	/* call the parser's initialization */
 	initparse();
 
-#if READLINE
+#if HAVE_READLINE
 	rl_basic_word_break_characters=" \t\n\\'`$><=;|&{()}";
 	rl_readline_name = "es";
 	rl_completer_quote_characters="'";
