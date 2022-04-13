@@ -47,8 +47,6 @@
 #endif /* HAVE_READLINE */
 
 
-typedef struct dirent Dirent;
-
 #if !HAVE__NORETURN
 # undef _Noreturn
 # if HAVE_NORETURN_ATTRIBUTE

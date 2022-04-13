@@ -47,7 +47,7 @@ static int ishiddenfile(const char *s) {
 static List *dirmatch(const char *prefix, const char *dirname, const char *pattern, const char *quote) {
 	List *list, **prevp;
 	static DIR *dirp;
-	static Dirent *dp;
+	static struct dirent *dp;
 	static struct stat s;
 
 	/*
