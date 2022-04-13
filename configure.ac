@@ -9,6 +9,9 @@ m4_pattern_forbid([^_?ES_])
 m4_pattern_forbid([^_es_])
 
 ES_WITH_READLINE
+AC_ARG_ENABLE(
+  [time],
+  [AS_HELP_STRING([--enable-time], [enable 'time' builtin @<:@auto@:>@])])
 
 AC_CANONICAL_HOST
 
@@ -116,8 +119,15 @@ void foo(void);]])],
 
 dnl Checks for library functions.
 AC_FUNC_MMAP
-AC_FUNC_WAIT3
 AC_CHECK_FUNCS([setrlimit sigaction sigsetjmp sysconf])
+AH_TEMPLATE([BUILTIN_TIME], [Define to 1 if you want $&time.])
+AC_CHECK_FUNC(
+  [wait3],
+  [AS_VAR_IF([enable_time],
+             [no], [],
+             [AC_DEFINE([BUILTIN_TIME])])],
+  [AS_VAR_IF([enable_time],
+             [yes], [AC_MSG_FAILURE([wait3 is required for 'time' builtin])])])
 
 # Check for va_copy or __va_copy
 # If C99 or newer, then we assume va_copy is available.  Otherwise, we test for

@@ -12,6 +12,10 @@
 
 #include <sys/types.h>
 
+#if BUILTIN_TIME
+# include <sys/resource.h>
+#endif
+
 #include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>

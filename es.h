@@ -224,7 +224,7 @@ extern char *checkexecutable(char *file);
 
 extern bool hasforked;
 extern int efork(bool parent, bool background);
-extern int ewait(int pid, bool interruptible, void *rusage);
+extern int ewait(int pid, bool interruptible, struct rusage *rusage);
 #define	ewaitfor(pid)	ewait(pid, false, NULL)
 
 

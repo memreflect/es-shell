@@ -1,26 +1,19 @@
 /* prim-sys.c -- system call primitives */
 
-#include "es.h"
-#include "prim.h"
+#include "esconfig.h"
 
 #include <sys/ioctl.h>
-
-#ifdef HAVE_SETRLIMIT
-# define BSD_LIMITS 1
-#else
-# define BSD_LIMITS 0
-#endif
-
-#if BSD_LIMITS || BUILTIN_TIME
-#include <sys/time.h>
-#include <sys/resource.h>
-#if !HAVE_WAIT3
-#include <sys/times.h>
-#include <limits.h>
-#endif
-#endif
-
 #include <sys/stat.h>
+
+#if HAVE_SETRLIMIT || BUILTIN_TIME
+# include <sys/resource.h>
+# if BUILTIN_TIME
+#  include <sys/time.h>
+# endif
+#endif
+
+#include "es.h"
+#include "prim.h"
 
 PRIM(newpgrp) {
 	int pid;
@@ -138,7 +131,7 @@ PRIM(setsignals) {
  * limit builtin -- this is too much code for what it gives you
  */
 
-#if BSD_LIMITS
+#if HAVE_SETRLIMIT
 typedef struct Suffix Suffix;
 struct Suffix {
 	const char *name;
@@ -292,13 +285,10 @@ PRIM(limit) {
 	RefEnd(lp);
 	return ltrue;
 }
-#endif	/* BSD_LIMITS */
+#endif	/* HAVE_SETRLIMIT */
 
 #if BUILTIN_TIME
 PRIM(time) {
-
-#if HAVE_WAIT3
-
 	int pid, status;
 	time_t t0, t1;
 	struct rusage r;
@@ -325,53 +315,6 @@ PRIM(time) {
 
 	RefEnd(lp);
 	return mklist(mkstr(mkstatus(status)), NULL);
-
-#else	/* !HAVE_WAIT3 */
-
-	int pid, status;
-	Ref(List *, lp, list);
-
-	gc();	/* do a garbage collection first to ensure reproducible results */
-	pid = efork(true, false);
-	if (pid == 0) {
-		clock_t t0, t1;
-		struct tms tms;
-		static clock_t ticks = 0;
-
-		if (ticks == 0)
-			ticks = sysconf(_SC_CLK_TCK);
-
-		t0 = times(&tms);
-		pid = efork(true, false);
-		if (pid == 0)
-			exit(exitstatus(eval(lp, NULL, evalflags | eval_inchild)));
-
-		status = ewaitfor(pid);
-		t1 = times(&tms);
-		SIGCHK();
-		printstatus(0, status);
-
-		tms.tms_cutime += ticks / 20;
-		tms.tms_cstime += ticks / 20;
-
-		eprint(
-			"%6ldr %5ld.%ldu %5ld.%lds\t%L\n",
-			(t1 - t0 + ticks / 2) / ticks,
-			tms.tms_cutime / ticks, ((tms.tms_cutime * 10) / ticks) % 10,
-			tms.tms_cstime / ticks, ((tms.tms_cstime * 10) / ticks) % 10,
-			lp, " "
-		);
-		exit(status);
-	}
-	status = ewaitfor(pid);
-	SIGCHK();
-	printstatus(0, status);
-
-	RefEnd(lp);
-	return mklist(mkstr(mkstatus(status)), NULL);
-
-#endif	/* !HAVE_WAIT3 */
-
 }
 #endif	/* BUILTIN_TIME */
 
@@ -448,7 +391,7 @@ extern Dict *initprims_sys(Dict *primdict) {
 	X(fork);
 	X(run);
 	X(setsignals);
-#if BSD_LIMITS
+#if HAVE_SETRLIMIT
 	X(limit);
 #endif
 #if BUILTIN_TIME

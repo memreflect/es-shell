@@ -23,10 +23,6 @@
  *		if this is on, asserts will be checked, raising errors on
  *		actual assertion failure.
  *
- *	BUILTIN_TIME
- *		if this is on, the time builtin is included.  by default, it is
- *		on, but feel free to turn it off.
- *
  *	HAVE_DEV_FD
  *		turn this on if your system supports /dev/fd for >{} and <{}
  *
@@ -113,10 +109,6 @@
 
 #ifndef	ASSERTIONS
 #define	ASSERTIONS		1
-#endif
-
-#ifndef	BUILTIN_TIME
-#define	BUILTIN_TIME		1
 #endif
 
 #ifndef	DEVFD_PATH
