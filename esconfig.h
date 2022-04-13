@@ -101,34 +101,11 @@
  *		edition) and plan 9.  in either case, an explicit ``.'' at
  *		the beginning of a pattern will match the hidden files.
  *		(Contributed by Steve Kilbane.)
- *
- *	SYSV_SIGNALS
- *		True if signal handling follows System V behavior;
- *		otherwise, berkeley signals are assumed.  If you set
- *		USE_SIGACTION, this value is ignore.  By System V
- *		behavior, we mean, signal must be called to reinstall
- *		the signal handler after it is invoked.  This behavior
- *		is also known as ``unreliable signals.''
- *
- *	USE_SIGACTION
- *		turn this on if your system understands the POSIX.1
- *		sigaction(2) call.  it's probably better to use this
- *		version if you have it.  if sigaction() is used, es
- *		assumes that signals have POSIX semantics, so the
- *		SPECIAL_SIGCLD and SYSV_SIGNALS options are turned
- *		off.
  */
-
 
 /*
- * platform specific options
- *	please send new configurations to haahr@adobe.com and byron@netapp.com
+ * add your customizations here
  */
-
-#if HAVE_SIGRELSE && HAVE_SIGHOLD
-# define SYSV_SIGNALS 1
-#endif
-
 
 /*
  * default defaults -- don't change this section
@@ -186,10 +163,6 @@
 #define	SHOW_DOT_FILES		0
 #endif
 
-#ifndef	SYSV_SIGNALS
-#define	SYSV_SIGNALS		0
-#endif
-
 /*
  * enforcing choices that must be made
  */
@@ -203,11 +176,6 @@
 #define	GCINFO			1
 #define	GCPROTECT		1
 #define	GCVERBOSE		1
-#endif
-
-#if HAVE_SIGACTION
-#undef	SYSV_SIGNALS
-#define	SYSV_SIGNALS		0
 #endif
 
 #endif  /* !ES_ESCONFIG_H */

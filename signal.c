@@ -68,7 +68,7 @@ extern char *sigmessage(int sig) {
 
 /* catcher -- catch (and defer) a signal from the kernel */
 static void catcher(int sig) {
-#if SYSV_SIGNALS /* only do this for unreliable signals */
+#if !HAVE_SIGACTION
 	signal(sig, catcher);
 #endif
 	if (hasforked)
@@ -103,7 +103,7 @@ static Sighandler setsignal(int sig, Sighandler handler) {
 		return SIG_ERR;
 #endif
 	return signal(sig, handler);
-#endif /* !HAVE_SIGACTION */
+#endif /* HAVE_SIGACTION */
 }
 
 extern Sigeffect esignal(int sig, Sigeffect effect) {
@@ -181,7 +181,7 @@ extern void initsignals(bool interactive, bool allowdumps) {
 			setsignal(sig, SIG_IGN);
 			sigeffect[sig] = sig_ignore;
 		}
-#endif /* !HAVE_SIGACTION */
+#endif /* HAVE_SIGACTION */
 		else if (h == SIG_DFL || h == SIG_ERR)
 			sigeffect[sig] = sig_default;
 		else
