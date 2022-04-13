@@ -21,6 +21,6 @@ static int mode_masks[] = {
 };
 
 extern int eopen(char *name, OpenKind k) {
-	assert((unsigned) k < arraysize(mode_masks));
+	assert((size_t)k < arraysize(mode_masks));
 	return open(name, mode_masks[k], 0666);
 }

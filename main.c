@@ -32,7 +32,7 @@ static void checkfd(int fd, OpenKind r) {
 
 /* initpath -- set $path based on the configuration default */
 static void initpath(void) {
-	int i;
+	size_t i;
 	static const char * const path[] = { INITIAL_PATH };
 
 	Ref(List *, list, NULL);

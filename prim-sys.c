@@ -377,7 +377,8 @@ PRIM(time) {
 
 #if !KERNEL_POUNDBANG
 PRIM(execfailure) {
-	int fd, len, argc;
+	int fd, len;
+    size_t argc;
 	char header[1024], *args[10], *s, *end, *file;
 
 	gcdisable();

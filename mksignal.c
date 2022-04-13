@@ -8,6 +8,10 @@
 
 #include "sigmsgs.h"
 
+#ifndef arraysize
+#define arraysize(a) (sizeof (a) / sizeof ((a)[0]))
+#endif
+
 /*
  * POSIX signals
  *
@@ -75,7 +79,7 @@ Sigmsgs posix[] = {
     {SIGUSR2, "sigusr2", "user signal 2"},
 #endif
 };
-const size_t nsig_posix = sizeof(posix) / sizeof(posix[0]);
+const size_t nsig_posix = arraysize(posix);
 
 /*
  * These are X/Open system interfaces, and some may be obsolescent, notably
@@ -107,7 +111,7 @@ Sigmsgs std[] = {
     {SIGXFSZ, "sigxfsz", "exceeded file size limit"},
 #endif
 };
-const size_t nsig_std = sizeof(std) / sizeof(std[0]);
+const size_t nsig_std = arraysize(std);
 
 /*
  * Nonstandard signals that may or may not be defined
@@ -279,7 +283,7 @@ Sigmsgs other[] = {
      * typically available for general use.
      */
 };
-const size_t nsig_other = sizeof(other) / sizeof(other[0]);
+const size_t nsig_other = arraysize(other);
 
 int es_sigcmp(const void *a, const void *b) {
     const Sigmsgs *sa = a;
@@ -308,6 +312,7 @@ int main(void) {
     Sigmsgs *pposix, *pstd, *pother;
     Sigmsgs *eposix, *estd, *eother;
 
+    /* end = count + (start = array) */
     eposix = nsig_posix + (pposix = posix);
     estd   = nsig_std   + (pstd   = std);
     eother = nsig_other + (pother = other);
@@ -326,7 +331,7 @@ int main(void) {
            ucase((ptr)->name), ucase((ptr)->name), (ptr)->name, (ptr)->msg)
 #define PFOOT() \
     printf("};\n" \
-           "const int nsignals = (int)(sizeof(signals)/sizeof(signals[0]));\n")
+           "const int nsignals = (int)arraysize(signals);\n")
 
     PHEAD();
     while (pposix != eposix || pstd != estd || pother != eother) {
