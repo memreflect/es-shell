@@ -21,6 +21,8 @@ rm -f conftest*
 ])
 
 
+ES_WITH_READLINE
+
 AC_CANONICAL_HOST
 
 case "$host" in
@@ -33,6 +35,8 @@ dnl saved_CFLAGS="$CFLAGS"
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_EGREP
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_PROG_YACC
@@ -56,15 +60,15 @@ fi
 
 
 dnl Checks for libraries.
-
 AC_CHECK_LIB(sun, getpwuid)
-ES_READLINE
+ES_LIB_READLINE
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h sys/ioctl.h sys/time.h unistd.h memory.h stdarg.h sys/cdefs.h)
+ES_HEADER_READLINE
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -113,5 +117,6 @@ AC_SUBST(SIGFILES, $es_cv_sigfiles)
 
 AC_DEFINE_UNQUOTED(LIMIT_T, $es_cv_rlimit_t, [What type are your limits?])
 
+ES_READLINE
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
