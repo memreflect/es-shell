@@ -138,7 +138,7 @@
 #  include <readline.h>
 # else
 #  invalid configuration -- readline.h
-# endif /* HAVE_READLINE_READLINE_H */
+# endif
 # define READLINE 1
 # if HAVE_READLINE_HISTORY
 #  if HAVE_READLINE_HISTORY_H

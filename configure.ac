@@ -8,6 +8,8 @@ AC_CONFIG_SRCDIR([access.c])
 m4_pattern_forbid([^_?ES_])
 m4_pattern_forbid([^_es_])
 
+ES_WITH_READLINE
+
 AC_CANONICAL_HOST
 
 AS_CASE(["$host"],
@@ -17,6 +19,8 @@ dnl saved_CFLAGS="$CFLAGS"
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_EGREP
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_PROG_YACC
@@ -43,10 +47,11 @@ AS_CASE(["$ac_cv_search_getpwuid"],
         ["none required"], [],
         [AC_DEFINE([HAVE_LIBSUN], [1],
                    [Define to 1 if you have the 'sun' library (-lsun).])])
-ES_READLINE
+ES_LIB_READLINE
 
 dnl Checks for header files.
 AC_CHECK_HEADERS([fcntl.h unistd.h sys/ioctl.h sys/time.h])
+ES_HEADER_READLINE
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -125,5 +130,6 @@ AS_VAR_IF([_es_va_copy],
   [AS_VAR_IF([_es_va_copy_alt],
              [yes], [AC_DEFINE([HAVE___VA_COPY])])])
 
+ES_READLINE
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
