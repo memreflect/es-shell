@@ -11,7 +11,7 @@ autom4te.cache
 /compile
 /config.cache
 /config.guess
-/config.h.in
+/config.h.in*
 /config.log
 /config.status
 /config.sub
@@ -35,7 +35,13 @@ y.*
 # es
 
 initial.c
+mksignal
 sigmsgs.c
 token.h
 es
 esdump
+
+# Misc files used by other dev tools (e.g. clangd)
+
+.cache
+compile_commands.json
