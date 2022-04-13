@@ -144,12 +144,6 @@ enum { UNREACHABLE = 0 };
  * hacks to present a standard system call interface
  */
 
-#if HAVE_SETSID
-# define setpgrp(a, b)  setsid()
-#elif defined(linux) || defined(__GLIBC__)
-# define setpgrp(a, b)  setpgid(a, b)
-#endif
-
 #if !HAVE_LSTAT
 #define lstat   stat
 #endif

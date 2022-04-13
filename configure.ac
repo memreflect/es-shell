@@ -117,7 +117,7 @@ void foo(void);]])],
 dnl Checks for library functions.
 AC_FUNC_MMAP
 AC_FUNC_WAIT3
-AC_CHECK_FUNCS([lstat setrlimit setsid strerror strtol sysconf])
+AC_CHECK_FUNCS([lstat setrlimit strerror strtol sysconf])
 AC_CHECK_FUNCS([sigaction sigsetjmp])
 
 # Check for va_copy or __va_copy
