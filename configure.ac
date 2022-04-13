@@ -44,12 +44,6 @@ AS_VAR_IF([ac_cv_sys_interpreter],
                     [Does your kernel support @%:@!?])])
 
 dnl Checks for libraries.
-AC_SEARCH_LIBS([getpwuid], [sun])
-AS_CASE(["$ac_cv_search_getpwuid"],
-        [no],              [],
-        ["none required"], [],
-        [AC_DEFINE([HAVE_LIBSUN], [1],
-                   [Define to 1 if you have the 'sun' library (-lsun).])])
 ES_LIB_READLINE
 
 dnl Checks for header files.
