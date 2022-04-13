@@ -85,7 +85,7 @@ static void initmmu(void) {
 /* take -- allocate memory for a space */
 static void *take(size_t n) {
 	vm_address_t addr;
-	kern_return_t error = vm_allocate(task_self(), &addr, n, TRUE);
+	kern_return_t error = vm_allocate(task_self(), &addr, n, true);
 	if (error != KERN_SUCCESS) {
 		mach_error("vm_allocate", error);
 		exit(1);
@@ -105,7 +105,7 @@ static void release(void *p, size_t n) {
 
 /* invalidate -- disable access to a range of memory */
 static void invalidate(void *p, size_t n) {
-	kern_return_t error = vm_protect(task_self(), (vm_address_t) p, n, FALSE, 0);
+	kern_return_t error = vm_protect(task_self(), (vm_address_t) p, n, false, 0);
 	if (error != KERN_SUCCESS) {
 		mach_error("vm_protect 0", error);
 		exit(1);
@@ -115,7 +115,7 @@ static void invalidate(void *p, size_t n) {
 /* revalidate -- enable access to a range of memory */
 static void revalidate(void *p, size_t n) {
 	kern_return_t error =
-		vm_protect(task_self(), (vm_address_t) p, n, FALSE, VM_PROT_READ|VM_PROT_WRITE);
+		vm_protect(task_self(), (vm_address_t) p, n, false, VM_PROT_READ|VM_PROT_WRITE);
 	if (error != KERN_SUCCESS) {
 		mach_error("vm_protect VM_PROT_READ|VM_PROT_WRITE", error);
 		exit(1);
@@ -273,13 +273,13 @@ static void deprecate(Space *space) {
 }
 
 /* isinspace -- does an object lie inside a given Space? */
-extern Boolean isinspace(Space *space, void *p) {
+extern bool isinspace(Space *space, void *p) {
 	for (; space != NULL; space = space->next)
 		if (INSPACE(p, space)) {
 		 	assert((char *) p < space->current);
-		 	return TRUE;
+		 	return true;
 		}
-	return FALSE;
+	return false;
 }
 
 
@@ -398,7 +398,7 @@ extern void gcreserve(size_t minfree) {
 }
 
 /* gcisblocked -- is collection disabled? */
-extern Boolean gcisblocked(void) {
+extern bool gcisblocked(void) {
 	assert(gcblocked >= 0);
 	return gcblocked != 0;
 }

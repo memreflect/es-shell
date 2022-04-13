@@ -124,7 +124,7 @@ Sigmsgs other[] = {
 #ifdef SIGCLD
     /*
      * SIGCLD is equivalent to SIGCHLD on all systems I'm aware of, but on
-     * the off chance that there's a system where that's not true...
+     * the off chance that there's a system where that's not ltrue...
      */
     {SIGCLD, "sigcld", "child status changed"},
 #endif

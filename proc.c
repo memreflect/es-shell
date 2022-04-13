@@ -11,13 +11,13 @@
 #include <sys/resource.h>
 #endif
 
-Boolean hasforked = FALSE;
+bool hasforked = false;
 
 typedef struct Proc Proc;
 struct Proc {
 	int pid;
 	int status;
-	Boolean alive, background;
+	bool alive, background;
 	Proc *next, *prev;
 #if HAVE_WAIT3
 	struct rusage rusage;
@@ -27,11 +27,11 @@ struct Proc {
 static Proc *proclist = NULL;
 
 /* mkproc -- create a Proc structure */
-extern Proc *mkproc(int pid, Boolean background) {
+extern Proc *mkproc(int pid, bool background) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid) {		/* are we recycling pids? */
-			assert(!proc->alive);	/* if false, violates unix semantics */
+			assert(!proc->alive);	/* if lfalse, violates unix semantics */
 			break;
 		}
 	if (proc == NULL) {
@@ -39,14 +39,14 @@ extern Proc *mkproc(int pid, Boolean background) {
 		proc->next = proclist;
 	}
 	proc->pid = pid;
-	proc->alive = TRUE;
+	proc->alive = true;
 	proc->background = background;
 	proc->prev = NULL;
 	return proc;
 }
 
 /* efork -- fork (if necessary) and clean up as appropriate */
-extern int efork(Boolean parent, Boolean background) {
+extern int efork(bool parent, bool background) {
 	if (parent) {
 		int pid = fork();
 		switch (pid) {
@@ -59,7 +59,7 @@ extern int efork(Boolean parent, Boolean background) {
 		}
 		case 0:		/* child */
 			proclist = NULL;
-			hasforked = TRUE;
+			hasforked = true;
 			break;
 		case -1:
 			fail("es:efork", "fork: %s", esstrerror(errno));
@@ -78,9 +78,9 @@ static struct rusage wait_rusage;
 /* dowait -- a wait wrapper that interfaces with signals */
 static int dowait(int *statusp) {
 	int n;
-	interrupted = FALSE;
+	interrupted = false;
 	if (!setjmp(slowlabel)) {
-		slow = TRUE;
+		slow = true;
 		n = interrupted ? -2 :
 #if HAVE_WAIT3
 			wait3((void *) statusp, 0, &wait_rusage);
@@ -89,7 +89,7 @@ static int dowait(int *statusp) {
 #endif
 	} else
 		n = -2;
-	slow = FALSE;
+	slow = false;
 	if (n == -2) {
 		errno = EINTR;
 		n = -1;
@@ -103,7 +103,7 @@ static void reap(int pid, int status) {
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid) {
 			assert(proc->alive);
-			proc->alive = FALSE;
+			proc->alive = false;
 			proc->status = status;
 #if HAVE_WAIT3
 			proc->rusage = wait_rusage;
@@ -113,7 +113,7 @@ static void reap(int pid, int status) {
 }
 
 /* ewait -- wait for a specific process to die, or any process if pid == 0 */
-extern int ewait(int pid, Boolean interruptible, void *rusage) {
+extern int ewait(int pid, bool interruptible, void *rusage) {
 	Proc *proc;
 top:
 	for (proc = proclist; proc != NULL; proc = proc->next)
@@ -121,21 +121,21 @@ top:
 			int status;
 			if (proc->alive) {
 				int deadpid;
-				int seen_eintr = FALSE;
+				int seen_eintr = false;
 				while ((deadpid = dowait(&proc->status)) != pid)
 					if (deadpid != -1)
 						reap(deadpid, proc->status);
 					else if (errno == EINTR) {
 						if (interruptible)
 							SIGCHK();
-						seen_eintr = TRUE;
+						seen_eintr = true;
 					} else if (errno == ECHILD && seen_eintr)
 						/* TODO: not clear on why this is necessary
 						 * (child procs _sometimes_ disappear after SIGINT) */
 						break;
 					else
 						fail("es:ewait", "wait: %s", esstrerror(errno));
-				proc->alive = FALSE;
+				proc->alive = false;
 #if HAVE_WAIT3
 				proc->rusage = wait_rusage;
 #endif
@@ -201,7 +201,7 @@ PRIM(wait) {
 		fail("$&wait", "usage: wait [pid]");
 		NOTREACHED;
 	}
-	return mklist(mkstr(mkstatus(ewait(pid, TRUE, NULL))), NULL);
+	return mklist(mkstr(mkstatus(ewait(pid, true, NULL))), NULL);
 }
 
 extern Dict *initprims_proc(Dict *primdict) {

@@ -1,6 +1,8 @@
 /* es.h -- definitions for higher order shell */
 
 #include "esconfig.h"
+
+#include "esbool.h"
 #include "stdenv.h"
 
 /*
@@ -82,10 +84,10 @@ typedef struct {
 /* main.c */
 
 #if GCVERBOSE
-extern Boolean gcverbose;		/* -G */
+extern bool gcverbose;		/* -G */
 #endif
 #if GCINFO
-extern Boolean gcinfo;			/* -I */
+extern bool gcinfo;			/* -I */
 #endif
 
 
@@ -100,14 +102,14 @@ extern void mvfd(int old, int new);
 extern int newfd(void);
 
 #define	UNREGISTERED	(-999)
-extern void registerfd(int *fdp, Boolean closeonfork);
+extern void registerfd(int *fdp, bool closeonfork);
 extern void unregisterfd(int *fdp);
 extern void releasefd(int fd);
 extern void closefds(void);
 
 extern int fdmap(int fd);
-extern int defer_mvfd(Boolean parent, int old, int new);
-extern int defer_close(Boolean parent, int fd);
+extern int defer_mvfd(bool parent, int old, int new);
+extern int defer_close(bool parent, int fd);
 extern void undefer(int ticket);
 
 
@@ -118,8 +120,8 @@ extern Term *mkterm(char *str, Closure *closure);
 extern char *getstr(Term *term);
 extern Closure *getclosure(Term *term);
 extern Term *termcat(Term *t1, Term *t2);
-extern Boolean termeq(Term *term, const char *s);
-extern Boolean isclosure(Term *term);
+extern bool termeq(Term *term, const char *s);
+extern bool isclosure(Term *term);
 
 
 /* list.c */
@@ -150,7 +152,7 @@ extern Binding *reversebindings(Binding *binding);
 /* eval.c */
 
 extern Binding *bindargs(Tree *params, List *args, Binding *binding);
-extern List *forkexec(char *file, List *list, Boolean inchild);
+extern List *forkexec(char *file, List *list, bool inchild);
 extern List *walk(Tree *tree, Binding *binding, int flags);
 extern List *eval(List *list, Binding *binding, int flags);
 extern List *eval1(Term *term, int flags);
@@ -167,7 +169,7 @@ extern unsigned long evaldepth, maxevaldepth;
 
 /* glom.c */
 
-extern List *glom(Tree *tree, Binding *binding, Boolean globit);
+extern List *glom(Tree *tree, Binding *binding, bool globit);
 extern List *glom2(Tree *tree, Binding *binding, StrList **quotep);
 
 
@@ -175,19 +177,19 @@ extern List *glom2(Tree *tree, Binding *binding, StrList **quotep);
 
 extern const char *QUOTED, *UNQUOTED;
 extern List *glob(List *list, StrList *quote);
-extern Boolean haswild(const char *pattern, const char *quoting);
+extern bool haswild(const char *pattern, const char *quoting);
 
 
 /* match.c */
-extern Boolean match(const char *subject, const char *pattern, const char *quote);
-extern Boolean listmatch(List *subject, List *pattern, StrList *quote);
+extern bool match(const char *subject, const char *pattern, const char *quote);
+extern bool listmatch(List *subject, List *pattern, StrList *quote);
 extern List *extractmatches(List *subjects, List *patterns, StrList *quotes);
 
 
 /* var.c */
 
 extern void initvars(void);
-extern void initenv(char **envp, Boolean protected);
+extern void initenv(char **envp, bool protected);
 extern void hidevariables(void);
 extern void validatevar(const char *var);
 extern List *varlookup(const char *name, Binding *binding);
@@ -196,7 +198,7 @@ extern void vardef(char *, Binding *, List *);
 extern Vector *mkenv(void);
 extern void setnoexport(List *list);
 extern void addtolist(void *arg, char *key, void *value);
-extern List *listvars(Boolean internal);
+extern List *listvars(bool internal);
 
 typedef struct Push Push;
 extern Push *pushlist;
@@ -206,8 +208,8 @@ extern void varpop(Push *);
 
 /* status.c */
 
-extern List *true, *false;
-extern Boolean istrue(List *status);
+extern List *ltrue, *lfalse;
+extern bool istrue(List *status);
 extern int exitstatus(List *status);
 extern char *mkstatus(int status);
 extern void printstatus(int pid, int status);
@@ -220,10 +222,10 @@ extern char *checkexecutable(char *file);
 
 /* proc.c */
 
-extern Boolean hasforked;
-extern int efork(Boolean parent, Boolean background);
-extern int ewait(int pid, Boolean interruptible, void *rusage);
-#define	ewaitfor(pid)	ewait(pid, FALSE, NULL)
+extern bool hasforked;
+extern int efork(bool parent, bool background);
+extern int ewait(int pid, bool interruptible, void *rusage);
+#define	ewaitfor(pid)	ewait(pid, false, NULL)
 
 
 /* dict.c */
@@ -272,8 +274,8 @@ extern void *erealloc(void *p, size_t n);
 extern void efree(void *p);
 extern void ewrite(int fd, const char *s, size_t n);
 extern long eread(int fd, char *buf, size_t n);
-extern Boolean isabsolute(char *path);
-extern Boolean streq2(const char *s, const char *t1, const char *t2);
+extern bool isabsolute(char *path);
+extern bool streq2(const char *s, const char *t1, const char *t2);
 
 
 /* input.c */
@@ -282,7 +284,7 @@ extern char *prompt, *prompt2;
 extern Tree *parse(char *esprompt1, char *esprompt2);
 extern Tree *parsestring(const char *str);
 extern void sethistory(char *file);
-extern Boolean isinteractive(void);
+extern bool isinteractive(void);
 extern void initinput(void);
 extern void resetparser(void);
 #if HAVE_READLINE
@@ -300,7 +302,7 @@ extern List *runstring(const char *str, const char *name, int flags);
 #define	run_lisptrees		64	/* -L and defined(LISPTREES) */
 
 #if HAVE_READLINE
-extern Boolean resetterminal;
+extern bool resetterminal;
 #endif
 
 
@@ -320,10 +322,10 @@ extern void initprims(void);
 
 /* split.c */
 
-extern void startsplit(const char *sep, Boolean coalesce);
-extern void splitstring(char *in, size_t len, Boolean endword);
+extern void startsplit(const char *sep, bool coalesce);
+extern void splitstring(char *in, size_t len, bool endword);
 extern List *endsplit(void);
-extern List *fsplit(const char *sep, List *list, Boolean coalesce);
+extern List *fsplit(const char *sep, List *list, bool coalesce);
 
 
 /* signal.c */
@@ -340,12 +342,12 @@ extern Sigeffect esignal(int sig, Sigeffect effect);
 extern void setsigeffects(const Sigeffect effects[]);
 extern void getsigeffects(Sigeffect effects[]);
 extern List *mksiglist(void);
-extern void initsignals(Boolean interactive, Boolean allowdumps);
+extern void initsignals(bool interactive, bool allowdumps);
 extern Atomic slow, interrupted;
 extern jmp_buf slowlabel;
-extern Boolean sigint_newline;
+extern bool sigint_newline;
 extern void sigchk(void);
-extern Boolean issilentsignal(List *e);
+extern bool issilentsignal(List *e);
 extern void setsigdefaults(void);
 extern void blocksignals(void);
 extern void unblocksignals(void);
@@ -376,7 +378,7 @@ extern void gc(void);				/* provoke a collection, if enabled */
 extern void gcreserve(size_t nbytes);		/* provoke a collection, if enabled and not enough space */
 extern void gcenable(void);			/* enable collections */
 extern void gcdisable(void);			/* disable collections */
-extern Boolean gcisblocked();			/* is collection disabled? */
+extern bool gcisblocked();			/* is collection disabled? */
 
 
 /*

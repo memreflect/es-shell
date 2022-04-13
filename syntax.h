@@ -35,5 +35,5 @@ extern Tree *mkmatch(Tree *subj, Tree *cases);
 
 /* heredoc.c */
 
-extern Boolean readheredocs(Boolean endfile);
-extern Boolean queueheredoc(Tree *t);
+extern bool readheredocs(bool endfile);
+extern bool queueheredoc(Tree *t);

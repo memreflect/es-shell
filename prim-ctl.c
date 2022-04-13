@@ -4,7 +4,7 @@
 #include "prim.h"
 
 PRIM(seq) {
-	Ref(List *, result, true);
+	Ref(List *, result, ltrue);
 	Ref(List *, lp, list);
 	for (; lp != NULL; lp = lp->next)
 		result = eval1(lp->term, evalflags &~ (lp->next == NULL ? 0 : eval_inchild));
@@ -28,7 +28,7 @@ PRIM(if) {
 		}
 	}
 	RefEnd(lp);
-	return true;
+	return ltrue;
 }
 
 PRIM(forever) {
@@ -56,7 +56,7 @@ PRIM(catch) {
 	Ref(List *, lp, list);
 
 	do {
-		retry = FALSE;
+		retry = false;
 
 		ExceptionHandler
 
@@ -75,7 +75,7 @@ PRIM(catch) {
 			CatchException (fromcatcher)
 
 				if (termeq(fromcatcher->term, "retry")) {
-					retry = TRUE;
+					retry = true;
 					unblocksignals();
 				} else {
 					unblocksignals();

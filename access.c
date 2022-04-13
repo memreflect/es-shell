@@ -15,31 +15,31 @@
 #define OTHER   0
 
 /* ingroupset -- determine whether gid lies in the user's set of groups */
-static Boolean ingroupset(gidset_t gid) {
+static bool ingroupset(gidset_t gid) {
 #ifdef NGROUPS
     int i;
     static int ngroups;
     static gidset_t gidset[NGROUPS];
-    static Boolean initialized = FALSE;
+    static bool initialized = false;
     if (!initialized) {
-        initialized = TRUE;
+        initialized = true;
         ngroups = getgroups(NGROUPS, gidset);
     }
     for (i = 0; i < ngroups; i++)
         if (gid == gidset[i])
-            return TRUE;
+            return true;
 #endif
-    return FALSE;
+    return false;
 }
 
 static int testperm(struct stat *stat, int perm) {
     int mask;
     static gidset_t uid, gid;
-    static Boolean initialized = FALSE;
+    static bool initialized = false;
     if (perm == 0)
         return 0;
     if (!initialized) {
-        initialized = TRUE;
+        initialized = true;
         uid = geteuid();
         gid = getegid();
     }
@@ -97,7 +97,7 @@ static char *pathcat(char *prefix, char *suffix) {
 
 PRIM(access) {
     int c, perm = 0, type = 0, estatus = ENOENT;
-    Boolean first = FALSE, exception = FALSE;
+    bool first = false, exception = false;
     char *suffix = NULL;
     List *lp;
     const char usage[] = "access [-n name] [-1e] [-rwx] [-fdcblsp] path ...";
@@ -107,8 +107,8 @@ PRIM(access) {
     while ((c = esopt("bcdefln:prswx1")) != EOF)
         switch (c) {
         case 'n':   suffix = getstr(esoptarg());    break;
-        case '1':   first = TRUE;                   break;
-        case 'e':   exception = TRUE;               break;
+        case '1':   first = true;                   break;
+        case 'e':   exception = true;               break;
         case 'r':   perm |= READ;                   break;
         case 'w':   perm |= WRITE;                  break;
         case 'x':   perm |= EXEC;                   break;

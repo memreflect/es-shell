@@ -51,11 +51,40 @@ ES_LIB_READLINE
 
 dnl Checks for header files.
 AC_CHECK_HEADERS([fcntl.h unistd.h sys/ioctl.h sys/time.h])
+AC_HEADER_STDBOOL
 ES_HEADER_READLINE
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-
 ES_STDC_VERSION
+
+# Check for boolean type
+# If AC_HEADER_STDBOOL found a working <stdbool.h>, we use it.
+# If C99 or newer, then we assume _Bool is available.
+# Otherwise, we test for it.
+m4_define([_es_bool], [ac_cv_type__Bool])
+AH_TEMPLATE([bool_false], [Define to 0 (pre-C2x) or ((_Bool)+0u).])
+AH_TEMPLATE([bool_true], [Define to 1 (pre-C2x) or ((_Bool)+1u).])
+AS_VAR_IF([ac_cv_header_stdbool_h],
+  [no], [AC_CACHE_CHECK([for boolean type support],
+                        [_es_bool],
+                        [AS_VAR_SET([_es_bool], [yes])
+                        AS_VERSION_COMPARE([$es_stdc_version], [ES_STDC_C99],
+                                           [AS_VAR_SET([_es_bool], [no])])
+                        AS_VAR_IF([_es_bool],
+                                  [no], [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_Bool b;])],
+                                                           [],
+                                                           [AS_VAR_SET([_es_bool],
+                                                                       [no])])])])
+        AS_VAR_IF([_es_bool],
+                  [yes], [AS_VERSION_COMPARE([$es_stdc_version], [ES_STDC_C17],
+                                             [AC_DEFINE([bool_false], [0])
+                                             AC_DEFINE([bool_true], [1])],
+                                             [AC_DEFINE([bool_false], [0])
+                                             AC_DEFINE([bool_true], [1])],
+                                             [AC_DEFINE([bool_false],
+                                                        [((_Bool)+0u)])
+                                             AC_DEFINE([bool_true],
+                                                       [((_Bool)+1u)])])])])
 
 # Check for _Noreturn
 # If C11 or newer, then we assume it is available.  Otherwise, we test for its

@@ -26,8 +26,8 @@
 Input *input;
 char *prompt, *prompt2;
 
-Boolean disablehistory = FALSE;
-Boolean resetterminal = FALSE;
+bool disablehistory = false;
+bool resetterminal = false;
 static char *history;
 static int historyfd = -1;
 
@@ -193,15 +193,15 @@ static char *callreadline(char *prompt) {
 		prompt = ""; /* bug fix for readline 2.0 */
 	if (resetterminal) {
 		rl_reset_terminal(NULL);
-		resetterminal = FALSE;
+		resetterminal = false;
 	}
-	interrupted = FALSE;
+	interrupted = false;
 	if (!setjmp(slowlabel)) {
-		slow = TRUE;
+		slow = true;
 		r = interrupted ? NULL : readline(prompt);
 	} else
 		r = NULL;
-	slow = FALSE;
+	slow = false;
 	if (r == NULL)
 		errno = EINTR;
 	SIGCHK();
@@ -217,12 +217,12 @@ static char *esgetenv(const char *name) {
 	else {
 		char *export;
 		static Dict *envdict;
-		static Boolean initialized = FALSE;
+		static bool initialized = false;
 		Ref(char *, string, NULL);
 
 		gcdisable();
 		if (!initialized) {
-			initialized = TRUE;
+			initialized = true;
 			envdict = mkdict();
 			globalroot(&envdict);
 		}
@@ -400,7 +400,7 @@ extern List *runinput(Input *in, int runflags) {
 					 + ((flags & run_noexec) ? 2 : 0)],
 			      NULL);
 		if (flags & eval_exitonfalse)
-			dispatch = mklist(mkstr("%exit-on-false"), dispatch);
+			dispatch = mklist(mkstr("%exit-on-lfalse"), dispatch);
 		varpush(&push, "fn-%dispatch", dispatch);
 
 		repl = varlookup((flags & run_interactive)
@@ -449,7 +449,7 @@ extern List *runfd(int fd, const char *name, int flags) {
 	in.fill = fdfill;
 	in.cleanup = fdcleanup;
 	in.fd = fd;
-	registerfd(&in.fd, TRUE);
+	registerfd(&in.fd, true);
 	in.buflen = BUFSIZE;
 	in.bufbegin = in.buf = ealloc(in.buflen);
 	in.bufend = in.bufbegin;
@@ -552,8 +552,8 @@ extern Tree *parsestring(const char *str) {
 }
 
 /* isinteractive -- is the innermost input source interactive? */
-extern Boolean isinteractive(void) {
-	return input == NULL ? FALSE : ((input->runflags & run_interactive) != 0);
+extern bool isinteractive(void) {
+	return input == NULL ? false : ((input->runflags & run_interactive) != 0);
 }
 
 
@@ -572,7 +572,7 @@ extern void initinput(void) {
 	globalroot(&prompt2);		/* secondary prompt */
 
 	/* mark the historyfd as a file descriptor to hold back from forked children */
-	registerfd(&historyfd, TRUE);
+	registerfd(&historyfd, true);
 
 	/* call the parser's initialization */
 	initparse();

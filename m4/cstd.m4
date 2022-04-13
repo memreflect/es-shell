@@ -16,6 +16,7 @@
 #   C99   199901L
 #   C11   201112L
 #   C17   201710L
+#   C2X   202000L
 #
 # Note that while C89 did not actually define __STDC_VERSION__, it still defined
 # __STDC__, distinguishing it from pre-standardization and non-standard
@@ -46,7 +47,8 @@ AC_DEFUN([ES_STDC_C94], [199409L])# ES_STDC_C94
 AC_DEFUN([ES_STDC_C99], [199901L])# ES_STDC_C99
 AC_DEFUN([ES_STDC_C11], [201112L])# ES_STDC_C11
 AC_DEFUN([ES_STDC_C17], [201710L])# ES_STDC_C17
-AC_DEFUN([ES_STDC_NEW], [201711L])# ES_STDC_NEW
+AC_DEFUN([ES_STDC_C2X], [202000L])# ES_STDC_C2X
+AC_DEFUN([ES_STDC_NEW], [202001L])# ES_STDC_NEW
 
 # ES_STDC_VERSION
 # ---------------
@@ -89,7 +91,8 @@ AS_CASE(["$[]_es_cppname[]"],
   [ES_STDC_C94], [AS_VAR_SET([_es_stdc], [ES_STDC_C94])],
   [ES_STDC_C99], [AS_VAR_SET([_es_stdc], [ES_STDC_C99])],
   [ES_STDC_C11], [AS_VAR_SET([_es_stdc], [ES_STDC_C11])],
-  [ES_STDC_C17], [AS_VAR_SET([_es_stdc], [ES_STDC_C17])])
+  [ES_STDC_C17], [AS_VAR_SET([_es_stdc], [ES_STDC_C17])],
+  [ES_STDC_C2X], [AS_VAR_SET([_es_stdc], [ES_STDC_C2X])])
 dnl Detect non-standard declarations of __STDC_VERSION__ before setting
 dnl 'es_stdc_version' to ES_STDC_NEW.
 AS_VAR_SET_IF([_es_stdc],

@@ -19,7 +19,7 @@ PRIM(echo) {
 			list = list->next;
 	}
 	print("%L%s", list, " ", eol);
-	return true;
+	return ltrue;
 }
 
 PRIM(count) {
@@ -120,7 +120,7 @@ PRIM(split) {
 		fail("$&split", "usage: %%split separator [args ...]");
 	Ref(List *, lp, list);
 	sep = getstr(lp->term);
-	lp = fsplit(sep, lp->next, TRUE);
+	lp = fsplit(sep, lp->next, true);
 	RefReturn(lp);
 }
 
@@ -130,7 +130,7 @@ PRIM(fsplit) {
 		fail("$&fsplit", "usage: %%fsplit separator [args ...]");
 	Ref(List *, lp, list);
 	sep = getstr(lp->term);
-	lp = fsplit(sep, lp->next, FALSE);
+	lp = fsplit(sep, lp->next, false);
 	RefReturn(lp);
 }
 
@@ -184,7 +184,7 @@ PRIM(exitonfalse) {
 }
 
 PRIM(batchloop) {
-	Ref(List *, result, true);
+	Ref(List *, result, ltrue);
 	Ref(List *, dispatch, NULL);
 
 	SIGCHK();
@@ -212,8 +212,8 @@ PRIM(batchloop) {
 		if (!termeq(e->term, "eof"))
 			throw(e);
 		RefEnd(dispatch);
-		if (result == true)
-			result = true;
+		if (result == ltrue)
+			result = ltrue;
 		RefReturn(result);
 
 	EndExceptionHandler
@@ -221,7 +221,7 @@ PRIM(batchloop) {
 
 PRIM(collect) {
 	gc();
-	return true;
+	return ltrue;
 }
 
 PRIM(home) {
@@ -235,15 +235,15 @@ PRIM(home) {
 }
 
 PRIM(vars) {
-	return listvars(FALSE);
+	return listvars(false);
 }
 
 PRIM(internals) {
-	return listvars(TRUE);
+	return listvars(true);
 }
 
 PRIM(isinteractive) {
-	return isinteractive() ? true : false;
+	return isinteractive() ? ltrue : lfalse;
 }
 
 PRIM(noreturn) {
@@ -281,8 +281,8 @@ PRIM(setmaxevaldepth) {
 
 #if HAVE_READLINE
 PRIM(resetterminal) {
-	resetterminal = TRUE;
-	return true;
+	resetterminal = true;
+	return ltrue;
 }
 #endif
 

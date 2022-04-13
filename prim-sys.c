@@ -39,11 +39,11 @@ PRIM(newpgrp) {
 		esignal(SIGTTOU, sigttou);
 	}
 #endif
-	return true;
+	return ltrue;
 }
 
 PRIM(background) {
-	int pid = efork(TRUE, TRUE);
+	int pid = efork(true, true);
 	if (pid == 0) {
 #if JOB_PROTECT
 		/* job control safe version: put it in a new pgroup. */
@@ -57,7 +57,7 @@ PRIM(background) {
 
 PRIM(fork) {
 	int pid, status;
-	pid = efork(TRUE, FALSE);
+	pid = efork(true, false);
 	if (pid == 0)
 		exit(exitstatus(eval(list, NULL, evalflags | eval_inchild)));
 	status = ewaitfor(pid);
@@ -81,7 +81,7 @@ PRIM(umask) {
 		int mask = umask(0);
 		umask(mask);
 		print("%04o\n", mask);
-		return true;
+		return ltrue;
 	}
 	if (list->next == NULL) {
 		int mask;
@@ -91,7 +91,7 @@ PRIM(umask) {
 		if ((t != NULL && *t != '\0') || ((unsigned) mask) > 07777)
 			fail("$&umask", "bad umask: %s", s);
 		umask(mask);
-		return true;
+		return ltrue;
 	}
 	fail("$&umask", "usage: umask [mask]");
 	NOTREACHED;
@@ -104,7 +104,7 @@ PRIM(cd) {
 	dir = getstr(list->term);
 	if (chdir(dir) == -1)
 		fail("$&cd", "chdir %s: %s", dir, esstrerror(errno));
-	return true;
+	return ltrue;
 }
 
 PRIM(setsignals) {
@@ -196,7 +196,7 @@ static const Limit limits[] = {
 	{ NULL, 0, NULL }
 };
 
-static void printlimit(const Limit *limit, Boolean hard) {
+static void printlimit(const Limit *limit, bool hard) {
 	struct rlimit rlim;
 	rlim_t lim;
 	getrlimit(limit->flag, &rlim);
@@ -253,11 +253,11 @@ static long parselimit(const Limit *limit, char *s) {
 
 PRIM(limit) {
 	const Limit *lim = limits;
-	Boolean hard = FALSE;
+	bool hard = false;
 	Ref(List *, lp, list);
 
 	if (lp != NULL && streq(getstr(lp->term), "-h")) {
-		hard = TRUE;
+		hard = true;
 		lp = lp->next;
 	}
 
@@ -290,7 +290,7 @@ PRIM(limit) {
 		}
 	}
 	RefEnd(lp);
-	return true;
+	return ltrue;
 }
 #endif	/* BSD_LIMITS */
 
@@ -307,10 +307,10 @@ PRIM(time) {
 
 	gc();	/* do a garbage collection first to ensure reproducible results */
 	t0 = time(NULL);
-	pid = efork(TRUE, FALSE);
+	pid = efork(true, false);
 	if (pid == 0)
 		exit(exitstatus(eval(lp, NULL, evalflags | eval_inchild)));
-	status = ewait(pid, FALSE, &r);
+	status = ewait(pid, false, &r);
 	t1 = time(NULL);
 	SIGCHK();
 	printstatus(0, status);
@@ -332,7 +332,7 @@ PRIM(time) {
 	Ref(List *, lp, list);
 
 	gc();	/* do a garbage collection first to ensure reproducible results */
-	pid = efork(TRUE, FALSE);
+	pid = efork(true, false);
 	if (pid == 0) {
 		clock_t t0, t1;
 		struct tms tms;
@@ -342,7 +342,7 @@ PRIM(time) {
 			ticks = sysconf(_SC_CLK_TCK);
 
 		t0 = times(&tms);
-		pid = efork(TRUE, FALSE);
+		pid = efork(true, false);
 		if (pid == 0)
 			exit(exitstatus(eval(lp, NULL, evalflags | eval_inchild)));
 

@@ -102,10 +102,6 @@
  * types we use throughout es
  */
 
-#undef FALSE
-#undef TRUE
-typedef enum { FALSE, TRUE } Boolean;
-
 typedef volatile sig_atomic_t Atomic;
 typedef gid_t gidset_t;
 
