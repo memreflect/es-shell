@@ -1,10 +1,10 @@
 /* access.c -- access testing and path searching */
 
-#include "es.h"
-#include "prim.h"
-
 #include <sys/param.h>
 #include <sys/stat.h>
+
+#include "es.h"
+#include "prim.h"
 
 #define READ    4
 #define WRITE   2
@@ -15,11 +15,11 @@
 #define OTHER   0
 
 /* ingroupset -- determine whether gid lies in the user's set of groups */
-static bool ingroupset(gidset_t gid) {
+static bool ingroupset(gid_t gid) {
 #ifdef NGROUPS
     int i;
     static int ngroups;
-    static gidset_t gidset[NGROUPS];
+    static gid_t gidset[NGROUPS];
     static bool initialized = false;
     if (!initialized) {
         initialized = true;
@@ -34,7 +34,7 @@ static bool ingroupset(gidset_t gid) {
 
 static int testperm(struct stat *stat, int perm) {
     int mask;
-    static gidset_t uid, gid;
+    static id_t uid, gid;
     static bool initialized = false;
     if (perm == 0)
         return 0;

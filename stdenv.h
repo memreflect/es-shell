@@ -103,7 +103,6 @@
  */
 
 typedef volatile sig_atomic_t Atomic;
-typedef gid_t gidset_t;
 
 
 /*
