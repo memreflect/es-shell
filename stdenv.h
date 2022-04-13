@@ -139,11 +139,3 @@ enum { UNREACHABLE = 0 };
 
 
 #define NOTREACHED  STMT(assert(UNREACHABLE))
-
-/*
- * hacks to present a standard system call interface
- */
-
-#if !HAVE_LSTAT
-#define lstat   stat
-#endif
