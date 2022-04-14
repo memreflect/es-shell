@@ -136,8 +136,7 @@ AH_TEMPLATE([HAVE_READLINE_HISTORY],
 AC_REQUIRE([ES_WITH_READLINE])
 AC_REQUIRE([ES_LIB_READLINE])
 AC_REQUIRE([ES_HEADER_READLINE])
-AC_CACHE_CHECK(
-  [whether to enable readline],
+AC_CACHE_VAL(
   [_es_cv_rlenable],
   [AS_VAR_SET([_es_cv_rlenable], [no])
   AS_VAR_IF([_es_cv_rllib],
