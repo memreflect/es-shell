@@ -23,9 +23,6 @@
  *		if this is on, asserts will be checked, raising errors on
  *		actual assertion failure.
  *
- *	HAVE_DEV_FD
- *		turn this on if your system supports /dev/fd for >{} and <{}
- *
  *	DEVFD_PATH
  *		(used only if DEVFD is on.)  a format string for print() to
  *		a file path for opening file descriptor n.
