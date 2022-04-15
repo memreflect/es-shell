@@ -134,158 +134,202 @@ PRIM(setsignals) {
 #if HAVE_SETRLIMIT
 typedef struct Suffix Suffix;
 struct Suffix {
-	const char *name;
-	long amount;
-	const Suffix *next;
+    const char *name;
+    long amount;
 };
 
 static const Suffix sizesuf[] = {
-	{ "g",	1024*1024*1024,	sizesuf + 1 },
-	{ "m",	1024*1024,	sizesuf + 2 },
-	{ "k",	1024,		NULL },
+    /* TODO add support for t and p on 64-bit systems */
+    { "g",  1024*1024*1024 },
+    { "m",  1024*1024 },
+    { "k",  1024 },
 };
+static const Suffix *sizesuf_end = sizesuf + arraysize(sizesuf);
 
 static const Suffix timesuf[] = {
-	{ "h",	60 * 60,	timesuf + 1 },
-	{ "m",	60,		timesuf + 2 },
-	{ "s",	1,		NULL },
+    { "h",  60*60 },
+    { "m",  60 },
+    { "s",  1 },
 };
+static const Suffix *timesuf_end = timesuf + arraysize(timesuf);
 
 typedef struct {
-	char *name;
-	int flag;
-	const Suffix *suffix;
+    char *name;
+    int flag;
+    const Suffix *suffix;
 } Limit;
 
 static const Limit limits[] = {
 
-	{ "cputime",		RLIMIT_CPU,	timesuf },
-	{ "filesize",		RLIMIT_FSIZE,	sizesuf },
-	{ "datasize",		RLIMIT_DATA,	sizesuf },
-	{ "stacksize",		RLIMIT_STACK,	sizesuf },
-	{ "coredumpsize",	RLIMIT_CORE,	sizesuf },
-
-#ifdef RLIMIT_RSS	/* SysVr4 does not have this */
-	{ "memoryuse",		RLIMIT_RSS,	sizesuf },
-#endif
-#ifdef RLIMIT_VMEM	/* instead, they have this! */
-	{ "memorysize",		RLIMIT_VMEM,	sizesuf },
+    /* resource limits from single unix specification */
+    { "coredumpsize",   RLIMIT_CORE,        sizesuf },
+    { "cputime",        RLIMIT_CPU,         timesuf },
+    { "datasize",       RLIMIT_DATA,        sizesuf },
+    { "filesize",       RLIMIT_FSIZE,       sizesuf },
+    { "descriptors",    RLIMIT_NOFILE,      NULL },
+    { "stacksize",      RLIMIT_STACK,       sizesuf },
+#ifdef RLIMIT_AS
+    { "available",      RLIMIT_AS,          sizesuf },
 #endif
 
-#ifdef RLIMIT_MEMLOCK	/* 4.4bsd adds an unimplemented limit on non-pageable memory */
-	{ "lockedmemory",	RLIMIT_CORE,	sizesuf },
+    /* platform-specific resource limits */
+#ifdef RLIMIT_KQUEUES
+    { "kqueues",        RLIMIT_KQUEUES,     NULL },
+#endif
+#ifdef RLIMIT_LOCKS
+    { "locks",          RLIMIT_LOCKS,       NULL },
+#endif
+#ifdef RLIMIT_MEMLOCK
+    { "lockedmemory",   RLIMIT_MEMLOCK,     sizesuf },
+#endif
+#ifdef RLIMIT_MSGQUEUE
+    { "mqmax",          RLIMIT_MSGQUEUE,    NULL },
+#endif
+#ifdef RLIMIT_NICE
+    { "nice",           RLIMIT_NICE         NULL },
+#endif
+#ifdef RLIMIT_NPROC
+    { "processes",      RLIMIT_NPROC,       NULL },
+#endif
+#ifdef RLIMIT_NPTS
+    { "ptys",           RLIMIT_NPTS,        NULL },
+#endif
+#ifdef RLIMIT_RSS
+    { "memoryuse",      RLIMIT_RSS,         sizesuf },
+#endif
+#ifdef RLIMIT_RTPRIO
+    { "rtprio",         RLIMIT_RTPRIO,      NULL },
+#endif
+#ifdef RLIMIT_RTTIME
+    { "rttime",         RLIMIT_RTTIME,      timesuf },
+#endif
+#ifdef RLIMIT_SBSIZE
+    { "sockbufsize",    RLIMIT_SBSIZE,      sizesuf },
+#endif
+#ifdef RLIMIT_SIGPENDING
+    { "pendsigs",       RLIMIT_SIGPENDING,  NULL },
+#endif
+#ifdef RLIMIT_SWAP
+    { "swap",           RLIMIT_SWAP,        sizesuf },
+#endif
+    /* some platforms equate this with RLIMIT_AS */
+#ifdef RLIMIT_VMEM
+    { "memorysize",     RLIMIT_VMEM,        sizesuf },
 #endif
 
-#ifdef RLIMIT_NOFILE	/* SunOS 4.1 adds a limit on file descriptors */
-	{ "descriptors",	RLIMIT_NOFILE,	NULL },
-#elif defined(RLIMIT_OFILE) /* but 4.4bsd uses this name for it */
-	{ "descriptors",	RLIMIT_OFILE,	NULL },
-#endif
-
-#ifdef RLIMIT_NPROC	/* 4.4bsd adds a limit on child processes */
-	{ "processes",		RLIMIT_NPROC,	NULL },
-#endif
-
-	{ NULL, 0, NULL }
 };
+static const Limit *limits_end = limits + arraysize(limits);
 
 static void printlimit(const Limit *limit, bool hard) {
-	struct rlimit rlim;
-	rlim_t lim;
-	getrlimit(limit->flag, &rlim);
-	if (hard)
-		lim = rlim.rlim_max;
-	else
-		lim = rlim.rlim_cur;
-	if (lim == RLIM_INFINITY)
-		print("%-8s\tunlimited\n", limit->name);
-	else {
-		const Suffix *suf;
+    struct rlimit rlim;
+    rlim_t lim;
+    getrlimit(limit->flag, &rlim);
+    if (hard)
+        lim = rlim.rlim_max;
+    else
+        lim = rlim.rlim_cur;
+    if (lim == RLIM_INFINITY)
+        print("%-8s\tunlimited\n", limit->name);
+    else {
+        const Suffix *suf;
+        const Suffix *end = limit->suffix == sizesuf
+                          ? sizesuf_end
+                          : limit->suffix == timesuf
+                          ? timesuf_end
+                          : NULL;
 
-		for (suf = limit->suffix; suf != NULL; suf = suf->next)
-			if (lim % suf->amount == 0 && (lim != 0 || suf->amount > 1)) {
-				lim /= suf->amount;
-				break;
-			}
-		print("%-8s\t%d%s\n", limit->name, (int)lim, (suf == NULL || lim == 0) ? "" : suf->name);
-	}
+        for (suf = limit->suffix; suf != end; ++suf)
+            if (lim % suf->amount == 0 && (lim != 0 || suf->amount > 1)) {
+                lim /= suf->amount;
+                break;
+            }
+        print("%-8s\t%d%s\n",
+              limit->name,
+              (int)lim,
+              (suf == NULL || lim == 0) ? "" : suf->name);
+    }
 }
 
 static long parselimit(const Limit *limit, char *s) {
-	long lim;
-	char *t;
-	const Suffix *suf = limit->suffix;
-	if (streq(s, "unlimited"))
-		return RLIM_INFINITY;
-	if (!isdigit(*s))
-		fail("$&limit", "%s: bad limit value", s);
-	if (suf == timesuf && (t = strchr(s, ':')) != NULL) {
-		char *u;
-		lim = strtol(s, &u, 0) * 60;
-		if (u != t)
-			fail("$&limit", "%s %s: bad limit value", limit->name, s);
-		lim += strtol(u + 1, &t, 0);
-		if (t != NULL && *t == ':')
-			lim = lim * 60 + strtol(t + 1, &t, 0);
-		if (t != NULL && *t != '\0')
-			fail("$&limit", "%s %s: bad limit value", limit->name, s);
-	} else {
-		lim = strtol(s, &t, 0);
-		if (t != NULL && *t != '\0')
-			for (;; suf = suf->next) {
-				if (suf == NULL)
-					fail("$&limit", "%s %s: bad limit value", limit->name, s);
-				if (streq(suf->name, t)) {
-					lim *= suf->amount;
-					break;
-				}
-			}
-	}
-	return lim;
+    long lim;
+    char *t;
+    const Suffix *suf = limit->suffix;
+    const Suffix *end = limit->suffix == sizesuf
+                      ? sizesuf_end
+                      : limit->suffix == timesuf
+                      ? timesuf_end
+                      : NULL;
+    if (streq(s, "unlimited"))
+        return RLIM_INFINITY;
+    if (!isdigit(*s))
+        fail("$&limit", "%s: bad limit value", s);
+    if (suf == timesuf && (t = strchr(s, ':')) != NULL) {
+        char *u;
+        lim = strtol(s, &u, 0) * 60;
+        if (u != t)
+            fail("$&limit", "%s %s: bad limit value", limit->name, s);
+        lim += strtol(u + 1, &t, 0);
+        if (t != NULL && *t == ':')
+            lim = lim * 60 + strtol(t + 1, &t, 0);
+        if (t != NULL && *t != '\0')
+            fail("$&limit", "%s %s: bad limit value", limit->name, s);
+    } else {
+        lim = strtol(s, &t, 0);
+        if (t != NULL && *t != '\0')
+            for (;; ++suf) {
+                if (suf == end)
+                    fail("$&limit", "%s %s: bad limit value", limit->name, s);
+                if (streq(suf->name, t)) {
+                    lim *= suf->amount;
+                    break;
+                }
+            }
+    }
+    return lim;
 }
 
 PRIM(limit) {
-	const Limit *lim = limits;
-	bool hard = false;
-	Ref(List *, lp, list);
+    const Limit *lim = limits;
+    bool hard = false;
+    Ref(List *, lp, list);
 
-	if (lp != NULL && streq(getstr(lp->term), "-h")) {
-		hard = true;
-		lp = lp->next;
-	}
+    if (lp != NULL && streq(getstr(lp->term), "-h")) {
+        hard = true;
+        lp = lp->next;
+    }
 
-	if (lp == NULL)
-		for (; lim->name != NULL; lim++)
-			printlimit(lim, hard);
-	else {
-		char *name = getstr(lp->term);
-		for (;; lim++) {
-			if (lim->name == NULL)
-				fail("$&limit", "%s: no such limit", name);
-			if (streq(name, lim->name))
-				break;
-		}
-		lp = lp->next;
-		if (lp == NULL)
-			printlimit(lim, hard);
-		else {
-			long n;
-			struct rlimit rlim;
-			getrlimit(lim->flag, &rlim);
-			if ((n = parselimit(lim, getstr(lp->term))) < 0)
-				fail("$&limit", "%s: bad limit value", getstr(lp->term));
-			if (hard)
-				rlim.rlim_max = n;
-			else
-				rlim.rlim_cur = n;
-			if (setrlimit(lim->flag, &rlim) == -1)
-				fail("$&limit", "setrlimit: %s", esstrerror(errno));
-		}
-	}
-	RefEnd(lp);
-	return ltrue;
+    if (lp == NULL)
+        for (; lim != limits_end; ++lim)
+            printlimit(lim, hard);
+    else {
+        char *name = getstr(lp->term);
+        for (;; ++lim) {
+            if (lim == limits_end)
+                fail("$&limit", "%s: no such limit", name);
+            if (streq(name, lim->name))
+                break;
+        }
+        lp = lp->next;
+        if (lp == NULL)
+            printlimit(lim, hard);
+        else {
+            long n;
+            struct rlimit rlim;
+            getrlimit(lim->flag, &rlim);
+            if ((n = parselimit(lim, getstr(lp->term))) < 0)
+                fail("$&limit", "%s: bad limit value", getstr(lp->term));
+            if (hard)
+                rlim.rlim_max = n;
+            else
+                rlim.rlim_cur = n;
+            if (setrlimit(lim->flag, &rlim) == -1)
+                fail("$&limit", "setrlimit: %s", esstrerror(errno));
+        }
+    }
+    RefEnd(lp);
+    return ltrue;
 }
-#endif	/* HAVE_SETRLIMIT */
+#endif  /* HAVE_SETRLIMIT */
 
 #if BUILTIN_TIME
 PRIM(time) {
