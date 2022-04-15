@@ -60,46 +60,59 @@ AC_DEFUN([ES_STDC_NEW], [202001L])# ES_STDC_NEW
 # The shell variable `es_stdc_version' is set to the value of the corresponding
 # ES_STDC_xxx macro.
 AC_DEFUN([ES_STDC_VERSION],
-[AC_REQUIRE([AC_PROG_CC])
-AC_REQUIRE([AC_PROG_CPP])
-AC_REQUIRE([AC_PROG_EGREP])
-m4_pushdef([_es_cppname], [es_cv_cpp_stdc_version])
-AC_CACHE_CHECK(
-  [for __STDC_VERSION__],
-  [_es_cppname],
-  [AS_VAR_SET([_es_cppname], [no])
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#ifdef __STDC_VERSION__
+  [AC_REQUIRE([AC_PROG_CC])
+  AC_REQUIRE([AC_PROG_CPP])
+  AC_REQUIRE([AC_PROG_EGREP])
+  AS_VAR_PUSHDEF([_es_cppname], [es_cv_cpp_stdc_version])
+  AC_CACHE_CHECK(
+    [for __STDC_VERSION__],
+    [_es_cppname],
+    [AS_VAR_SET([_es_cppname], [no])
+    AC_COMPILE_IFELSE(
+      [AC_LANG_SOURCE(
+        [[#ifdef __STDC_VERSION__
 long v = __STDC_VERSION__;
 #else
 choke me
-#endif
-]])],
-                    [echo "__STDC_VERSION__" > conftest.$ac_ext
-                    AS_IF([(eval "$ac_cpp conftest.$ac_ext") >conftest.i],
-                          [AS_VAR_SET([_es_cppname],
-                                      [[$($EGREP '^[[:blank:]]*[0-9]{6}L[[:blank:]]*$' conftest.i)]])
-                          AS_VAR_IF([_es_cppname],
-                                    [], [AS_VAR_SET([_es_cppname], [no])])])
-                    rm -f conftest.i conftest.$ac_ext],
-                    [AS_VAR_IF([ac_cv_prog_cc_c89],
-                               [no], [],
-                               [AS_VAR_SET([_es_cppname], [ES_STDC_C89])])])])
-m4_pushdef([_es_stdc], [es_stdc_version])
-AS_CASE(["$[]_es_cppname[]"],
-  [no],          [AS_VAR_SET([_es_stdc], [ES_STDC_OLD])],
-  [ES_STDC_C89], [AS_VAR_SET([_es_stdc], [ES_STDC_C89])],
-  [ES_STDC_C94], [AS_VAR_SET([_es_stdc], [ES_STDC_C94])],
-  [ES_STDC_C99], [AS_VAR_SET([_es_stdc], [ES_STDC_C99])],
-  [ES_STDC_C11], [AS_VAR_SET([_es_stdc], [ES_STDC_C11])],
-  [ES_STDC_C17], [AS_VAR_SET([_es_stdc], [ES_STDC_C17])],
-  [ES_STDC_C2X], [AS_VAR_SET([_es_stdc], [ES_STDC_C2X])])
-dnl Detect non-standard declarations of __STDC_VERSION__ before setting
-dnl 'es_stdc_version' to ES_STDC_NEW.
-AS_VAR_SET_IF([_es_stdc],
-  [],
-  [AS_VERSION_COMPARE(["$[]_es_cppname[]"], [ES_STDC_NEW],
-                      [AC_MSG_ERROR([unexpected ISO C version -- $[]_es_cppname])])
-  AS_VAR_SET([_es_stdc], [ES_STDC_NEW])])
-m4_popdef([_es_stdc])
-m4_popdef([_es_cppname])
-])# ES_STDC_VERSION
+#endif  ]]
+      )],
+      [echo "__STDC_VERSION__" > conftest.$ac_ext
+      AS_IF(
+        [(eval "$ac_cpp conftest.$ac_ext") >conftest.i],
+        [AS_VAR_SET(
+          [_es_cppname],
+          [[$($EGREP '^[[:blank:]]*[0-9]{6}L[[:blank:]]*$' conftest.i)]]
+        )
+        AS_VAR_IF([_es_cppname],
+          [], [AS_VAR_SET([_es_cppname], [no])]
+        )]
+      )
+      rm -f conftest.i conftest.$ac_ext],
+      [AS_VAR_IF([ac_cv_prog_cc_c89],
+        [no], [],
+        [AS_VAR_SET([_es_cppname], [ES_STDC_C89])]
+      )]
+    )]
+  )
+  AS_VAR_PUSHDEF([_es_stdc], [es_stdc_version])
+  AS_CASE(["$[]_es_cppname[]"],
+    [no],          [AS_VAR_SET([_es_stdc], [ES_STDC_OLD])],
+    [ES_STDC_C89], [AS_VAR_SET([_es_stdc], [ES_STDC_C89])],
+    [ES_STDC_C94], [AS_VAR_SET([_es_stdc], [ES_STDC_C94])],
+    [ES_STDC_C99], [AS_VAR_SET([_es_stdc], [ES_STDC_C99])],
+    [ES_STDC_C11], [AS_VAR_SET([_es_stdc], [ES_STDC_C11])],
+    [ES_STDC_C17], [AS_VAR_SET([_es_stdc], [ES_STDC_C17])],
+    [ES_STDC_C2X], [AS_VAR_SET([_es_stdc], [ES_STDC_C2X])]
+  )
+  dnl Detect non-standard declarations of __STDC_VERSION__ before setting
+  dnl 'es_stdc_version' to ES_STDC_NEW.
+  AS_VAR_SET_IF([_es_stdc],
+    [],
+    [AS_VERSION_COMPARE(["$[]_es_cppname[]"], [ES_STDC_NEW],
+      [AC_MSG_ERROR([unexpected ISO C version -- $[]_es_cppname])]
+    )
+    AS_VAR_SET([_es_stdc], [ES_STDC_NEW])]
+  )
+  AS_VAR_POPDEF([_es_stdc])
+  AS_VAR_POPDEF([_es_cppname])]
+)# ES_STDC_VERSION
