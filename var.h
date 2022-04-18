@@ -1,5 +1,7 @@
 /* var.h -- es variables */
 
+#include "estypes.h"
+
 typedef struct Var Var;
 struct Var {
 	List *defn;

@@ -1,5 +1,10 @@
 /* input.h -- definitions for es lexical analyzer */
 
+#include <stddef.h>
+
+#include "esbool.h"
+#include "estypes.h"
+
 #define	MAXUNGET	2		/* maximum 2 character pushback */
 
 typedef struct Input Input;

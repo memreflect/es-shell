@@ -1,5 +1,7 @@
 /* prim.h -- definitions for es primitives */
 
+#include "estypes.h"
+
 #define	PRIM(name)	static List *CONCAT(prim_,name)( \
 				List *list, Binding *binding, int evalflags \
 			)

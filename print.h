@@ -1,5 +1,10 @@
 /* print.h -- interface to formatted printing routines */
 
+#include <stdarg.h>
+#include <stddef.h>
+
+#include "esbool.h"
+
 typedef struct Format Format;
 struct Format {
   /* for the formatting routines */

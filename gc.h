@@ -1,5 +1,7 @@
 /* gc.h -- garbage collector interface for es */
 
+#include <stddef.h>
+
 /* see also es.h for more generally applicable definitions */
 
 /*
@@ -15,7 +17,7 @@ struct Tag {
 #endif
 };
 
-extern Tag StringTag;
+extern struct Tag StringTag;
 
 #if ASSERTIONS || GCVERBOSE
 enum {TAGMAGIC = 0xDefaced};
@@ -34,7 +36,7 @@ enum {TAGMAGIC = 0xDefaced};
  * allocation
  */
 
-extern void *gcalloc(size_t, Tag *);
+extern void *gcalloc(size_t, struct Tag *);
 
 typedef struct Buffer Buffer;
 struct Buffer {

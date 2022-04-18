@@ -1,5 +1,8 @@
 /* syntax.h -- abstract syntax tree interface */
 
+#include "esbool.h"
+#include "estypes.h"
+
 #define	CAR	u[0].p
 #define	CDR	u[1].p
 

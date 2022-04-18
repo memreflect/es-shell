@@ -3,6 +3,7 @@
 #include "esconfig.h"
 
 #include "esbool.h"
+#include "estypes.h"
 #include "stdenv.h"
 
 /*
@@ -11,69 +12,6 @@
 
 #define ENV_SEPARATOR	'\017'		/* control-O */
 #define	ENV_ESCAPE	'\016'		/* control-N */
-
-
-/*
- * the fundamental es data structures.
- */
-
-typedef struct Tree Tree;
-typedef struct Term Term;
-typedef struct List List;
-typedef struct Binding Binding;
-typedef struct Closure Closure;
-
-struct List {
-	Term *term;
-	List *next;
-};
-
-struct Binding {
-	char *name;
-	List *defn;
-	Binding *next;
-};
-
-struct Closure {
-	Binding	*binding;
-	Tree *tree;
-};
-
-
-/*
- * parse trees
- */
-
-typedef enum {
-	nAssign, nCall, nClosure, nConcat, nFor, nLambda, nLet, nList, nLocal,
-	nMatch, nExtract, nPrim, nQword, nThunk, nVar, nVarsub, nWord,
-	nRedir, nPipe		/* only appear during construction */
-} NodeKind;
-
-struct Tree {
-	NodeKind kind;
-	union {
-		Tree *p;
-		char *s;
-		int i;
-	} u[2];
-};
-
-
-/*
- * miscellaneous data structures
- */
-
-typedef struct StrList StrList;
-struct StrList {
-	char *str;
-	StrList *next;
-};
-
-typedef struct {
-	int alloclen, count;
-	char *vector[1];
-} Vector;			/* environment or arguments */
 
 
 /*
@@ -230,7 +168,6 @@ extern int ewait(int pid, bool interruptible, struct rusage *rusage);
 
 /* dict.c */
 
-typedef struct Dict Dict;
 extern Dict *mkdict(void);
 extern void dictforall(Dict *dict, void (*proc)(void *, char *, void *), void *arg);
 extern void *dictget(Dict *dict, const char *name);
