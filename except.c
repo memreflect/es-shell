@@ -38,7 +38,7 @@ extern _Noreturn void throw(List *e) {
 	rootlist = handler->rootlist;
 #endif
 	exception = e;
-	longjmp(handler->label, 1);
+	siglongjmp(handler->label, 1);
 	NOTREACHED;
 }
 

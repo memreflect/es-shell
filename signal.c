@@ -7,14 +7,13 @@ typedef void (*Sighandler)(int);
 
 bool sigint_newline = true;
 
-jmp_buf slowlabel;
+sigjmp_buf slowlabel;
 Atomic slow = false;
 Atomic interrupted = false;
 static Atomic sigcount;
 static Atomic caught[NSIG];
 static Sigeffect sigeffect[NSIG];
 
-#if HAVE_SIGACTION
 #ifndef	SA_NOCLDSTOP
 #define	SA_NOCLDSTOP	0
 #endif
@@ -23,7 +22,6 @@ static Sigeffect sigeffect[NSIG];
 #endif
 #ifndef	SA_INTERRUPT		/* for sunos */
 #define	SA_INTERRUPT	0
-#endif
 #endif
 
 
@@ -68,9 +66,6 @@ extern char *sigmessage(int sig) {
 
 /* catcher -- catch (and defer) a signal from the kernel */
 static void catcher(int sig) {
-#if !HAVE_SIGACTION
-	signal(sig, catcher);
-#endif
 	if (hasforked)
 		/* exit unconditionally on a signal in a child process */
 		exit(1);
@@ -80,7 +75,7 @@ static void catcher(int sig) {
 	}
 	interrupted = true;
 	if (slow)
-		longjmp(slowlabel, 1);
+		siglongjmp(slowlabel, 1);
 }
 
 
@@ -89,7 +84,6 @@ static void catcher(int sig) {
  */
 
 static Sighandler setsignal(int sig, Sighandler handler) {
-#if HAVE_SIGACTION
 	struct sigaction nsa, osa;
 	sigemptyset(&nsa.sa_mask);
 	nsa.sa_handler = handler;
@@ -97,13 +91,6 @@ static Sighandler setsignal(int sig, Sighandler handler) {
 	if (sigaction(sig, &nsa, &osa) == -1)
 		return SIG_ERR;
 	return osa.sa_handler;
-#else /* !HAVE_SIGACTION */
-#ifdef SIGCLD
-	if (sig == SIGCLD && handler != SIG_DFL)
-		return SIG_ERR;
-#endif
-	return signal(sig, handler);
-#endif /* HAVE_SIGACTION */
 }
 
 extern Sigeffect esignal(int sig, Sigeffect effect) {
@@ -169,19 +156,11 @@ extern void initsignals(bool interactive, bool allowdumps) {
 
 	for (sig = 1; sig < NSIG; sig++) {
 		Sighandler h;
-#if HAVE_SIGACTION
 		struct sigaction sa;
 		sigaction(sig, NULL, &sa);
 		h = sa.sa_handler;
 		if (h == SIG_IGN)
 			sigeffect[sig] = sig_ignore;
-#else /* !HAVE_SIGACTION */
-		h = signal(sig, SIG_DFL);
-		if (h == SIG_IGN) {
-			setsignal(sig, SIG_IGN);
-			sigeffect[sig] = sig_ignore;
-		}
-#endif /* HAVE_SIGACTION */
 		else if (h == SIG_DFL || h == SIG_ERR)
 			sigeffect[sig] = sig_default;
 		else

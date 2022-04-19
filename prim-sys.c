@@ -2,7 +2,6 @@
 
 #include "esconfig.h"
 
-#include <sys/ioctl.h>
 #include <sys/stat.h>
 
 #if HAVE_SETRLIMIT || BUILTIN_TIME
@@ -21,17 +20,11 @@ PRIM(newpgrp) {
 		fail("$&newpgrp", "usage: newpgrp");
 	pid = getpid();
 	setpgid(pid, pid);
-#ifdef TIOCSPGRP
 	{
-		Sigeffect sigtstp = esignal(SIGTSTP, sig_ignore);
-		Sigeffect sigttin = esignal(SIGTTIN, sig_ignore);
 		Sigeffect sigttou = esignal(SIGTTOU, sig_ignore);
-		ioctl(2, TIOCSPGRP, &pid);
-		esignal(SIGTSTP, sigtstp);
-		esignal(SIGTTIN, sigttin);
+        tcsetpgrp(2, pid);
 		esignal(SIGTTOU, sigttou);
 	}
-#endif
 	return ltrue;
 }
 

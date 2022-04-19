@@ -2,14 +2,6 @@
 
 #include "esconfig.h"
 
-/*
- * type qualifiers
- */
-
-/*
- * protect the rest of es source from the dance of the includes
- */
-
 #include <sys/types.h>
 
 #if BUILTIN_TIME
@@ -51,6 +43,10 @@
 #endif /* HAVE_READLINE */
 
 
+/*
+ * things that rely on specific versions of ISO C
+ */
+
 #if !ENABLE_C11
 # undef _Noreturn
 # if HAVE_NORETURN_ATTRIBUTE
@@ -60,22 +56,12 @@
 # endif
 #endif
 
-/*
- * things that should be defined by header files but might not have been
- */
-
-/* setjmp */
-
-#if defined sigsetjmp || HAVE_SIGSETJMP
-/* under linux, sigsetjmp and setjmp are both macros
- * -- need to undef setjmp to avoid problems
- */
-# ifdef setjmp
-#  undef setjmp
+#if !ENABLE_C99
+# if HAVE___VA_COPY
+#  define va_copy(dest, src)    __va_copy(dest, src)
+# else
+#  define va_copy(dest, src)    memcpy(&dest, &src, sizeof(src))
 # endif
-# define setjmp(buf)    sigsetjmp(buf,1)
-# define longjmp(x,y)   siglongjmp(x,y)
-# define jmp_buf        sigjmp_buf
 #endif
 
 
@@ -112,19 +98,6 @@
  */
 
 typedef volatile sig_atomic_t Atomic;
-
-
-/*
- * variable argument lists
- */
-
-#if !ENABLE_C99
-# if HAVE___VA_COPY
-#  define va_copy(dest, src)    __va_copy(dest, src)
-# else
-#  define va_copy(dest, src)    memcpy(&dest, &src, sizeof(src))
-# endif
-#endif
 
 
 /*

@@ -58,7 +58,6 @@ AS_VAR_IF([ac_cv_search_explicit_bzero],
 ES_LIB_READLINE
 
 dnl Checks for header files.
-AC_CHECK_HEADERS([fcntl.h unistd.h sys/ioctl.h sys/time.h])
 ES_HEADER_READLINE
 
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -109,8 +108,28 @@ AS_VAR_IF([es_cv_stdc_enable_c11],
 )
 
 dnl Checks for library functions.
-AC_FUNC_MMAP
-AC_CHECK_FUNCS([setrlimit sigaction sigsetjmp sysconf])
+AC_CHECK_FUNCS([setrlimit])
+AC_CHECK_FUNC(
+  [mmap],
+  [AC_CACHE_CHECK(
+    [whether sys/mman.h defines MAP_PRIVATE],
+    [ac_cv_ppdef_map_private],
+    [AS_VAR_SET([ac_cv_ppdef_map_private], [no])
+    AC_COMPILE_IFELSE(
+      [AC_LANG_SOURCE(
+        [[#include <sys/mman.h>
+#ifndef MAP_PRIVATE
+choke me
+#endif  ]]
+      )],
+      [AS_VAR_SET([ac_cv_ppdef_map_private], [yes])]
+    )]
+  )
+  AS_VAR_IF([ac_cv_ppdef_map_private],
+    [no], [AC_MSG_FAILURE([MAP_PRIVATE must be defined])]
+  )],
+  [AC_MSG_FAILURE([mmap function with MAP_PRIVATE is required])]
+)
 AH_TEMPLATE([BUILTIN_TIME], [Define to 1 if you want the $&time primitive.])
 AS_VAR_IF([enable_time],
   [no], [],

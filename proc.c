@@ -79,7 +79,7 @@ static struct rusage wait_rusage;
 static int dowait(int *statusp) {
 	int n;
 	interrupted = false;
-	if (!setjmp(slowlabel)) {
+	if (!sigsetjmp(slowlabel, 1)) {
 		slow = true;
 		n = interrupted ? -2 :
 #if BUILTIN_TIME

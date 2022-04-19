@@ -196,7 +196,7 @@ static char *callreadline(char *prompt) {
 		resetterminal = false;
 	}
 	interrupted = false;
-	if (!setjmp(slowlabel)) {
+	if (!sigsetjmp(slowlabel, 1)) {
 		slow = true;
 		r = interrupted ? NULL : readline(prompt);
 	} else

@@ -24,11 +24,8 @@ struct Space {
 #define	NSPACES		10
 #endif
 
-#if HAVE_SYSCONF
-# ifndef _SC_PAGESIZE
-#  undef HAVE_SYSCONF
-#  define HAVE_SYSCONF 0
-# endif
+#ifndef _SC_PAGESIZE
+# define _SC_PAGESIZE _SC_PAGE_SIZE
 #endif
 
 
@@ -169,11 +166,7 @@ static void revalidate(void *p, size_t n) {
 
 /* initmmu -- initialization for memory management calls */
 static void initmmu(void) {
-#if HAVE_SYSCONF
 	pagesize = sysconf(_SC_PAGESIZE);
-#else
-	pagesize = getpagesize();
-#endif
 }
 
 #endif	/* !__MACH__ */
@@ -194,7 +187,7 @@ static Space *mkspace(Space *space, Space *next) {
 		Space *sp;
 		if (space->bot == NULL)
 			sp = NULL;
-		else if (SPACESIZE(space) < minspace)
+		else if ((size_t)SPACESIZE(space) < minspace)
 			sp = space;
 		else {
 			sp = space->next;
