@@ -3,16 +3,16 @@
 
 #include "esconfig.h"
 
-#if HAVE_STDBOOL_H
+#if ENABLE_C99
 # include <stdbool.h>
 #else
 # ifndef __cplusplus
-#  if !HAVE__BOOL
+#  ifndef HAVE__BOOL
 typedef unsigned char _Bool;
 #  endif
 #  define bool  _Bool
-#  define false bool_false
-#  define true  bool_true
+#  define false 0
+#  define true  1
 #  define __bool_true_false_are_defined 1
 # endif
 #endif

@@ -51,7 +51,7 @@
 #endif /* HAVE_READLINE */
 
 
-#if !HAVE__NORETURN
+#if !ENABLE_C11
 # undef _Noreturn
 # if HAVE_NORETURN_ATTRIBUTE
 #  define _Noreturn __attribute__((noreturn))
@@ -113,7 +113,7 @@ typedef volatile sig_atomic_t Atomic;
  * variable argument lists
  */
 
-#if !HAVE_VA_COPY
+#if !ENABLE_C99
 # if HAVE___VA_COPY
 #  define va_copy(dest, src)    __va_copy(dest, src)
 # else
