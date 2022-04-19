@@ -46,6 +46,15 @@ AS_VAR_IF([ac_cv_sys_interpreter],
 )
 
 dnl Checks for libraries.
+AC_SEARCH_LIBS([explicit_bzero], [bsd])
+AS_VAR_IF([ac_cv_search_explicit_bzero],
+  [no], [],
+  [AC_DEFINE(
+    [HAVE_EXPLICIT_BZERO],
+    [1],
+    [Define to 1 if you have explicit_bzero.]
+  )]
+)
 ES_LIB_READLINE
 
 dnl Checks for header files.

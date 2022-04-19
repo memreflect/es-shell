@@ -83,12 +83,17 @@
  * macros
  */
 
+#define atoi(s)                 strtol(s, NULL, 0)
+#define arraysize(a)            (sizeof (a) / sizeof (*a))
+#define hasprefix(s, p)         strneq(s, p, (sizeof p) - 1)
+#if HAVE_EXPLICIT_BZERO
+# include <strings.h>
+# define memzero(dest, count)   explicit_bzero(dest, count)
+#else
+# define memzero(dest, count)   memset(dest, 0, count)
+#endif
 #define streq(s, t)             (strcmp(s, t) == 0)
 #define strneq(s, t, n)         (strncmp(s, t, n) == 0)
-#define hasprefix(s, p)         strneq(s, p, (sizeof p) - 1)
-#define arraysize(a)            (sizeof (a) / sizeof (*a))
-#define memzero(dest, count)    memset(dest, 0, count)
-#define atoi(s)                 strtol(s, NULL, 0)
 
 #if SOLARIS
 #define STMT(stmt)      if (1) { stmt; } else
