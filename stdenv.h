@@ -2,46 +2,14 @@
 
 #include "esconfig.h"
 
-#include <sys/types.h>
-
 #if BUILTIN_TIME
 # include <sys/resource.h>
 #endif
 
-#include <ctype.h>
-#include <errno.h>
 #include <setjmp.h>
 #include <signal.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-
-#include <unistd.h>
-
-#if HAVE_READLINE
-# include <stdio.h>
-# if HAVE_READLINE_READLINE_H
-#  include <readline/readline.h>
-# elif HAVE_READLINE_H
-#  include <readline.h>
-# else
-#  invalid configuration -- readline.h
-# endif
-# define READLINE 1
-# if HAVE_READLINE_HISTORY
-#  if HAVE_READLINE_HISTORY_H
-#   include <readline/history.h>
-#  elif HAVE_HISTORY_H
-#   include <history.h>
-#  else
-#   invalid configuration -- history.h
-#  endif
-# endif /* HAVE_READLINE_HISTORY */
-#endif /* HAVE_READLINE */
-
 
 /*
  * things that rely on specific versions of ISO C
@@ -69,8 +37,9 @@
  * macros
  */
 
-#define atoi(s)                 strtol(s, NULL, 0)
-#define arraysize(a)            (sizeof (a) / sizeof (*a))
+#ifndef arraysize
+#define arraysize(a)            (sizeof(a) / sizeof(*a))
+#endif
 #define hasprefix(s, p)         strneq(s, p, (sizeof p) - 1)
 #if HAVE_EXPLICIT_BZERO
 # include <strings.h>

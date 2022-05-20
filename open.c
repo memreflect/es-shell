@@ -1,8 +1,8 @@
 /* open.c -- to insulate <fcntl.h> from the rest of es */
 
-#include "es.h"
-
 #include <fcntl.h>
+
+#include "es.h"
 
 /*
  * Opens a file with the necessary flags.  Assumes the following order:

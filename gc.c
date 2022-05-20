@@ -1,6 +1,7 @@
 /* gc.c -- copying garbage collector for es */
 
-#define	GARBAGE_COLLECTOR	1	/* for es.h */
+#include <errno.h>
+#include <unistd.h>
 
 #include "es.h"
 #include "gc.h"
@@ -131,7 +132,7 @@ static int pagesize;
 
 /* take -- allocate memory for a space */
 static void *take(size_t n) {
-	caddr_t addr;
+	void *addr;
 #ifdef MAP_ANONYMOUS
 	addr = mmap(0, n, PROT_READ|PROT_WRITE,	MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 #else
@@ -140,7 +141,7 @@ static void *take(size_t n) {
 		devzero = eopen("/dev/zero", oOpen);
 	addr = mmap(0, n, PROT_READ|PROT_WRITE, MAP_PRIVATE, devzero, 0);
 #endif
-	if (addr == (caddr_t) -1)
+	if (addr == MAP_FAILED)
 		panic("mmap: %s", esstrerror(errno));
 	memset(addr, 0xA5, n);
 	return addr;

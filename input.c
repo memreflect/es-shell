@@ -1,6 +1,33 @@
 /* input.c -- read input from files or strings */
 /* stdgetenv is based on the FreeBSD getenv */
 
+#include "esconfig.h"
+
+#include <errno.h>
+#include <stdio.h>
+
+#include <unistd.h>
+
+#if HAVE_READLINE
+# if HAVE_READLINE_READLINE_H
+#  include <readline/readline.h>
+# elif HAVE_READLINE_H
+#  include <readline.h>
+# else
+#  invalid configuration -- readline.h
+# endif
+# define READLINE 1
+# if HAVE_READLINE_HISTORY
+#  if HAVE_READLINE_HISTORY_H
+#   include <readline/history.h>
+#  elif HAVE_HISTORY_H
+#   include <history.h>
+#  else
+#   invalid configuration -- history.h
+#  endif
+# endif /* HAVE_READLINE_HISTORY */
+#endif /* HAVE_READLINE */
+
 #include "es.h"
 #include "input.h"
 
@@ -303,10 +330,10 @@ static int fdfill(Input *in) {
 		}
 	} else
 #endif
-	do {
-		nread = eread(in->fd, (char *) in->bufbegin, in->buflen);
-		SIGCHK();
-	} while (nread == -1 && errno == EINTR);
+		do {
+			nread = eread(in->fd, (char *) in->bufbegin, in->buflen);
+			SIGCHK();
+		} while (nread == -1 && errno == EINTR);
 
 	if (nread <= 0) {
 		close(in->fd);

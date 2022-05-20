@@ -1,5 +1,9 @@
 /* eval.c -- evaluation of lists and trees */
 
+#include <errno.h>
+
+#include <unistd.h>
+
 #include "es.h"
 
 unsigned long evaldepth = 0, maxevaldepth = MAXmaxevaldepth;

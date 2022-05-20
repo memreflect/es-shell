@@ -3,6 +3,11 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 
+#include <errno.h>
+#include <stdio.h>
+
+#include <unistd.h>
+
 #include "es.h"
 #include "prim.h"
 

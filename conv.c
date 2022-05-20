@@ -1,5 +1,7 @@
 /* conv.c -- convert between internal and external forms */
 
+#include <ctype.h>
+
 #include "es.h"
 #include "print.h"
 

@@ -1,5 +1,8 @@
 /* token.c -- lexical analyzer for es */
 
+#include <ctype.h>
+#include <stdio.h>
+
 #include "es.h"
 #include "input.h"
 #include "syntax.h"

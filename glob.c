@@ -1,10 +1,11 @@
 /* glob.c -- wildcard matching */
 
-#include "es.h"
-#include "gc.h"
+#include <sys/stat.h>
 
 #include <dirent.h>
-#include <sys/stat.h>
+
+#include "es.h"
+#include "gc.h"
 
 const char *QUOTED = "QUOTED", *UNQUOTED = "RAW";
 

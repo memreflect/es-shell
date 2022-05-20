@@ -1,5 +1,7 @@
 /* heredoc.c -- in-line files (here documents) */
 
+#include <stdio.h>
+
 #include "es.h"
 #include "gc.h"
 #include "input.h"

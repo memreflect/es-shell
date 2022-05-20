@@ -1,5 +1,7 @@
 /* opt.c -- option parsing */
 
+#include <stdio.h>
+
 #include "es.h"
 
 static const char *usage, *invoker;

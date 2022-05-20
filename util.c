@@ -1,5 +1,9 @@
 /* util.c -- the kitchen sink */
 
+#include <errno.h>
+
+#include <unistd.h>
+
 #include "es.h"
 
 /* esstrerror -- a wrapper around sterror(3) */

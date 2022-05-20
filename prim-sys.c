@@ -11,6 +11,11 @@
 # endif
 #endif
 
+#include <ctype.h>
+#include <errno.h>
+
+#include <unistd.h>
+
 #include "es.h"
 #include "prim.h"
 

@@ -1,5 +1,9 @@
 /* fd.c -- file descriptor manipulations */
 
+#include <errno.h>
+
+#include <unistd.h>
+
 #include "es.h"
 
 

@@ -1,5 +1,7 @@
 /* print.c -- formatted printing routines */
 
+#include <unistd.h>
+
 #include "es.h"
 #include "print.h"
 

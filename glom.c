@@ -102,7 +102,7 @@ static List *subscript(List *list, List *subs) {
 	}
 
 	while (subs != NULL) {
-		lo = atoi(getstr(subs->term));
+		lo = strtol(getstr(subs->term), NULL, 0);
 		if (lo < 1) {
 			Ref(char *, bad, getstr(subs->term));
 			gcenable();
@@ -116,7 +116,7 @@ static List *subscript(List *list, List *subs) {
 			if (subs == NULL)
 				hi = len;
 			else {
-				hi = atoi(getstr(subs->term));
+				hi = strtol(getstr(subs->term), NULL, 0);
 				if (hi < 1) {
 					Ref(char *, bad, getstr(subs->term));
 					gcenable();

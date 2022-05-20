@@ -1,7 +1,6 @@
 /* es.h -- definitions for higher order shell */
 
 #include "esconfig.h"
-
 #include "esbool.h"
 #include "estypes.h"
 #include "stdenv.h"

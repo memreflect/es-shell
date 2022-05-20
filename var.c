@@ -1,9 +1,12 @@
 /* var.c -- es variables */
 
+#include <ctype.h>
+#include <errno.h>
+
 #include "es.h"
 #include "gc.h"
-#include "var.h"
 #include "term.h"
+#include "var.h"
 
 #if PROTECT_ENV
 #define	ENV_FORMAT	"%F=%W"

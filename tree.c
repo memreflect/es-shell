@@ -1,5 +1,7 @@
 /* tree.c -- functions for manipulating parse-trees. (create, copy, scan) */
 
+#include <stdarg.h>
+
 #include "es.h"
 #include "gc.h"
 

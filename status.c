@@ -1,8 +1,9 @@
 /* status.c -- status manipulations */
 
+#include <sys/wait.h>
+
 #include "es.h"
 #include "term.h"
-#include <sys/wait.h>
 
 #ifndef WCOREDUMP
 # define WCOREDUMP(status) ((status) & 0x80)

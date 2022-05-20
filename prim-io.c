@@ -1,5 +1,10 @@
 /* prim-io.c -- input/output and redirection primitives */
 
+#include <errno.h>
+#include <stdio.h>
+
+#include <unistd.h>
+
 #include "es.h"
 #include "gc.h"
 #include "prim.h"

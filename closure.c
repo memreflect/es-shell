@@ -78,7 +78,7 @@ static Binding *extract(Tree *tree, Binding *bindings) {
 						if (
 							(defn = defn->u[1].p) == NULL
 						     || defn->u[0].p->kind != nWord
-						     || (count = (atoi(defn->u[0].p->u[0].s))) < 0
+						     || (count = (strtol(defn->u[0].p->u[0].s, NULL, 0))) < 0
 						) {
 							fail("$&parse", "improper use of $&nestedbinding");
 							NOTREACHED;
@@ -115,7 +115,7 @@ extern Closure *extractbindings(Tree *tree0) {
 	gcdisable();
 
 	if (tree->kind == nList && tree->u[1].p == NULL)
-		tree = tree->u[0].p; 
+		tree = tree->u[0].p;
 
 	me.closure = mkclosure(NULL, NULL);
 	me.next = chain;
@@ -127,11 +127,11 @@ extern Closure *extractbindings(Tree *tree0) {
 			bindings = extract(tree->u[0].p, bindings);
 			tree = tree->u[1].p;
 			if (tree->kind == nList && tree->u[1].p == NULL)
-				tree = tree->u[0].p; 
+				tree = tree->u[0].p;
 		}
 
 	CatchException (e)
-	
+
 		chain = chain->next;
 		throw(e);
 

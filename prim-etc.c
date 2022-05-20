@@ -1,9 +1,12 @@
 /* prim-etc.c -- miscellaneous primitives */
 
-#include "es.h"
-#include "prim.h"
+#include <errno.h>
+#include <stdio.h>
 
 #include <pwd.h>
+
+#include "es.h"
+#include "prim.h"
 
 PRIM(result) {
 	return list;

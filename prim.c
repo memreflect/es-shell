@@ -1,5 +1,7 @@
 /* prim.c -- primitives and primitive dispatching */
 
+#include <stddef.h>
+
 #include "es.h"
 #include "prim.h"
 

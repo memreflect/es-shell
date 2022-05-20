@@ -1,8 +1,12 @@
 /* proc.c -- process control system calls */
 
-#include "es.h"
-
 #include <sys/wait.h>
+
+#include <errno.h>
+
+#include <unistd.h>
+
+#include "es.h"
 
 /* TODO: the rusage code for the time builtin really needs to be cleaned up */
 
@@ -192,7 +196,7 @@ PRIM(wait) {
 	if (list == NULL)
 		pid = 0;
 	else if (list->next == NULL) {
-		pid = atoi(getstr(list->term));
+		pid = strtol(getstr(list->term), NULL, 0);
 		if (pid <= 0) {
 			fail("$&wait", "wait: %d: bad pid", pid);
 			NOTREACHED;
