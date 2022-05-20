@@ -5,14 +5,15 @@
 #include "es.h"
 #include "print.h"
 
-
 /* %L -- print a list */
-static bool Lconv(Format *f) {
-	List *lp, *next;
-	char *sep;
+static bool
+Lconv(Format *f) {
+	List       *lp;
+	List       *next;
+	char       *sep;
 	const char *fmt = (f->flags & FMT_altform) ? "%S%s" : "%s%s";
 
-	lp = va_arg(f->args, List *);
+	lp  = va_arg(f->args, List *);
 	sep = va_arg(f->args, char *);
 	for (; lp != NULL; lp = next) {
 		next = lp->next;
@@ -22,16 +23,18 @@ static bool Lconv(Format *f) {
 }
 
 /* treecount -- count the number of nodes in a flattened tree list */
-static int treecount(Tree *tree) {
+static int
+treecount(Tree *tree) {
 	return tree == NULL
-		 ? 0
-		 : tree->kind == nList
-		    ? treecount(tree->u[0].p) + treecount(tree->u[1].p)
-		    : 1;
+	             ? 0
+	     : tree->kind == nList
+	             ? treecount(tree->u[0].p) + treecount(tree->u[1].p)
+	             : 1;
 }
 
 /* binding -- print a binding statement */
-static void binding(Format *f, char *keyword, Tree *tree) {
+static void
+binding(Format *f, char *keyword, Tree *tree) {
 	Tree *np;
 	char *sep = "";
 	fmtprint(f, "%s(", keyword);
@@ -48,12 +51,12 @@ static void binding(Format *f, char *keyword, Tree *tree) {
 }
 
 /* %T -- print a tree */
-static bool Tconv(Format *f) {
-	Tree *n = va_arg(f->args, Tree *);
-	bool group = (f->flags & FMT_altform) != 0;
+static bool
+Tconv(Format *f) {
+	Tree *n     = va_arg(f->args, Tree *);
+	bool  group = (f->flags & FMT_altform) != 0;
 
-
-#define	tailcall(tree, altform) \
+#define tailcall(tree, altform) \
 	STMT(n = (tree); group = (altform); goto top)
 
 top:
@@ -64,7 +67,6 @@ top:
 	}
 
 	switch (n->kind) {
-
 	case nWord:
 		fmtprint(f, "%s", n->u[0].s);
 		return false;
@@ -101,7 +103,6 @@ top:
 		fmtprint(f, "$%#T(%T)", n->u[0].p, n->u[1].p);
 		return false;
 
-
 	case nLocal:
 		binding(f, "local", n);
 		tailcall(n->u[1].p, false);
@@ -117,7 +118,6 @@ top:
 	case nClosure:
 		binding(f, "%closure", n);
 		tailcall(n->u[1].p, false);
-
 
 	case nCall: {
 		Tree *t = n->u[0].p;
@@ -171,13 +171,13 @@ top:
 
 	default:
 		panic("bad node kind: %d", n->kind);
-
 	}
 	NOTREACHED;
 }
 
 /* enclose -- build up a closure */
-static void enclose(Format *f, Binding *binding, const char *sep) {
+static void
+enclose(Format *f, Binding *binding, const char *sep) {
 	if (binding != NULL) {
 		Binding *next = binding->next;
 		enclose(f, next, ";");
@@ -195,15 +195,17 @@ static Chain *chain = NULL;
 #endif
 
 /* %C -- print a closure */
-static bool Cconv(Format *f) {
+static bool
+Cconv(Format *f) {
 	Closure *closure = va_arg(f->args, Closure *);
-	Tree *tree = closure->tree;
+	Tree    *tree    = closure->tree;
 	Binding *binding = closure->binding;
-	bool altform = (f->flags & FMT_altform) != 0;
+	bool     altform = (f->flags & FMT_altform) != 0;
 
 #if 0
 	int i;
-	Chain me, *cp;
+	Chain me;
+	Chain *cp;
 	assert(tree->kind == nThunk || tree->kind == nLambda || tree->kind == nPrim);
 	assert(binding == NULL || tree->kind != nPrim);
 
@@ -235,8 +237,9 @@ static bool Cconv(Format *f) {
 }
 
 /* %E -- print a term */
-static bool Econv(Format *f) {
-	Term *term = va_arg(f->args, Term *);
+static bool
+Econv(Format *f) {
+	Term    *term    = va_arg(f->args, Term *);
 	Closure *closure = getclosure(term);
 
 	if (closure != NULL)
@@ -247,11 +250,18 @@ static bool Econv(Format *f) {
 }
 
 /* %S -- print a string with conservative quoting rules */
-static bool Sconv(Format *f) {
+static bool
+Sconv(Format *f) {
 	int c;
-	enum { Begin, Quoted, Unquoted } state = Begin;
-	const unsigned char *s, *t;
-	extern const char nw[];
+	enum {
+		Begin,
+		Quoted,
+		Unquoted
+	} state
+			= Begin;
+	const unsigned char *s;
+	const unsigned char *t;
+	extern const char    nw[];
 
 	s = va_arg(f->args, const unsigned char *);
 	if (f->flags & FMT_altform || *s == '\0')
@@ -271,14 +281,30 @@ quoteit:
 			if (state != Begin)
 				fmtputc(f, '^');
 			switch (c) {
-			    case '\a':	fmtprint(f, "\\a");	break;
-			    case '\b':	fmtprint(f, "\\b");	break;
-			    case '\f':	fmtprint(f, "\\f");	break;
-			    case '\n':	fmtprint(f, "\\n");	break;
-			    case '\r':	fmtprint(f, "\\r");	break;
-			    case '\t':	fmtprint(f, "\\t");	break;
-		            case '\33':	fmtprint(f, "\\e");	break;
-			    default:	fmtprint(f, "\\%o", c);	break;
+			case '\a':
+				fmtprint(f, "\\a");
+				break;
+			case '\b':
+				fmtprint(f, "\\b");
+				break;
+			case '\f':
+				fmtprint(f, "\\f");
+				break;
+			case '\n':
+				fmtprint(f, "\\n");
+				break;
+			case '\r':
+				fmtprint(f, "\\r");
+				break;
+			case '\t':
+				fmtprint(f, "\\t");
+				break;
+			case '\33':
+				fmtprint(f, "\\e");
+				break;
+			default:
+				fmtprint(f, "\\%o", c);
+				break;
 			}
 			state = Unquoted;
 		} else {
@@ -293,13 +319,13 @@ quoteit:
 		}
 
 	switch (state) {
-	    case Begin:
+	case Begin:
 		fmtprint(f, "''");
 		break;
-	    case Quoted:
+	case Quoted:
 		fmtputc(f, '\'');
 		break;
-	    case Unquoted:
+	case Unquoted:
 		break;
 	}
 
@@ -307,11 +333,13 @@ quoteit:
 }
 
 /* %Z -- print a StrList */
-static bool Zconv(Format *f) {
-	StrList *lp, *next;
-	char *sep;
+static bool
+Zconv(Format *f) {
+	StrList *lp;
+	StrList *next;
+	char    *sep;
 
-	lp = va_arg(f->args, StrList *);
+	lp  = va_arg(f->args, StrList *);
 	sep = va_arg(f->args, char *);
 	for (; lp != NULL; lp = next) {
 		next = lp->next;
@@ -321,9 +349,11 @@ static bool Zconv(Format *f) {
 }
 
 /* %F -- protect an exported name from brain-dead shells */
-static bool Fconv(Format *f) {
-	int c;
-	unsigned char *name, *s;
+static bool
+Fconv(Format *f) {
+	int            c;
+	unsigned char *name;
+	unsigned char *s;
 
 	name = va_arg(f->args, unsigned char *);
 
@@ -337,15 +367,16 @@ static bool Fconv(Format *f) {
 }
 
 /* %N -- undo %F */
-static bool Nconv(Format *f) {
-	int c;
+static bool
+Nconv(Format *f) {
+	int            c;
 	unsigned char *s = va_arg(f->args, unsigned char *);
 
 	while ((c = *s++) != '\0') {
 		if (c == '_' && *s == '_') {
 			static const char hexchar[] = "0123456789abcdef";
-			const char *h1 = strchr(hexchar, s[1]);
-			const char *h2 = strchr(hexchar, s[2]);
+			const char       *h1        = strchr(hexchar, s[1]);
+			const char       *h2        = strchr(hexchar, s[2]);
 			if (h1 != NULL && h2 != NULL) {
 				c = ((h1 - hexchar) << 4) | (h2 - hexchar);
 				s += 3;
@@ -357,11 +388,13 @@ static bool Nconv(Format *f) {
 }
 
 /* %W -- print a list for exporting to the environment, merging and quoting */
-static bool Wconv(Format *f) {
-	List *lp, *next;
+static bool
+Wconv(Format *f) {
+	List *lp;
+	List *next;
 
 	for (lp = va_arg(f->args, List *); lp != NULL; lp = next) {
-		int c;
+		int         c;
 		const char *s;
 		for (s = getstr(lp->term); (c = *s) != '\0'; s++) {
 			if (c == ENV_ESCAPE || c == ENV_SEPARATOR)
@@ -375,16 +408,15 @@ static bool Wconv(Format *f) {
 	return false;
 }
 
-
 #if LISPTREES
-static bool Bconv(Format *f) {
+static bool
+Bconv(Format *f) {
 	Tree *n = va_arg(f->args, Tree *);
 	if (n == NULL) {
 		fmtprint(f, "nil");
 		return false;
 	}
 	switch (n->kind) {
-
 	case nWord:
 		fmtprint(f, "(word \"%s\")", n->u[0].s);
 		break;
@@ -466,14 +498,14 @@ static bool Bconv(Format *f) {
 		fmtprint(f, ")");
 		break;
 	}
-
 	}
 	return false;
 }
 #endif
 
 /* install the conversion routines */
-void initconv(void) {
+void
+initconv(void) {
 	fmtinstall('C', Cconv);
 	fmtinstall('E', Econv);
 	fmtinstall('F', Fconv);

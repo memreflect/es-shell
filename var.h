@@ -6,10 +6,10 @@ typedef struct Var Var;
 struct Var {
 	List *defn;
 	char *env;
-	int flags;
+	int   flags;
 };
 
-#define	var_hasbindings		1
-#define	var_isinternal		2
+#define var_hasbindings 1
+#define var_isinternal  2
 
 extern Dict *vars;

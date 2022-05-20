@@ -11,18 +11,20 @@
 /* TODO: the rusage code for the time builtin really needs to be cleaned up */
 
 #if BUILTIN_TIME
-#include <sys/time.h>
-#include <sys/resource.h>
+#	include <sys/resource.h>
+#	include <sys/time.h>
 #endif
 
-bool hasforked = false;
+bool                hasforked = false;
 
 typedef struct Proc Proc;
 struct Proc {
-	int pid;
-	int status;
-	bool alive, background;
-	Proc *next, *prev;
+	int   pid;
+	int   status;
+	bool  alive;
+	bool  background;
+	Proc *next;
+	Proc *prev;
 #if BUILTIN_TIME
 	struct rusage rusage;
 #endif
@@ -31,38 +33,40 @@ struct Proc {
 static Proc *proclist = NULL;
 
 /* mkproc -- create a Proc structure */
-extern Proc *mkproc(int pid, bool background) {
+extern Proc *
+mkproc(int pid, bool background) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
-		if (proc->pid == pid) {		/* are we recycling pids? */
-			assert(!proc->alive);	/* if lfalse, violates unix semantics */
+		if (proc->pid == pid) {   /* are we recycling pids? */
+			assert(!proc->alive); /* if lfalse, violates unix semantics */
 			break;
 		}
 	if (proc == NULL) {
-		proc = ealloc(sizeof (Proc));
+		proc       = ealloc(sizeof(Proc));
 		proc->next = proclist;
 	}
-	proc->pid = pid;
-	proc->alive = true;
+	proc->pid        = pid;
+	proc->alive      = true;
 	proc->background = background;
-	proc->prev = NULL;
+	proc->prev       = NULL;
 	return proc;
 }
 
 /* efork -- fork (if necessary) and clean up as appropriate */
-extern int efork(bool parent, bool background) {
+extern int
+efork(bool parent, bool background) {
 	if (parent) {
 		int pid = fork();
 		switch (pid) {
-		default: {	/* parent */
+		default: { /* parent */
 			Proc *proc = mkproc(pid, background);
 			if (proclist != NULL)
 				proclist->prev = proc;
 			proclist = proc;
 			return pid;
 		}
-		case 0:		/* child */
-			proclist = NULL;
+		case 0: /* child */
+			proclist  = NULL;
 			hasforked = true;
 			break;
 		case -1:
@@ -80,34 +84,36 @@ static struct rusage wait_rusage;
 #endif
 
 /* dowait -- a wait wrapper that interfaces with signals */
-static int dowait(int *statusp) {
+static int
+dowait(int *statusp) {
 	int n;
 	interrupted = false;
 	if (!sigsetjmp(slowlabel, 1)) {
 		slow = true;
-		n = interrupted ? -2 :
+		n    = interrupted ? -2 :
 #if BUILTIN_TIME
-			wait3((void *) statusp, 0, &wait_rusage);
+		                wait3((void *)statusp, 0, &wait_rusage);
 #else
-			wait((void *) statusp);
+		                wait((void *)statusp);
 #endif
 	} else
 		n = -2;
 	slow = false;
 	if (n == -2) {
 		errno = EINTR;
-		n = -1;
+		n     = -1;
 	}
 	return n;
 }
 
 /* reap -- mark a process as dead and attach its exit status */
-static void reap(int pid, int status) {
+static void
+reap(int pid, int status) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid) {
 			assert(proc->alive);
-			proc->alive = false;
+			proc->alive  = false;
 			proc->status = status;
 #if BUILTIN_TIME
 			proc->rusage = wait_rusage;
@@ -117,7 +123,8 @@ static void reap(int pid, int status) {
 }
 
 /* ewait -- wait for a specific process to die, or any process if pid == 0 */
-extern int ewait(int pid, bool interruptible, struct rusage *rusage) {
+extern int
+ewait(int pid, bool interruptible, struct rusage *rusage) {
 	Proc *proc;
 top:
 	for (proc = proclist; proc != NULL; proc = proc->next)
@@ -185,7 +192,7 @@ PRIM(apids) {
 	for (p = proclist; p != NULL; p = p->next)
 		if (p->background && p->alive) {
 			Term *t = mkstr(str("%d", p->pid));
-			lp = mklist(t, lp);
+			lp      = mklist(t, lp);
 		}
 	/* TODO: sort the return value, but by number? */
 	RefReturn(lp);
@@ -208,7 +215,8 @@ PRIM(wait) {
 	return mklist(mkstr(mkstatus(ewait(pid, true, NULL))), NULL);
 }
 
-extern Dict *initprims_proc(Dict *primdict) {
+extern Dict *
+initprims_proc(Dict *primdict) {
 	X(apids);
 	X(wait);
 	return primdict;

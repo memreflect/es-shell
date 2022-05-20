@@ -5,10 +5,10 @@
 #include <sys/stat.h>
 
 #if HAVE_SETRLIMIT || BUILTIN_TIME
-# include <sys/resource.h>
-# if BUILTIN_TIME
-#  include <sys/time.h>
-# endif
+#	include <sys/resource.h>
+#	if BUILTIN_TIME
+#		include <sys/time.h>
+#	endif
 #endif
 
 #include <ctype.h>
@@ -27,7 +27,7 @@ PRIM(newpgrp) {
 	setpgid(pid, pid);
 	{
 		Sigeffect sigttou = esignal(SIGTTOU, sig_ignore);
-        tcsetpgrp(2, pid);
+		tcsetpgrp(2, pid);
 		esignal(SIGTTOU, sigttou);
 	}
 	return ltrue;
@@ -47,7 +47,8 @@ PRIM(background) {
 }
 
 PRIM(fork) {
-	int pid, status;
+	int pid;
+	int status;
 	pid = efork(true, false);
 	if (pid == 0)
 		exit(exitstatus(eval(list, NULL, evalflags | eval_inchild)));
@@ -63,7 +64,7 @@ PRIM(run) {
 		fail("$&run", "usage: %%run file argv0 argv1 ...");
 	Ref(List *, lp, list);
 	file = getstr(lp->term);
-	lp = forkexec(file, lp->next, (evalflags & eval_inchild) != 0);
+	lp   = forkexec(file, lp->next, (evalflags & eval_inchild) != 0);
 	RefReturn(lp);
 }
 
@@ -75,11 +76,12 @@ PRIM(umask) {
 		return ltrue;
 	}
 	if (list->next == NULL) {
-		int mask;
-		char *s, *t;
-		s = getstr(list->term);
+		int   mask;
+		char *s;
+		char *t;
+		s    = getstr(list->term);
 		mask = strtol(s, &t, 8);
-		if ((t != NULL && *t != '\0') || ((unsigned) mask) > 07777)
+		if ((t != NULL && *t != '\0') || ((unsigned)mask) > 07777)
 			fail("$&umask", "bad umask: %s", s);
 		umask(mask);
 		return ltrue;
@@ -99,19 +101,28 @@ PRIM(cd) {
 }
 
 PRIM(setsignals) {
-	int i;
+	int       i;
 	Sigeffect effects[NSIG];
 	for (i = 0; i < NSIG; i++)
 		effects[i] = sig_default;
 	Ref(List *, lp, list);
 	for (; lp != NULL; lp = lp->next) {
-		int sig;
-		const char *s = getstr(lp->term);
-		Sigeffect effect = sig_catch;
+		int         sig;
+		const char *s      = getstr(lp->term);
+		Sigeffect   effect = sig_catch;
 		switch (*s) {
-		case '-':	effect = sig_ignore;	s++; break;
-		case '/':	effect = sig_noop;	s++; break;
-		case '.':	effect = sig_special;	s++; break;
+		case '-':
+			effect = sig_ignore;
+			s++;
+			break;
+		case '/':
+			effect = sig_noop;
+			s++;
+			break;
+		case '.':
+			effect = sig_special;
+			s++;
+			break;
 		}
 		sig = signumber(s);
 		if (sig < 0)
@@ -132,246 +143,256 @@ PRIM(setsignals) {
 #if HAVE_SETRLIMIT
 typedef struct Suffix Suffix;
 struct Suffix {
-    const char *name;
-    long amount;
+	const char *name;
+	long        amount;
 };
 
 static const Suffix sizesuf[] = {
-    /* TODO add support for t and p on 64-bit systems */
-    { "g",  1024*1024*1024 },
-    { "m",  1024*1024 },
-    { "k",  1024 },
+  /* TODO add support for t and p on 64-bit systems */
+		{"g", 1024 * 1024 * 1024},
+		{"m", 1024 * 1024       },
+		{"k", 1024              },
 };
 static const Suffix *sizesuf_end = sizesuf + arraysize(sizesuf);
 
-static const Suffix timesuf[] = {
-    { "h",  60*60 },
-    { "m",  60 },
-    { "s",  1 },
+static const Suffix  timesuf[] = {
+		 {"h", 60 * 60},
+		 {"m", 60     },
+		 {"s", 1      },
 };
 static const Suffix *timesuf_end = timesuf + arraysize(timesuf);
 
 typedef struct {
-    char *name;
-    int flag;
-    const Suffix *suffix;
+	char		 *name;
+	int           flag;
+	const Suffix *suffix;
 } Limit;
 
 static const Limit limits[] = {
 
-    /* resource limits from single unix specification */
-    { "coredumpsize",   RLIMIT_CORE,        sizesuf },
-    { "cputime",        RLIMIT_CPU,         timesuf },
-    { "datasize",       RLIMIT_DATA,        sizesuf },
-    { "filesize",       RLIMIT_FSIZE,       sizesuf },
-    { "descriptors",    RLIMIT_NOFILE,      NULL },
-    { "stacksize",      RLIMIT_STACK,       sizesuf },
-#ifdef RLIMIT_AS
-    { "available",      RLIMIT_AS,          sizesuf },
-#endif
+  /* resource limits from single unix specification */
+		{"coredumpsize",     RLIMIT_CORE,      sizesuf},
+		{"cputime",          RLIMIT_CPU,       timesuf},
+		{"datasize",         RLIMIT_DATA,      sizesuf},
+		{"filesize",         RLIMIT_FSIZE,     sizesuf},
+		{"descriptors",      RLIMIT_NOFILE,    NULL   },
+		{"stacksize",        RLIMIT_STACK,     sizesuf},
+#	ifdef RLIMIT_AS
+		{"available",        RLIMIT_AS,        sizesuf},
+#	endif
 
-    /* platform-specific resource limits */
-#ifdef RLIMIT_KQUEUES
-    { "kqueues",        RLIMIT_KQUEUES,     NULL },
-#endif
-#ifdef RLIMIT_LOCKS
-    { "locks",          RLIMIT_LOCKS,       NULL },
-#endif
-#ifdef RLIMIT_MEMLOCK
-    { "lockedmemory",   RLIMIT_MEMLOCK,     sizesuf },
-#endif
-#ifdef RLIMIT_MSGQUEUE
-    { "mqmax",          RLIMIT_MSGQUEUE,    NULL },
-#endif
-#ifdef RLIMIT_NICE
-    { "nice",           RLIMIT_NICE         NULL },
-#endif
-#ifdef RLIMIT_NPROC
-    { "processes",      RLIMIT_NPROC,       NULL },
-#endif
-#ifdef RLIMIT_NPTS
-    { "ptys",           RLIMIT_NPTS,        NULL },
-#endif
-#ifdef RLIMIT_RSS
-    { "memoryuse",      RLIMIT_RSS,         sizesuf },
-#endif
-#ifdef RLIMIT_RTPRIO
-    { "rtprio",         RLIMIT_RTPRIO,      NULL },
-#endif
-#ifdef RLIMIT_RTTIME
-    { "rttime",         RLIMIT_RTTIME,      timesuf },
-#endif
-#ifdef RLIMIT_SBSIZE
-    { "sockbufsize",    RLIMIT_SBSIZE,      sizesuf },
-#endif
-#ifdef RLIMIT_SIGPENDING
-    { "pendsigs",       RLIMIT_SIGPENDING,  NULL },
-#endif
-#ifdef RLIMIT_SWAP
-    { "swap",           RLIMIT_SWAP,        sizesuf },
-#endif
-    /* some platforms equate this with RLIMIT_AS */
-#ifdef RLIMIT_VMEM
-    { "memorysize",     RLIMIT_VMEM,        sizesuf },
-#endif
-
+  /* platform-specific resource limits */
+#	ifdef RLIMIT_KQUEUES
+		{"kqueues",          RLIMIT_KQUEUES,   NULL   },
+#	endif
+#	ifdef RLIMIT_LOCKS
+		{"locks",            RLIMIT_LOCKS,     NULL   },
+#	endif
+#	ifdef RLIMIT_MEMLOCK
+		{"lockedmemory",     RLIMIT_MEMLOCK,   sizesuf},
+#	endif
+#	ifdef RLIMIT_MSGQUEUE
+		{"mqmax",            RLIMIT_MSGQUEUE,  NULL   },
+#	endif
+#	ifdef RLIMIT_NICE
+		{"nice",             RLIMIT_NICE NULL},
+#	endif
+#	ifdef RLIMIT_NPROC
+		{"processes",      RLIMIT_NPROC,             NULL       },
+#	endif
+#	ifdef RLIMIT_NPTS
+		{"ptys",       RLIMIT_NPTS,             NULL},
+#	endif
+#	ifdef RLIMIT_RSS
+		{"memoryuse",        RLIMIT_RSS,          sizesuf       },
+#	endif
+#	ifdef RLIMIT_RTPRIO
+		{"rtprio",     RLIMIT_RTPRIO,             NULL},
+#	endif
+#	ifdef RLIMIT_RTTIME
+		{"rttime",     RLIMIT_RTTIME,          timesuf       },
+#	endif
+#	ifdef RLIMIT_SBSIZE
+		{"sockbufsize",     RLIMIT_SBSIZE,          sizesuf},
+#	endif
+#	ifdef RLIMIT_SIGPENDING
+		{"pendsigs", RLIMIT_SIGPENDING,             NULL       },
+#	endif
+#	ifdef RLIMIT_SWAP
+		{"swap",       RLIMIT_SWAP,          sizesuf},
+#	endif
+  /* some platforms equate this with RLIMIT_AS */
+#	ifdef RLIMIT_VMEM
+		{"memorysize",       RLIMIT_VMEM,          sizesuf       },
+#	endif
 };
 static const Limit *limits_end = limits + arraysize(limits);
 
-static void printlimit(const Limit *limit, bool hard) {
-    struct rlimit rlim;
-    rlim_t lim;
-    getrlimit(limit->flag, &rlim);
-    if (hard)
-        lim = rlim.rlim_max;
-    else
-        lim = rlim.rlim_cur;
-    if (lim == RLIM_INFINITY)
-        print("%-8s\tunlimited\n", limit->name);
-    else {
-        const Suffix *suf;
-        const Suffix *end = limit->suffix == sizesuf
-                          ? sizesuf_end
-                          : limit->suffix == timesuf
-                          ? timesuf_end
-                          : NULL;
+static void
+printlimit(const Limit *limit, bool hard) {
+	struct rlimit rlim;
+	rlim_t        lim;
+	getrlimit(limit->flag, &rlim);
+	if (hard)
+		lim = rlim.rlim_max;
+	else
+		lim = rlim.rlim_cur;
+	if (lim == RLIM_INFINITY)
+		print("%-8s\tunlimited\n", limit->name);
+	else {
+		const Suffix *suf;
+		const Suffix *end = limit->suffix == sizesuf
+		                          ? sizesuf_end
+		                  : limit->suffix == timesuf
+		                          ? timesuf_end
+		                          : NULL;
 
-        for (suf = limit->suffix; suf != end; ++suf)
-            if (lim % suf->amount == 0 && (lim != 0 || suf->amount > 1)) {
-                lim /= suf->amount;
-                break;
-            }
-        print("%-8s\t%d%s\n",
-              limit->name,
-              (int)lim,
-              (suf == NULL || lim == 0) ? "" : suf->name);
-    }
+		for (suf = limit->suffix; suf != end; ++suf)
+			if (lim % suf->amount == 0 && (lim != 0 || suf->amount > 1)) {
+				lim /= suf->amount;
+				break;
+			}
+		print("%-8s\t%d%s\n",
+		      limit->name,
+		      (int)lim,
+		      (suf == NULL || lim == 0) ? "" : suf->name);
+	}
 }
 
-static long parselimit(const Limit *limit, char *s) {
-    long lim;
-    char *t;
-    const Suffix *suf = limit->suffix;
-    const Suffix *end = limit->suffix == sizesuf
-                      ? sizesuf_end
-                      : limit->suffix == timesuf
-                      ? timesuf_end
-                      : NULL;
-    if (streq(s, "unlimited"))
-        return RLIM_INFINITY;
-    if (!isdigit(*s))
-        fail("$&limit", "%s: bad limit value", s);
-    if (suf == timesuf && (t = strchr(s, ':')) != NULL) {
-        char *u;
-        lim = strtol(s, &u, 0) * 60;
-        if (u != t)
-            fail("$&limit", "%s %s: bad limit value", limit->name, s);
-        lim += strtol(u + 1, &t, 0);
-        if (t != NULL && *t == ':')
-            lim = lim * 60 + strtol(t + 1, &t, 0);
-        if (t != NULL && *t != '\0')
-            fail("$&limit", "%s %s: bad limit value", limit->name, s);
-    } else {
-        lim = strtol(s, &t, 0);
-        if (t != NULL && *t != '\0')
-            for (;; ++suf) {
-                if (suf == end)
-                    fail("$&limit", "%s %s: bad limit value", limit->name, s);
-                if (streq(suf->name, t)) {
-                    lim *= suf->amount;
-                    break;
-                }
-            }
-    }
-    return lim;
+static long
+parselimit(const Limit *limit, char *s) {
+	long          lim;
+	char		 *t;
+	const Suffix *suf = limit->suffix;
+	const Suffix *end = limit->suffix == sizesuf
+	                          ? sizesuf_end
+	                  : limit->suffix == timesuf
+	                          ? timesuf_end
+	                          : NULL;
+	if (streq(s, "unlimited"))
+		return RLIM_INFINITY;
+	if (!isdigit(*s))
+		fail("$&limit", "%s: bad limit value", s);
+	if (suf == timesuf && (t = strchr(s, ':')) != NULL) {
+		char *u;
+		lim = strtol(s, &u, 0) * 60;
+		if (u != t)
+			fail("$&limit", "%s %s: bad limit value", limit->name, s);
+		lim += strtol(u + 1, &t, 0);
+		if (t != NULL && *t == ':')
+			lim = lim * 60 + strtol(t + 1, &t, 0);
+		if (t != NULL && *t != '\0')
+			fail("$&limit", "%s %s: bad limit value", limit->name, s);
+	} else {
+		lim = strtol(s, &t, 0);
+		if (t != NULL && *t != '\0')
+			for (;; ++suf) {
+				if (suf == end)
+					fail("$&limit", "%s %s: bad limit value", limit->name, s);
+				if (streq(suf->name, t)) {
+					lim *= suf->amount;
+					break;
+				}
+			}
+	}
+	return lim;
 }
 
 PRIM(limit) {
-    const Limit *lim = limits;
-    bool hard = false;
-    Ref(List *, lp, list);
+	const Limit *lim  = limits;
+	bool         hard = false;
+	Ref(List *, lp, list);
 
-    if (lp != NULL && streq(getstr(lp->term), "-h")) {
-        hard = true;
-        lp = lp->next;
-    }
+	if (lp != NULL && streq(getstr(lp->term), "-h")) {
+		hard = true;
+		lp   = lp->next;
+	}
 
-    if (lp == NULL)
-        for (; lim != limits_end; ++lim)
-            printlimit(lim, hard);
-    else {
-        char *name = getstr(lp->term);
-        for (;; ++lim) {
-            if (lim == limits_end)
-                fail("$&limit", "%s: no such limit", name);
-            if (streq(name, lim->name))
-                break;
-        }
-        lp = lp->next;
-        if (lp == NULL)
-            printlimit(lim, hard);
-        else {
-            long n;
-            struct rlimit rlim;
-            getrlimit(lim->flag, &rlim);
-            if ((n = parselimit(lim, getstr(lp->term))) < 0)
-                fail("$&limit", "%s: bad limit value", getstr(lp->term));
-            if (hard)
-                rlim.rlim_max = n;
-            else
-                rlim.rlim_cur = n;
-            if (setrlimit(lim->flag, &rlim) == -1)
-                fail("$&limit", "setrlimit: %s", esstrerror(errno));
-        }
-    }
-    RefEnd(lp);
-    return ltrue;
+	if (lp == NULL)
+		for (; lim != limits_end; ++lim)
+			printlimit(lim, hard);
+	else {
+		char *name = getstr(lp->term);
+		for (;; ++lim) {
+			if (lim == limits_end)
+				fail("$&limit", "%s: no such limit", name);
+			if (streq(name, lim->name))
+				break;
+		}
+		lp = lp->next;
+		if (lp == NULL)
+			printlimit(lim, hard);
+		else {
+			long          n;
+			struct rlimit rlim;
+			getrlimit(lim->flag, &rlim);
+			if ((n = parselimit(lim, getstr(lp->term))) < 0)
+				fail("$&limit", "%s: bad limit value", getstr(lp->term));
+			if (hard)
+				rlim.rlim_max = n;
+			else
+				rlim.rlim_cur = n;
+			if (setrlimit(lim->flag, &rlim) == -1)
+				fail("$&limit", "setrlimit: %s", esstrerror(errno));
+		}
+	}
+	RefEnd(lp);
+	return ltrue;
 }
-#endif  /* HAVE_SETRLIMIT */
+#endif /* HAVE_SETRLIMIT */
 
 #if BUILTIN_TIME
 PRIM(time) {
-	int pid, status;
-	time_t t0, t1;
+	int           pid;
+	int           status;
+	time_t        t0;
+	time_t        t1;
 	struct rusage r;
 
 	Ref(List *, lp, list);
 
-	gc();	/* do a garbage collection first to ensure reproducible results */
-	t0 = time(NULL);
+	gc(); /* do a garbage collection first to ensure reproducible results */
+	t0  = time(NULL);
 	pid = efork(true, false);
 	if (pid == 0)
 		exit(exitstatus(eval(lp, NULL, evalflags | eval_inchild)));
 	status = ewait(pid, false, &r);
-	t1 = time(NULL);
+	t1     = time(NULL);
 	SIGCHK();
 	printstatus(0, status);
 
 	eprint(
-		"%6ldr %5ld.%ldu %5ld.%lds\t%L\n",
-		t1 - t0,
-		r.ru_utime.tv_sec, (long) (r.ru_utime.tv_usec / 100000),
-		r.ru_stime.tv_sec, (long) (r.ru_stime.tv_usec / 100000),
-		lp, " "
-	);
+			"%6ldr %5ld.%ldu %5ld.%lds\t%L\n",
+			t1 - t0,
+			r.ru_utime.tv_sec,
+			(long)(r.ru_utime.tv_usec / 100000),
+			r.ru_stime.tv_sec,
+			(long)(r.ru_stime.tv_usec / 100000),
+			lp,
+			" ");
 
 	RefEnd(lp);
 	return mklist(mkstr(mkstatus(status)), NULL);
 }
-#endif	/* BUILTIN_TIME */
+#endif /* BUILTIN_TIME */
 
 #if !KERNEL_POUNDBANG
 PRIM(execfailure) {
-	int fd, len;
-    size_t argc;
-	char header[1024], *args[10], *s, *end, *file;
+	int    fd;
+	int    len;
+	size_t argc;
+	char   header[1024];
+	char  *args[10];
+	char  *s;
+	char  *end;
+	char  *file;
 
 	gcdisable();
 	if (list == NULL)
 		fail("$&execfailure", "usage: %%exec-failure name argv");
 
 	file = getstr(list->term);
-	fd = eopen(file, oOpen);
+	fd   = eopen(file, oOpen);
 	if (fd < 0) {
 		gcenable();
 		return NULL;
@@ -383,8 +404,8 @@ PRIM(execfailure) {
 		return NULL;
 	}
 
-	s = &header[2];
-	end = &header[len];
+	s    = &header[2];
+	end  = &header[len];
 	argc = 0;
 	while (argc < arraysize(args) - 1) {
 		int c;
@@ -425,7 +446,8 @@ PRIM(execfailure) {
 }
 #endif /* !KERNEL_POUNDBANG */
 
-extern Dict *initprims_sys(Dict *primdict) {
+extern Dict *
+initprims_sys(Dict *primdict) {
 	X(newpgrp);
 	X(background);
 	X(umask);

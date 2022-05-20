@@ -8,25 +8,25 @@
 #include "es.h"
 
 #if GCVERBOSE
-bool gcverbose	= false;	/* -G */
+bool gcverbose = false; /* -G */
 #endif
 #if GCINFO
-bool gcinfo		= false;	/* -I */
+bool gcinfo = false; /* -I */
 #endif
 
 /* #if 0 && !HPUX && !defined(linux) && !defined(sgi) */
 /* extern int getopt (int argc, char **argv, const char *optstring); */
 /* #endif */
 
-extern int optind;
-extern char *optarg;
+extern int    optind;
+extern char  *optarg;
 
 /* extern int isatty(int fd); */
 extern char **environ;
 
-
 /* checkfd -- open /dev/null on an fd if it is closed */
-static void checkfd(int fd, OpenKind r) {
+static void
+checkfd(int fd, OpenKind r) {
 	int new;
 	new = dup(fd);
 	if (new != -1)
@@ -36,32 +36,35 @@ static void checkfd(int fd, OpenKind r) {
 }
 
 /* initpath -- set $path based on the configuration default */
-static void initpath(void) {
-	size_t i;
-	static const char * const path[] = { INITIAL_PATH };
+static void
+initpath(void) {
+	size_t                   i;
+	static const char *const path[] = {INITIAL_PATH};
 
 	Ref(List *, list, NULL);
 	for (i = arraysize(path); i-- > 0;) {
-		Term *t = mkstr((char *) path[i]);
-		list = mklist(t, list);
+		Term *t = mkstr((char *)path[i]);
+		list    = mklist(t, list);
 	}
 	vardef("path", NULL, list);
 	RefEnd(list);
 }
 
 /* initpid -- set $pid for this shell */
-static void initpid(void) {
+static void
+initpid(void) {
 	vardef("pid", NULL, mklist(mkstr(str("%d", getpid())), NULL));
 }
 
 /* runesrc -- run the user's profile, if it exists */
-static void runesrc(void) {
+static void
+runesrc(void) {
 	char *esrc = str("%L/.esrc", varlookup("home", NULL), "\001");
-	int fd = eopen(esrc, oOpen);
+	int   fd   = eopen(esrc, oOpen);
 	if (fd != -1) {
 		ExceptionHandler
 			runfd(fd, esrc, 0);
-		CatchException (e)
+		CatchException(e)
 			if (termeq(e->term, "exit"))
 				exit(exitstatus(e->next));
 			else if (termeq(e->term, "error"))
@@ -76,54 +79,55 @@ static void runesrc(void) {
 }
 
 /* usage -- print usage message and die */
-static _Noreturn void usage(void) {
+static _Noreturn void
+usage(void) {
 	eprint(
-		"usage: es [-c command] [-silevxnpo] [file [args ...]]\n"
-		"	-c cmd	execute argument\n"
-		"	-s	read commands from standard input; stop option parsing\n"
-		"	-i	interactive shell\n"
-		"	-l	login shell\n"
-		"	-e	exit if any command exits with lfalse status\n"
-		"	-v	print input to standard error\n"
-		"	-x	print commands to standard error before executing\n"
-		"	-n	just parse; don't execute\n"
-		"	-p	don't load functions from the environment\n"
-		"	-o	don't open stdin, stdout, and stderr if they were closed\n"
-		"	-d	don't ignore SIGQUIT or SIGTERM\n"
+			"usage: es [-c command] [-silevxnpo] [file [args ...]]\n"
+			"	-c cmd	execute argument\n"
+			"	-s	read commands from standard input; stop option parsing\n"
+			"	-i	interactive shell\n"
+			"	-l	login shell\n"
+			"	-e	exit if any command exits with lfalse status\n"
+			"	-v	print input to standard error\n"
+			"	-x	print commands to standard error before executing\n"
+			"	-n	just parse; don't execute\n"
+			"	-p	don't load functions from the environment\n"
+			"	-o	don't open stdin, stdout, and stderr if they were closed\n"
+			"	-d	don't ignore SIGQUIT or SIGTERM\n"
 #if GCINFO
-		"	-I	print garbage collector information\n"
+			"	-I	print garbage collector information\n"
 #endif
 #if GCVERBOSE
-		"	-G	print verbose garbage collector information\n"
+			"	-G	print verbose garbage collector information\n"
 #endif
 #if LISPTREES
-		"	-L	print parser results in LISP format\n"
+			"	-L	print parser results in LISP format\n"
 #endif
 	);
 	exit(1);
 }
 
-
 /* main -- initialize, parse command arguments, and start running */
-int main(int argc, char **argv) {
-	int c;
+int
+main(int argc, char **argv) {
+	int          c;
 	volatile int ac;
 	char **volatile av;
 
-	volatile int runflags = 0;		/* -[einvxL] */
-	volatile bool protected = false;	/* -p */
-	volatile bool allowquit = false;	/* -d */
-	volatile bool cmd_stdin = false;		/* -s */
-	volatile bool loginshell = false;	/* -l or $0[0] == '-' */
-	bool keepclosed = false;		/* -o */
-	const char *volatile cmd = NULL;	/* -c */
+	volatile int runflags    = 0;     /* -[einvxL] */
+	volatile bool protected  = false; /* -p */
+	volatile bool allowquit  = false; /* -d */
+	volatile bool cmd_stdin  = false; /* -s */
+	volatile bool loginshell = false; /* -l or $0[0] == '-' */
+	bool          keepclosed = false; /* -o */
+	const char *volatile cmd = NULL;  /* -c */
 
 	initgc();
 	initconv();
 
 	if (argc == 0) {
-		argc = 1;
-		argv = ealloc(2 * sizeof (char *));
+		argc    = 1;
+		argv    = ealloc(2 * sizeof(char *));
 		argv[0] = "es";
 		argv[1] = NULL;
 	}
@@ -132,25 +136,54 @@ int main(int argc, char **argv) {
 
 	while ((c = getopt(argc, argv, "eilxvnpodsc:?GIL")) != EOF)
 		switch (c) {
-		case 'c':	cmd = optarg;			break;
-		case 'e':	runflags |= eval_exitonfalse;	break;
-		case 'i':	runflags |= run_interactive;	break;
-		case 'n':	runflags |= run_noexec;		break;
-		case 'v':	runflags |= run_echoinput;	break;
-		case 'x':	runflags |= run_printcmds;	break;
+		case 'c':
+			cmd = optarg;
+			break;
+		case 'e':
+			runflags |= eval_exitonfalse;
+			break;
+		case 'i':
+			runflags |= run_interactive;
+			break;
+		case 'n':
+			runflags |= run_noexec;
+			break;
+		case 'v':
+			runflags |= run_echoinput;
+			break;
+		case 'x':
+			runflags |= run_printcmds;
+			break;
 #if LISPTREES
-		case 'L':	runflags |= run_lisptrees;	break;
+		case 'L':
+			runflags |= run_lisptrees;
+			break;
 #endif
-		case 'l':	loginshell = true;		break;
-		case 'p':	protected = true;		break;
-		case 'o':	keepclosed = true;		break;
-		case 'd':	allowquit = true;		break;
-		case 's':	cmd_stdin = true;			goto getopt_done;
+		case 'l':
+			loginshell = true;
+			break;
+		case 'p':
+			protected
+			= true;
+			break;
+		case 'o':
+			keepclosed = true;
+			break;
+		case 'd':
+			allowquit = true;
+			break;
+		case 's':
+			cmd_stdin = true;
+			goto getopt_done;
 #if GCVERBOSE
-		case 'G':	gcverbose = true;		break;
+		case 'G':
+			gcverbose = true;
+			break;
 #endif
 #if GCINFO
-		case 'I':	gcinfo = true;			break;
+		case 'I':
+			gcinfo = true;
+			break;
 #endif
 		default:
 			usage();
@@ -169,18 +202,17 @@ getopt_done:
 	}
 
 	if (
-		cmd == NULL
-	     && (optind == argc || cmd_stdin)
-	     && (runflags & run_interactive) == 0
-	     && isatty(0)
-	)
+			cmd == NULL
+			&& (optind == argc || cmd_stdin)
+			&& (runflags & run_interactive) == 0
+			&& isatty(0))
 		runflags |= run_interactive;
 
 	ac = argc;
 	av = argv;
 
 	ExceptionHandler
-		roothandler = &_localhandler;	/* unhygeinic */
+		roothandler = &_localhandler; /* unhygeinic */
 
 		initinput();
 		initprims();
@@ -198,7 +230,7 @@ getopt_done:
 			runesrc();
 
 		if (cmd == NULL && !cmd_stdin && optind < ac) {
-			int fd;
+			int   fd;
 			char *file = av[optind++];
 			if ((fd = eopen(file, oOpen)) == -1) {
 				eprint("%s: %s\n", file, esstrerror(errno));
@@ -215,7 +247,7 @@ getopt_done:
 			return exitstatus(runstring(cmd, NULL, runflags));
 		return exitstatus(runfd(0, "stdin", runflags));
 
-	CatchException (e)
+	CatchException(e)
 
 		if (termeq(e->term, "exit"))
 			return exitstatus(e->next);

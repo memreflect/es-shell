@@ -104,52 +104,52 @@
  * default defaults -- don't change this section
  */
 
-#ifndef	ASSERTIONS
-#define	ASSERTIONS		1
+#ifndef ASSERTIONS
+#	define ASSERTIONS 1
 #endif
 
-#ifndef	DEVFD_PATH
-#define	DEVFD_PATH		"/dev/fd/%d"
+#ifndef DEVFD_PATH
+#	define DEVFD_PATH "/dev/fd/%d"
 #endif
 
-#ifndef	GCALWAYS
-#define	GCALWAYS		0
+#ifndef GCALWAYS
+#	define GCALWAYS 0
 #endif
 
-#ifndef	GCDEBUG
-#define	GCDEBUG			0
+#ifndef GCDEBUG
+#	define GCDEBUG 0
 #endif
 
-#ifndef	GCINFO
-#define	GCINFO			0
+#ifndef GCINFO
+#	define GCINFO 0
 #endif
 
-#ifndef	GCPROTECT
-#define	GCPROTECT		0
+#ifndef GCPROTECT
+#	define GCPROTECT 0
 #endif
 
-#ifndef	GCVERBOSE
-#define	GCVERBOSE		0
+#ifndef GCVERBOSE
+#	define GCVERBOSE 0
 #endif
 
-#ifndef	INITIAL_PATH
-#define	INITIAL_PATH		"/usr/ucb", "/usr/bin", "/bin", ""
+#ifndef INITIAL_PATH
+#	define INITIAL_PATH "/usr/ucb", "/usr/bin", "/bin", ""
 #endif
 
-#ifndef	JOB_PROTECT
-#define	JOB_PROTECT		1
+#ifndef JOB_PROTECT
+#	define JOB_PROTECT 1
 #endif
 
-#ifndef	PROTECT_ENV
-#define	PROTECT_ENV		1
+#ifndef PROTECT_ENV
+#	define PROTECT_ENV 1
 #endif
 
-#ifndef	REF_ASSERTIONS
-#define	REF_ASSERTIONS		0
+#ifndef REF_ASSERTIONS
+#	define REF_ASSERTIONS 0
 #endif
 
-#ifndef	SHOW_DOT_FILES
-#define	SHOW_DOT_FILES		0
+#ifndef SHOW_DOT_FILES
+#	define SHOW_DOT_FILES 0
 #endif
 
 /*
@@ -157,14 +157,14 @@
  */
 
 #if GCDEBUG
-#undef	GCALWAYS
-#undef	GCINFO
-#undef	GCPROTECT
-#undef	GCVERBOSE
-#define	GCALWAYS		1
-#define	GCINFO			1
-#define	GCPROTECT		1
-#define	GCVERBOSE		1
+#	undef GCALWAYS
+#	undef GCINFO
+#	undef GCPROTECT
+#	undef GCVERBOSE
+#	define GCALWAYS  1
+#	define GCINFO    1
+#	define GCPROTECT 1
+#	define GCVERBOSE 1
 #endif
 
-#endif  /* !ES_ESCONFIG_H */
+#endif /* !ES_ESCONFIG_H */

@@ -6,21 +6,25 @@
 #include "term.h"
 
 #ifndef WCOREDUMP
-# define WCOREDUMP(status) ((status) & 0x80)
+#	define WCOREDUMP(status) ((status)&0x80)
 #endif
 
 static const Term
-	ltrueterm	= { "0", NULL },
-	lfalseterm	= { "1", NULL };
+		ltrueterm
+		= {"0", NULL},
+		lfalseterm = {"1", NULL};
 static const List
-	ltruelist	= { (Term *) &ltrueterm, NULL },
-	lfalselist	= { (Term *) &lfalseterm, NULL };
+		ltruelist
+		= {(Term *)&ltrueterm, NULL},
+		lfalselist = {(Term *)&lfalseterm, NULL};
 List
-	*ltrue		= (List *) &ltruelist,
-	*lfalse		= (List *) &lfalselist;
+		*ltrue
+		= (List *)&ltruelist,
+		*lfalse = (List *)&lfalselist;
 
 /* istrue -- is this status list ltrue? */
-extern bool istrue(List *status) {
+extern bool
+istrue(List *status) {
 	for (; status != NULL; status = status->next) {
 		Term *term = status->term;
 		if (term->closure != NULL)
@@ -36,9 +40,10 @@ extern bool istrue(List *status) {
 }
 
 /* exitstatus -- turn a status list into an exit(2) value */
-extern int exitstatus(List *status) {
-	Term *term;
-	char *s;
+extern int
+exitstatus(List *status) {
+	Term		 *term;
+	char		 *s;
 	unsigned long n;
 
 	if (status == NULL)
@@ -59,7 +64,8 @@ extern int exitstatus(List *status) {
 }
 
 /* mkstatus -- turn a unix exit(2) status into a string */
-extern char *mkstatus(int status) {
+extern char *
+mkstatus(int status) {
 	if (WIFSIGNALED(status)) {
 		char *name = signame(WTERMSIG(status));
 		if (WCOREDUMP(status))
@@ -70,19 +76,21 @@ extern char *mkstatus(int status) {
 }
 
 /* printstatus -- print the status if we should */
-extern void printstatus(int pid, int status) {
+extern void
+printstatus(int pid, int status) {
 	if (WIFSIGNALED(status)) {
-		const char *msg = sigmessage(WTERMSIG(status)), *tail = "";
+		const char *msg  = sigmessage(WTERMSIG(status));
+		const char *tail = "";
 		if (WCOREDUMP(status)) {
 			tail = "--core dumped";
 			if (*msg == '\0')
 				tail += (sizeof "--") - 1;
 		}
-    if (*msg != '\0' || *tail != '\0') {
-      if (pid == 0)
-        eprint("%s%s\n", msg, tail);
-      else
-        eprint("%d: %s%s\n", pid, msg, tail);
-    }
+		if (*msg != '\0' || *tail != '\0') {
+			if (pid == 0)
+				eprint("%s%s\n", msg, tail);
+			else
+				eprint("%d: %s%s\n", pid, msg, tail);
+		}
 	}
 }

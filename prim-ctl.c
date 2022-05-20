@@ -7,7 +7,7 @@ PRIM(seq) {
 	Ref(List *, result, ltrue);
 	Ref(List *, lp, list);
 	for (; lp != NULL; lp = lp->next)
-		result = eval1(lp->term, evalflags &~ (lp->next == NULL ? 0 : eval_inchild));
+		result = eval1(lp->term, evalflags & ~(lp->next == NULL ? 0 : eval_inchild));
 	RefEnd(lp);
 	RefReturn(result);
 }
@@ -15,8 +15,9 @@ PRIM(seq) {
 PRIM(if) {
 	Ref(List *, lp, list);
 	for (; lp != NULL; lp = lp->next) {
-		List *cond = eval1(lp->term, evalflags & (lp->next == NULL ? eval_inchild : 0));
-		lp = lp->next;
+		List *cond;
+		cond = eval1(lp->term, evalflags & (lp->next == NULL ? eval_inchild : 0));
+		lp   = lp->next;
 		if (lp == NULL) {
 			RefPop(lp);
 			return cond;
@@ -42,7 +43,7 @@ PRIM(forever) {
 PRIM(throw) {
 	if (list == NULL)
 		fail("$&throw", "usage: throw exception [args ...]");
-	throw(list);
+	fire(list);
 	NOTREACHED;
 }
 
@@ -62,24 +63,24 @@ PRIM(catch) {
 
 			result = eval(lp->next, NULL, evalflags);
 
-		CatchException (frombody)
+		CatchException(frombody)
 
 			blocksignals();
 			ExceptionHandler
 				result
-				  = eval(mklist(mkstr("$&noreturn"),
-					        mklist(lp->term, frombody)),
-					 NULL,
-					 evalflags);
+						= eval(mklist(mkstr("$&noreturn"),
+				                      mklist(lp->term, frombody)),
+				               NULL,
+				               evalflags);
 				unblocksignals();
-			CatchException (fromcatcher)
+			CatchException(fromcatcher)
 
 				if (termeq(fromcatcher->term, "retry")) {
 					retry = true;
 					unblocksignals();
 				} else {
 					unblocksignals();
-					throw(fromcatcher);
+					fire(fromcatcher);
 				}
 			EndExceptionHandler
 
@@ -89,7 +90,8 @@ PRIM(catch) {
 	RefReturn(result);
 }
 
-extern Dict *initprims_controlflow(Dict *primdict) {
+extern Dict *
+initprims_controlflow(Dict *primdict) {
 	X(seq);
 	X(if);
 	X(throw);

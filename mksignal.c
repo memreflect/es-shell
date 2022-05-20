@@ -95,7 +95,7 @@ const size_t nsig_posix = arraysize(posix);
  * These are X/Open system interfaces, and some may be obsolescent, notably
  * SIGPOLL used with X/Open STREAMS interfaces and SIGPROF.
  */
-Sigmsgs      std[]      = {
+Sigmsgs      std[] = {
 #ifdef SIGPOLL
 		{SIGPOLL,   "sigpoll",   "pollable event occurred"        },
 #endif
@@ -134,7 +134,7 @@ const size_t nsig_std = arraysize(std);
  * on some systems, such as SIGLWP and SIGTHR, an arbitrary choice is made
  * which one to prefer.
  */
-Sigmsgs      other[]  = {
+Sigmsgs      other[] = {
 #ifdef SIGCLD
   /*
   * SIGCLD is equivalent to SIGCHLD on all systems I'm aware of, but on
@@ -323,8 +323,12 @@ ucase(const char *lsigname) {
 
 int
 main(void) {
-	Sigmsgs *pposix, *pstd, *pother;
-	Sigmsgs *eposix, *estd, *eother;
+	Sigmsgs *pposix;
+	Sigmsgs *pstd;
+	Sigmsgs *pother;
+	Sigmsgs *eposix;
+	Sigmsgs *estd;
+	Sigmsgs *eother;
 
 	/* end = count + (start = array) */
 	eposix = nsig_posix + (pposix = posix);
@@ -334,8 +338,9 @@ main(void) {
 	sort_siggroups();
 
 #define PHEAD()                       \
-	printf("#include \"es.h\"\n"      \
-	       "#include \"sigmsgs.h\"\n" \
+	printf("#include \"sigmsgs.h\"\n" \
+	       "\n"                       \
+	       "#include \"es.h\"\n"      \
 	       "\n"                       \
 	       "const Sigmsgs signals[] = {\n")
 #define PSIG(ptr)                      \

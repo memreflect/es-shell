@@ -1,0 +1,26 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = tab
+insert_final_newline = true
+max_line_length = 0
+trim_trailing_whitespace = true
+
+# Autoconf/M4 can get long really quickly.
+# It is worse than Lisp!
+[{configure.ac,*.m4}]
+indent_size = 2
+indent_style = space
+
+[{*.man,*.mdoc,*.{0..9}*}]
+max_line_length = 76
+
+# trip.es tests for heredocs contain trailing whitespace.
+[trip.es*]
+trim_trailing_whitespace = false
+
+[.git/*]
+max_line_length = 72

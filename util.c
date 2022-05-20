@@ -7,18 +7,18 @@
 #include "es.h"
 
 /* esstrerror -- a wrapper around sterror(3) */
-extern char *esstrerror(int n) {
-  char *error = strerror(n);
+extern char *
+esstrerror(int n) {
+	char *error = strerror(n);
 
-  if (error == NULL)
-    return "unknown error";
-  return error;
+	if (error == NULL)
+		return "unknown error";
+	return error;
 }
 
-
-
 /* uerror -- print a unix error, our version of perror */
-extern void uerror(char *s) {
+extern void
+uerror(char *s) {
 	if (s != NULL)
 		eprint("%s: %s\n", s, esstrerror(errno));
 	else
@@ -26,14 +26,15 @@ extern void uerror(char *s) {
 }
 
 /* isabsolute -- test to see if pathname begins with "/", "./", or "../" */
-extern bool isabsolute(char *path) {
+extern bool
+isabsolute(char *path) {
 	return path[0] == '/'
-	       || (path[0] == '.' && (path[1] == '/'
-				      || (path[1] == '.' && path[2] == '/')));
+	    || (path[0] == '.' && (path[1] == '/' || (path[1] == '.' && path[2] == '/')));
 }
 
 /* streq2 -- is a string equal to the concatenation of two strings? */
-extern bool streq2(const char *s, const char *t1, const char *t2) {
+extern bool
+streq2(const char *s, const char *t1, const char *t2) {
 	int c;
 	assert(s != NULL && t1 != NULL && t2 != NULL);
 	while ((c = *t1++) != '\0')
@@ -45,14 +46,13 @@ extern bool streq2(const char *s, const char *t1, const char *t2) {
 	return *s == '\0';
 }
 
-
 /*
  * safe interface to malloc and friends
  */
 
 /* ealloc -- error checked malloc */
-extern void *ealloc(size_t n) {
-	extern void *malloc(size_t n);
+extern void *
+ealloc(size_t n) {
 	void *p = malloc(n);
 	if (p == NULL) {
 		uerror("malloc");
@@ -62,8 +62,8 @@ extern void *ealloc(size_t n) {
 }
 
 /* erealloc -- error checked realloc */
-extern void *erealloc(void *p, size_t n) {
-	extern void *realloc(void *, size_t);
+extern void *
+erealloc(void *p, size_t n) {
 	if (p == NULL)
 		return ealloc(n);
 	p = realloc(p, n);
@@ -75,19 +75,20 @@ extern void *erealloc(void *p, size_t n) {
 }
 
 /* efree -- error checked free */
-extern void efree(void *p) {
-	extern void free(void *);
+extern void
+efree(void *p) {
 	assert(p != NULL);
 	free(p);
 }
-
 
 /*
  * private interfaces to system calls
  */
 
-extern void ewrite(int fd, const char *buf, size_t n) {
-	volatile long i, remain;
+extern void
+ewrite(int fd, const char *buf, size_t n) {
+	volatile long i;
+	volatile long remain;
 	const char *volatile bufp = buf;
 	for (i = 0, remain = n; remain > 0; bufp += i, remain -= i) {
 		interrupted = false;
@@ -105,7 +106,8 @@ extern void ewrite(int fd, const char *buf, size_t n) {
 	SIGCHK();
 }
 
-extern long eread(int fd, char *buf, size_t n) {
+extern long
+eread(int fd, char *buf, size_t n) {
 	long r;
 	interrupted = false;
 	if (!sigsetjmp(slowlabel, 1)) {
@@ -119,7 +121,7 @@ extern long eread(int fd, char *buf, size_t n) {
 	slow = false;
 	if (r == -2) {
 		errno = EINTR;
-		r = -1;
+		r     = -1;
 	}
 	SIGCHK();
 	return r;

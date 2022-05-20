@@ -11,67 +11,73 @@
 
 static const char *caller;
 
-static int getnumber(const char *s) {
+static int
+getnumber(const char *s) {
 	char *end;
-	int result = strtol(s, &end, 0);
+	int   result = strtol(s, &end, 0);
 
 	if (*end != '\0' || result < 0)
 		fail(caller, "bad number: %s", s);
 	return result;
 }
 
-static List *redir(List *(*rop)(int *fd, List *list), List *list, int evalflags) {
-	int destfd, srcfd;
+static List *
+redir(List *(*rop)(int *fd, List *list), List *list, int evalflags) {
+	int          destfd;
+	int          srcfd;
 	volatile int inparent = (evalflags & eval_inchild) == 0;
-	volatile int ticket = UNREGISTERED;
+	volatile int ticket   = UNREGISTERED;
 
 	assert(list != NULL);
 	Ref(List *, lp, list);
 	destfd = getnumber(getstr(lp->term));
-	lp = (*rop)(&srcfd, lp->next);
+	lp     = (*rop)(&srcfd, lp->next);
 
 	ticket = (srcfd == -1)
-		   ? defer_close(inparent, destfd)
-		   : defer_mvfd(inparent, srcfd, destfd);
+	               ? defer_close(inparent, destfd)
+	               : defer_mvfd(inparent, srcfd, destfd);
 	ExceptionHandler
 		lp = eval(lp, NULL, evalflags);
 		undefer(ticket);
-	CatchException (e)
+	CatchException(e)
 		undefer(ticket);
-		throw(e);
+		fire(e);
 	EndExceptionHandler
 
 	RefReturn(lp);
 }
 
-#define	REDIR(name)	static List *CONCAT(redir_,name)(int *srcfdp, List *list)
+#define REDIR(name) static List *CONCAT(redir_, name)(int *srcfdp, List *list)
 
-static _Noreturn void argcount(const char *s) {
+static _Noreturn void
+argcount(const char *s) {
 	fail(caller, "argument count: usage: %s", s);
 }
 
 REDIR(openfile) {
-	int i, fd;
-	char *mode, *name;
+	int      i;
+	int      fd;
+	char    *mode;
+	char    *name;
 	OpenKind kind;
 	static const struct {
 		const char *name;
-		OpenKind kind;
+		OpenKind    kind;
 	} modes[] = {
-		{ "r",	oOpen },
-		{ "w",	oCreate },
-		{ "a",	oAppend },
-		{ "r+",	oReadWrite },
-		{ "w+",	oReadCreate },
-		{ "a+",	oReadAppend },
-		{ NULL, 0 }
-	};
+			{"r",  oOpen      },
+			{"w",  oCreate    },
+			{"a",  oAppend    },
+			{"r+", oReadWrite },
+			{"w+", oReadCreate},
+			{"a+", oReadAppend},
+			{NULL, 0          }
+    };
 
 	assert(length(list) == 3);
 	Ref(List *, lp, list);
 
 	mode = getstr(lp->term);
-	lp = lp->next;
+	lp   = lp->next;
 	for (i = 0;; i++) {
 		if (modes[i].name == NULL)
 			fail("$&openfile", "bad %%openfile mode: %s", mode);
@@ -82,8 +88,8 @@ REDIR(openfile) {
 	}
 
 	name = getstr(lp->term);
-	lp = lp->next;
-	fd = eopen(name, kind);
+	lp   = lp->next;
+	fd   = eopen(name, kind);
 	if (fd == -1)
 		fail("$&openfile", "%s: %s", name, esstrerror(errno));
 	*srcfdp = fd;
@@ -96,9 +102,9 @@ PRIM(openfile) {
 	if (length(list) != 4)
 		argcount("%openfile mode fd file cmd");
 	/* transpose the first two elements */
-	lp = list->next;
+	lp         = list->next;
 	list->next = lp->next;
-	lp->next = list;
+	lp->next   = list;
 	return redir(redir_openfile, lp, evalflags);
 }
 
@@ -110,7 +116,7 @@ REDIR(dup) {
 	if (fd == -1)
 		fail("$&dup", "dup: %s", esstrerror(errno));
 	*srcfdp = fd;
-	lp = lp->next;
+	lp      = lp->next;
 	RefReturn(lp);
 }
 
@@ -134,7 +140,8 @@ PRIM(close) {
 }
 
 /* pipefork -- create a pipe and fork */
-static int pipefork(int p[2], int *extra) {
+static int
+pipefork(int p[2], int *extra) {
 	volatile int pid = 0;
 
 	if (pipe(p) == -1)
@@ -147,12 +154,12 @@ static int pipefork(int p[2], int *extra) {
 
 	ExceptionHandler
 		pid = efork(true, false);
-	CatchExceptionIf (pid != 0, e)
+	CatchExceptionIf(pid != 0, e)
 		unregisterfd(&p[0]);
 		unregisterfd(&p[1]);
 		if (extra != NULL)
 			unregisterfd(extra);
-		throw(e);
+		fire(e);
 	EndExceptionHandler;
 
 	unregisterfd(&p[0]);
@@ -163,16 +170,19 @@ static int pipefork(int p[2], int *extra) {
 }
 
 REDIR(here) {
-	int pid, p[2];
-	List *doc, *tail, **tailp;
+	int    pid;
+	int    p[2];
+	List  *doc;
+	List  *tail;
+	List **tailp;
 
 	assert(list != NULL);
 	for (tailp = &list; (tail = *tailp)->next != NULL; tailp = &tail->next)
 		;
-	doc = (list == tail) ? NULL : list;
+	doc    = (list == tail) ? NULL : list;
 	*tailp = NULL;
 
-	if ((pid = pipefork(p, NULL)) == 0) {		/* child that writes to pipe */
+	if ((pid = pipefork(p, NULL)) == 0) { /* child that writes to pipe */
 		close(p[0]);
 		fprint(p[1], "%L", doc, "");
 		exit(0);
@@ -191,16 +201,19 @@ PRIM(here) {
 }
 
 PRIM(pipe) {
-	int n, infd, inpipe;
-	static int *pids = NULL, pidmax = 0;
+	int         n;
+	int         infd;
+	int         inpipe;
+	static int *pids   = NULL;
+	static int  pidmax = 0;
 
 	caller = "$&pipe";
-	n = length(list);
+	n      = length(list);
 	if ((n % 3) != 1)
 		fail("$&pipe", "usage: pipe cmd [ outfd infd cmd ] ...");
 	n = (n + 2) / 3;
 	if (n > pidmax) {
-		pids = erealloc(pids, n * sizeof *pids);
+		pids   = erealloc(pids, n * sizeof *pids);
 		pidmax = n;
 	}
 	n = 0;
@@ -208,11 +221,12 @@ PRIM(pipe) {
 	infd = inpipe = -1;
 
 	for (;; list = list->next) {
-		int p[2], pid;
+		int p[2];
+		int pid;
 
 		pid = (list->next == NULL) ? efork(true, false) : pipefork(p, &inpipe);
 
-		if (pid == 0) {		/* child */
+		if (pid == 0) { /* child */
 			if (inpipe != -1) {
 				assert(infd != -1);
 				releasefd(infd);
@@ -230,8 +244,8 @@ PRIM(pipe) {
 		close(inpipe);
 		if (list->next == NULL)
 			break;
-		list = list->next->next;
-		infd = getnumber(getstr(list->term));
+		list   = list->next->next;
+		infd   = getnumber(getstr(list->term));
 		inpipe = p[0];
 		close(p[1]);
 	}
@@ -239,9 +253,9 @@ PRIM(pipe) {
 	Ref(List *, result, NULL);
 	do {
 		Term *t;
-		int status = ewaitfor(pids[--n]);
+		int   status = ewaitfor(pids[--n]);
 		printstatus(0, status);
-		t = mkstr(mkstatus(status));
+		t      = mkstr(mkstatus(status));
 		result = mklist(t, result);
 	} while (0 < n);
 	if (evalflags & eval_inchild)
@@ -251,7 +265,9 @@ PRIM(pipe) {
 
 #if HAVE_DEV_FD
 PRIM(readfrom) {
-	int pid, p[2], status;
+	int  p[2];
+	int  pid;
+	int  status;
 	Push push;
 
 	caller = "$&readfrom";
@@ -267,7 +283,7 @@ PRIM(readfrom) {
 	if ((pid = pipefork(p, NULL)) == 0) {
 		close(p[0]);
 		mvfd(p[1], 1);
-		exit(exitstatus(eval1(input, evalflags &~ eval_inchild)));
+		exit(exitstatus(eval1(input, evalflags & ~eval_inchild)));
 	}
 
 	close(p[1]);
@@ -276,10 +292,10 @@ PRIM(readfrom) {
 
 	ExceptionHandler
 		lp = eval1(cmd, evalflags);
-	CatchException (e)
+	CatchException(e)
 		close(p[0]);
 		ewaitfor(pid);
-		throw(e);
+		fire(e);
 	EndExceptionHandler
 
 	close(p[0]);
@@ -291,7 +307,9 @@ PRIM(readfrom) {
 }
 
 PRIM(writeto) {
-	int pid, p[2], status;
+	int  p[2];
+	int  pid;
+	int  status;
 	Push push;
 
 	caller = "$&writeto";
@@ -307,7 +325,7 @@ PRIM(writeto) {
 	if ((pid = pipefork(p, NULL)) == 0) {
 		close(p[1]);
 		mvfd(p[0], 0);
-		exit(exitstatus(eval1(output, evalflags &~ eval_inchild)));
+		exit(exitstatus(eval1(output, evalflags & ~eval_inchild)));
 	}
 
 	close(p[0]);
@@ -316,10 +334,10 @@ PRIM(writeto) {
 
 	ExceptionHandler
 		lp = eval1(cmd, evalflags);
-	CatchException (e)
+	CatchException(e)
 		close(p[1]);
 		ewaitfor(pid);
-		throw(e);
+		fire(e);
 	EndExceptionHandler
 
 	close(p[1]);
@@ -331,9 +349,10 @@ PRIM(writeto) {
 }
 #endif
 
-#define	BUFSIZE	4096
+#define BUFSIZE 4096
 
-static List *bqinput(const char *sep, int fd) {
+static List *
+bqinput(const char *sep, int fd) {
 	long n;
 	char in[BUFSIZE];
 	startsplit(sep, true);
@@ -352,7 +371,9 @@ restart:
 }
 
 PRIM(backquote) {
-	int pid, p[2], status;
+	int p[2];
+	int pid;
+	int status;
 
 	caller = "$&backquote";
 	if (list == NULL)
@@ -389,11 +410,12 @@ PRIM(newfd) {
 }
 
 /* read1 -- read one byte */
-static int read1(int fd) {
-	int nread;
+static int
+read1(int fd) {
+	int           nread;
 	unsigned char buf;
 	do {
-		nread = eread(fd, (char *) &buf, 1);
+		nread = eread(fd, (char *)&buf, 1);
 		SIGCHK();
 	} while (nread == -1 && errno == EINTR);
 	if (nread == -1)
@@ -402,8 +424,8 @@ static int read1(int fd) {
 }
 
 PRIM(read) {
-	int c;
-	int fd = fdmap(0);
+	int            c;
+	int            fd = fdmap(0);
 
 	static Buffer *buffer = NULL;
 	if (buffer != NULL)
@@ -419,12 +441,13 @@ PRIM(read) {
 		return NULL;
 	} else {
 		List *result = mklist(mkstr(sealcountedbuffer(buffer)), NULL);
-		buffer = NULL;
+		buffer       = NULL;
 		return result;
 	}
 }
 
-extern Dict *initprims_io(Dict *primdict) {
+extern Dict *
+initprims_io(Dict *primdict) {
 	X(openfile);
 	X(close);
 	X(dup);

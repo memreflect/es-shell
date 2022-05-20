@@ -9,7 +9,8 @@
 
 DefineTag(List, static);
 
-extern List *mklist(Term *term, List *next) {
+extern List *
+mklist(Term *term, List *next) {
 	gcdisable();
 	assert(term != NULL);
 	Ref(List *, list, gcnew(List));
@@ -19,44 +20,49 @@ extern List *mklist(Term *term, List *next) {
 	RefReturn(list);
 }
 
-static void *ListCopy(void *op) {
+static void *
+ListCopy(void *op) {
 	void *np = gcnew(List);
-	memcpy(np, op, sizeof (List));
+	memcpy(np, op, sizeof(List));
 	return np;
 }
 
-static size_t ListScan(void *p) {
+static size_t
+ListScan(void *p) {
 	List *list = p;
 	list->term = forward(list->term);
 	list->next = forward(list->next);
-	return sizeof (List);
+	return sizeof(List);
 }
-
 
 /*
  * basic list manipulations
  */
 
 /* reverse -- destructively reverse a list */
-extern List *reverse(List *list) {
-	List *prev, *next;
+extern List *
+reverse(List *list) {
+	List *prev;
+	List *next;
 	if (list == NULL)
 		return NULL;
 	prev = NULL;
 	do {
-		next = list->next;
+		next       = list->next;
 		list->next = prev;
-		prev = list;
+		prev       = list;
 	} while ((list = next) != NULL);
 	return prev;
 }
 
 /* append -- merge two lists, non-destructively */
-extern List *append(List *head, List *tail) {
-	List *lp, **prevp;
+extern List *
+append(List *head, List *tail) {
+	List  *lp;
+	List **prevp;
 	Ref(List *, hp, head);
 	Ref(List *, tp, tail);
-	gcreserve(40 * sizeof (List));
+	gcreserve(40 * sizeof(List));
 	gcdisable();
 	head = hp;
 	tail = tp;
@@ -64,8 +70,8 @@ extern List *append(List *head, List *tail) {
 
 	for (prevp = &lp; head != NULL; head = head->next) {
 		List *np = mklist(head->term, NULL);
-		*prevp = np;
-		prevp = &np->next;
+		*prevp   = np;
+		prevp    = &np->next;
 	}
 	*prevp = tail;
 
@@ -75,12 +81,14 @@ extern List *append(List *head, List *tail) {
 }
 
 /* listcopy -- make a copy of a list */
-extern List *listcopy(List *list) {
+extern List *
+listcopy(List *list) {
 	return append(list, NULL);
 }
 
 /* length -- lenth of a list */
-extern int length(List *list) {
+extern int
+length(List *list) {
 	int len = 0;
 	for (; list != NULL; list = list->next)
 		++len;
@@ -88,17 +96,19 @@ extern int length(List *list) {
 }
 
 /* listify -- turn an argc/argv vector into a list */
-extern List *listify(int argc, char **argv) {
+extern List *
+listify(int argc, char **argv) {
 	Ref(List *, list, NULL);
 	while (argc > 0) {
 		Term *term = mkstr(argv[--argc]);
-		list = mklist(term, list);
+		list       = mklist(term, list);
 	}
 	RefReturn(list);
 }
 
 /* nth -- return nth element of a list, indexed from 1 */
-extern Term *nth(List *list, int n) {
+extern Term *
+nth(List *list, int n) {
 	assert(n > 0);
 	for (; list != NULL; list = list->next) {
 		assert(list->term != NULL);
@@ -109,7 +119,8 @@ extern Term *nth(List *list, int n) {
 }
 
 /* sortlist */
-extern List *sortlist(List *list) {
+extern List *
+sortlist(List *list) {
 	if (length(list) > 1) {
 		Vector *v = vectorize(list);
 		sortvector(v);

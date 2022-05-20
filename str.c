@@ -5,28 +5,30 @@
 #include "print.h"
 
 /* grow -- buffer grow function for str() */
-static void str_grow(Format *f, size_t more) {
+static void
+str_grow(Format *f, size_t more) {
 	Buffer *buf = expandbuffer(f->u.p, more);
-	f->u.p		= buf;
-	f->buf		= buf->str + (f->buf - f->bufbegin);
-	f->bufbegin	= buf->str;
-	f->bufend	= buf->str + buf->len;
+	f->u.p      = buf;
+	f->buf      = buf->str + (f->buf - f->bufbegin);
+	f->bufbegin = buf->str;
+	f->bufend   = buf->str + buf->len;
 }
 
 /* strv -- print a formatted string into gc space */
-extern char *strv(const char *fmt, va_list args) {
+extern char *
+strv(const char *fmt, va_list args) {
 	Buffer *buf;
-	Format format;
+	Format  format;
 
 	gcdisable();
 	buf = openbuffer(0);
 	va_copy(format.args, args);
-	format.u.p	= buf;
-	format.buf	= buf->str;
-	format.bufbegin	= buf->str;
-	format.bufend	= buf->str + buf->len;
-	format.grow	= str_grow;
-	format.flushed	= 0;
+	format.u.p      = buf;
+	format.buf      = buf->str;
+	format.bufbegin = buf->str;
+	format.bufend   = buf->str + buf->len;
+	format.grow     = str_grow;
+	format.flushed  = 0;
 
 	printfmt(&format, fmt);
 	fmtputc(&format, '\0');
@@ -37,8 +39,9 @@ extern char *strv(const char *fmt, va_list args) {
 }
 
 /* str -- create a string (in garbage collection space) by printing to it */
-extern char *str(const char * fmt, ...) {
-	char *s;
+extern char *
+str(const char *fmt, ...) {
+	char   *s;
 	va_list args;
 	va_start(args, fmt);
 	s = strv(fmt, args);
@@ -46,40 +49,40 @@ extern char *str(const char * fmt, ...) {
 	return s;
 }
 
-
-#define	PRINT_ALLOCSIZE	64
+#define PRINT_ALLOCSIZE 64
 
 /* mprint_grow -- buffer grow function for mprint() */
-static void mprint_grow(Format *format, size_t more) {
-	char *buf;
-	size_t len = format->bufend - format->bufbegin + 1;
-	len = (len >= more)
-		? len * 2
-		: ((len + more) + PRINT_ALLOCSIZE) &~ (PRINT_ALLOCSIZE - 1);
-	buf = erealloc(format->bufbegin, len);
-	format->buf	 = buf + (format->buf - format->bufbegin);
+static void
+mprint_grow(Format *format, size_t more) {
+	char  *buf;
+	size_t len       = format->bufend - format->bufbegin + 1;
+	len              = (len >= more)
+	                         ? len * 2
+	                         : ((len + more) + PRINT_ALLOCSIZE) & ~(PRINT_ALLOCSIZE - 1);
+	buf              = erealloc(format->bufbegin, len);
+	format->buf      = buf + (format->buf - format->bufbegin);
 	format->bufbegin = buf;
-	format->bufend	 = buf + len - 1;
+	format->bufend   = buf + len - 1;
 }
 
 /* mprint -- create a string in ealloc space by printing to it */
-extern char *mprint(const char * fmt, ...) {
+extern char *
+mprint(const char *fmt, ...) {
 	Format format;
 	format.u.n = 1;
 	va_start(format.args, fmt);
 
-	format.buf	= ealloc(PRINT_ALLOCSIZE);
-	format.bufbegin	= format.buf;
-	format.bufend	= format.buf + PRINT_ALLOCSIZE - 1;
-	format.grow	= mprint_grow;
-	format.flushed	= 0;
+	format.buf      = ealloc(PRINT_ALLOCSIZE);
+	format.bufbegin = format.buf;
+	format.bufend   = format.buf + PRINT_ALLOCSIZE - 1;
+	format.grow     = mprint_grow;
+	format.flushed  = 0;
 
 	printfmt(&format, fmt);
 	*format.buf = '\0';
 	va_end(format.args);
 	return format.bufbegin;
 }
-
 
 /*
  * StrList -- lists of strings
@@ -88,26 +91,28 @@ extern char *mprint(const char * fmt, ...) {
 
 DefineTag(StrList, static);
 
-extern StrList *mkstrlist(char *str, StrList *next) {
+extern StrList *
+mkstrlist(char *str, StrList *next) {
 	gcdisable();
 	assert(str != NULL);
 	Ref(StrList *, list, gcnew(StrList));
-	list->str = str;
+	list->str  = str;
 	list->next = next;
 	gcenable();
 	RefReturn(list);
 }
 
-static void *StrListCopy(void *op) {
+static void *
+StrListCopy(void *op) {
 	void *np = gcnew(StrList);
-	memcpy(np, op, sizeof (StrList));
+	memcpy(np, op, sizeof(StrList));
 	return np;
 }
 
-static size_t StrListScan(void *p) {
+static size_t
+StrListScan(void *p) {
 	StrList *list = p;
-	list->str = forward(list->str);
-	list->next = forward(list->next);
-	return sizeof (StrList);
+	list->str     = forward(list->str);
+	list->next    = forward(list->next);
+	return sizeof(StrList);
 }
-

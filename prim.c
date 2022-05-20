@@ -1,15 +1,17 @@
 /* prim.c -- primitives and primitive dispatching */
 
+#include "prim.h"
+
 #include <stddef.h>
 
 #include "es.h"
-#include "prim.h"
 
 static Dict *prims;
 
-extern List *prim(char *s, List *list, Binding *binding, int evalflags) {
-	List *(*p)(List *, Binding *, int);
-	p = (List *(*)(List *, Binding *, int)) dictget(prims, s);
+extern List *
+prim(char *s, List *list, Binding *binding, int evalflags) {
+	PrimFunc *p;
+	p = (PrimFunc *)dictget(prims, s);
 	if (p == NULL)
 		fail("es:prim", "unknown primitive: %s", s);
 	return (*p)(list, binding, evalflags);
@@ -25,7 +27,8 @@ PRIM(primitives) {
 	return primlist;
 }
 
-extern void initprims(void) {
+extern void
+initprims(void) {
 	prims = mkdict();
 	globalroot(&prims);
 
@@ -36,6 +39,6 @@ extern void initprims(void) {
 	prims = initprims_proc(prims);
 	prims = initprims_access(prims);
 
-#define	primdict prims
+#define primdict prims
 	X(primitives);
 }

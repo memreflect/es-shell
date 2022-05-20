@@ -1,29 +1,31 @@
 /* term.c -- operations on terms */
 
+#include "term.h"
+
 #include "es.h"
 #include "gc.h"
-#include "term.h"
 
 DefineTag(Term, static);
 
-extern Term *mkterm(char *str, Closure *closure) {
+extern Term *
+mkterm(char *str, Closure *closure) {
 	gcdisable();
 	Ref(Term *, term, gcnew(Term));
-	term->str = str;
+	term->str     = str;
 	term->closure = closure;
 	gcenable();
 	RefReturn(term);
 }
 
-extern Closure *getclosure(Term *term) {
+extern Closure *
+getclosure(Term *term) {
 	if (term->closure == NULL) {
 		char *s = term->str;
 		assert(s != NULL);
 		if (
-			((*s == '{' || *s == '@') && s[strlen(s) - 1] == '}')
-			|| (*s == '$' && s[1] == '&')
-			|| hasprefix(s, "%closure")
-		) {
+				((*s == '{' || *s == '@') && s[strlen(s) - 1] == '}')
+				|| (*s == '$' && s[1] == '&')
+				|| hasprefix(s, "%closure")) {
 			Ref(Term *, tp, term);
 			Ref(Tree *, np, parsestring(s));
 			if (np == NULL) {
@@ -31,22 +33,23 @@ extern Closure *getclosure(Term *term) {
 				return NULL;
 			}
 			tp->closure = extractbindings(np);
-			tp->str = NULL;
-			term = tp;
+			tp->str     = NULL;
+			term        = tp;
 			RefEnd2(np, tp);
 		}
 	}
 	return term->closure;
 }
 
-extern char *getstr(Term *term) {
-	char *s = term->str;
+extern char *
+getstr(Term *term) {
+	char    *s       = term->str;
 	Closure *closure = term->closure;
 	assert((s == NULL) != (closure == NULL));
 	if (s != NULL)
 		return s;
 
-#if 0	/* TODO: decide whether getstr() leaves term in closure or string form */
+#if 0 /* TODO: decide whether getstr() leaves term in closure or string form */
 	Ref(Term *, tp, term);
 	s = str("%C", closure);
 	tp->str = s;
@@ -58,7 +61,8 @@ extern char *getstr(Term *term) {
 #endif
 }
 
-extern Term *termcat(Term *t1, Term *t2) {
+extern Term *
+termcat(Term *t1, Term *t2) {
 	if (t1 == NULL)
 		return t2;
 	if (t2 == NULL)
@@ -72,28 +76,31 @@ extern Term *termcat(Term *t1, Term *t2) {
 	RefReturn(term);
 }
 
-
-static void *TermCopy(void *op) {
+static void *
+TermCopy(void *op) {
 	void *np = gcnew(Term);
-	memcpy(np, op, sizeof (Term));
+	memcpy(np, op, sizeof(Term));
 	return np;
 }
 
-static size_t TermScan(void *p) {
-	Term *term = p;
+static size_t
+TermScan(void *p) {
+	Term *term    = p;
 	term->closure = forward(term->closure);
-	term->str = forward(term->str);
-	return sizeof (Term);
+	term->str     = forward(term->str);
+	return sizeof(Term);
 }
 
-extern bool termeq(Term *term, const char *s) {
+extern bool
+termeq(Term *term, const char *s) {
 	assert(term != NULL);
 	if (term->str == NULL)
 		return false;
 	return streq(term->str, s);
 }
 
-extern bool isclosure(Term *term) {
+extern bool
+isclosure(Term *term) {
 	assert(term != NULL);
 	return term->closure != NULL;
 }

@@ -12,15 +12,16 @@
  */
 
 static int mode_masks[] = {
-	O_RDONLY,			/* rOpen */
-	O_WRONLY | O_CREAT | O_TRUNC,	/* rCreate */
-	O_WRONLY | O_CREAT | O_APPEND,	/* rAppend */
-	O_RDWR   | O_CREAT,		/* oReadWrite */
-	O_RDWR   | O_CREAT | O_TRUNC,	/* oReadCreate */
-	O_RDWR   | O_CREAT | O_APPEND,	/* oReadAppend */
+		O_RDONLY,                      /* rOpen */
+		O_WRONLY | O_CREAT | O_TRUNC,  /* rCreate */
+		O_WRONLY | O_CREAT | O_APPEND, /* rAppend */
+		O_RDWR | O_CREAT,              /* oReadWrite */
+		O_RDWR | O_CREAT | O_TRUNC,    /* oReadCreate */
+		O_RDWR | O_CREAT | O_APPEND,   /* oReadAppend */
 };
 
-extern int eopen(char *name, OpenKind k) {
+extern int
+eopen(char *name, OpenKind k) {
 	assert((size_t)k < arraysize(mode_masks));
 	return open(name, mode_masks[k], 0666);
 }

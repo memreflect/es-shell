@@ -20,29 +20,37 @@ struct Tag {
 extern struct Tag StringTag;
 
 #if ASSERTIONS || GCVERBOSE
-enum {TAGMAGIC = 0xDefaced};
-#define	DefineTag(t, storage) \
-	static void *CONCAT(t,Copy)(void *); \
-	static size_t CONCAT(t,Scan)(void *); \
-	storage Tag CONCAT(t,Tag) = { CONCAT(t,Copy), CONCAT(t,Scan), TAGMAGIC, STRING(t) }
+enum { TAGMAGIC = 0xDefaced };
+#	define DefineTag(t, storage)              \
+		static void  *CONCAT(t, Copy)(void *); \
+		static size_t CONCAT(t, Scan)(void *); \
+		storage Tag   CONCAT(t, Tag) = {       \
+				  CONCAT(t, Copy),             \
+				  CONCAT(t, Scan),             \
+				  TAGMAGIC,                    \
+				  STRING(t),                   \
+        }
 #else
-#define	DefineTag(t, storage) \
-	static void *CONCAT(t,Copy)(void *); \
-	static size_t CONCAT(t,Scan)(void *); \
-	storage Tag CONCAT(t,Tag) = { CONCAT(t,Copy), CONCAT(t,Scan) }
+#	define DefineTag(t, storage)              \
+		static void  *CONCAT(t, Copy)(void *); \
+		static size_t CONCAT(t, Scan)(void *); \
+		storage Tag   CONCAT(t, Tag) = {       \
+				  CONCAT(t, Copy),             \
+				  CONCAT(t, Scan),             \
+        }
 #endif
 
 /*
  * allocation
  */
 
-extern void *gcalloc(size_t, struct Tag *);
+extern void          *gcalloc(size_t, struct Tag *);
 
 typedef struct Buffer Buffer;
 struct Buffer {
 	size_t len;
 	size_t current;
-	char str[1];
+	char   str[1];
 };
 
 extern Buffer *openbuffer(size_t minsize);
@@ -50,8 +58,8 @@ extern Buffer *expandbuffer(Buffer *buf, size_t minsize);
 extern Buffer *bufncat(Buffer *buf, const char *s, size_t len);
 extern Buffer *bufcat(Buffer *buf, const char *s);
 extern Buffer *bufputc(Buffer *buf, char c);
-extern char *sealbuffer(Buffer *buf);
-extern char *sealcountedbuffer(Buffer *buf);
-extern void freebuffer(Buffer *buf);
+extern char   *sealbuffer(Buffer *buf);
+extern char   *sealcountedbuffer(Buffer *buf);
+extern void    freebuffer(Buffer *buf);
 
-extern void *forward(void *p);
+extern void   *forward(void *p);

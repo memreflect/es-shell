@@ -4,12 +4,14 @@
 
 #include "es.h"
 
-static const char *usage, *invoker;
-static List *args;
-static Term *termarg;
-static int nextchar;
+static const char *usage;
+static const char *invoker;
+static List       *args;
+static Term       *termarg;
+static int         nextchar;
 
-extern void esoptbegin(List *list, const char *caller, const char *usagemsg) {
+extern void
+esoptbegin(List *list, const char *caller, const char *usagemsg) {
 	static bool initialized = false;
 	if (!initialized) {
 		initialized = true;
@@ -19,16 +21,18 @@ extern void esoptbegin(List *list, const char *caller, const char *usagemsg) {
 		globalroot(&termarg);
 	}
 	assert(usage == NULL);
-	usage = usagemsg;
-	invoker = caller;
-	args = list;
-	termarg = NULL;
+	usage    = usagemsg;
+	invoker  = caller;
+	args     = list;
+	termarg  = NULL;
 	nextchar = 0;
 }
 
-extern int esopt(const char *options) {
-	int c;
-	const char *arg, *opt;
+extern int
+esopt(const char *options) {
+	int         c;
+	const char *arg;
+	const char *opt;
 
 	assert(usage != NULL);
 	assert(termarg == NULL);
@@ -49,19 +53,19 @@ extern int esopt(const char *options) {
 		arg = getstr(args->term);
 	}
 
-	c = arg[nextchar++];
+	c   = arg[nextchar++];
 	opt = strchr(options, c);
 	if (opt == NULL) {
 		const char *msg = usage;
-		usage = NULL;
-		args = NULL;
-		nextchar = 0;
+		usage           = NULL;
+		args            = NULL;
+		nextchar        = 0;
 		fail(invoker, "illegal option: -%c -- usage: %s", c, msg);
 	}
 
 	if (arg[nextchar] == '\0') {
 		nextchar = 0;
-		args = args->next;
+		args     = args->next;
 	}
 
 	if (opt[1] == ':') {
@@ -69,27 +73,30 @@ extern int esopt(const char *options) {
 			const char *msg = usage;
 			fail(invoker,
 			     "option -%c expects an argument -- usage: %s",
-			     c, msg);
+			     c,
+			     msg);
 		}
-		termarg = (nextchar == 0)
-				? args->term
-				: mkstr(gcdup(arg + nextchar));
+		termarg  = (nextchar == 0)
+		                 ? args->term
+		                 : mkstr(gcdup(arg + nextchar));
 		nextchar = 0;
-		args = args->next;
+		args     = args->next;
 	}
 	return c;
 }
 
-extern Term *esoptarg(void) {
+extern Term *
+esoptarg(void) {
 	Term *t = termarg;
 	assert(t != NULL);
 	termarg = NULL;
 	return t;
 }
 
-extern List *esoptend(void) {
+extern List *
+esoptend(void) {
 	List *result = args;
-	args = NULL;
-	usage = NULL;
+	args         = NULL;
+	usage        = NULL;
 	return result;
 }

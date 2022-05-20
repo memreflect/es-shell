@@ -3,24 +3,26 @@
 #include "es.h"
 #include "gc.h"
 
-static bool coalesce;
-static bool splitchars;
+static bool    coalesce;
+static bool    splitchars;
 static Buffer *buffer;
-static List *value;
+static List   *value;
 
-static bool ifsvalid = false;
-static char ifs[10], isifs[256];
+static bool    ifsvalid = false;
+static char    ifs[10];
+static char    isifs[256];
 
-extern void startsplit(const char *sep, bool coalescef) {
+extern void
+startsplit(const char *sep, bool coalescef) {
 	static bool initialized = false;
 	if (!initialized) {
 		initialized = true;
 		globalroot(&value);
 	}
 
-	value = NULL;
-	buffer = NULL;
-	coalesce = coalescef;
+	value      = NULL;
+	buffer     = NULL;
+	coalesce   = coalescef;
 	splitchars = !coalesce && *sep == '\0';
 
 	if (!ifsvalid || !streq(sep, ifs)) {
@@ -36,15 +38,17 @@ extern void startsplit(const char *sep, bool coalescef) {
 	}
 }
 
-extern void splitstring(char *in, size_t len, bool endword) {
-	Buffer *buf = buffer;
-	unsigned char *s = (unsigned char *) in, *inend = s + len;
+extern void
+splitstring(char *in, size_t len, bool endword) {
+	Buffer        *buf   = buffer;
+	unsigned char *s     = (unsigned char *)in;
+	unsigned char *inend = s + len;
 
 	if (splitchars) {
 		assert(buf == NULL);
 		while (s < inend) {
-			Term *term = mkstr(gcndup((char *) s++, 1));
-			value = mklist(term, value);
+			Term *term = mkstr(gcndup((char *)s++, 1));
+			value      = mklist(term, value);
 		}
 		return;
 	}
@@ -57,8 +61,8 @@ extern void splitstring(char *in, size_t len, bool endword) {
 		if (buf != NULL)
 			if (isifs[c]) {
 				Term *term = mkstr(sealcountedbuffer(buf));
-				value = mklist(term, value);
-				buf = coalesce ? NULL : openbuffer(0);
+				value      = mklist(term, value);
+				buf        = coalesce ? NULL : openbuffer(0);
 			} else
 				buf = bufputc(buf, c);
 		else if (!isifs[c])
@@ -67,26 +71,28 @@ extern void splitstring(char *in, size_t len, bool endword) {
 
 	if (endword && buf != NULL) {
 		Term *term = mkstr(sealcountedbuffer(buf));
-		value = mklist(term, value);
-		buf = NULL;
+		value      = mklist(term, value);
+		buf        = NULL;
 	}
 	buffer = buf;
 }
 
-extern List *endsplit(void) {
+extern List *
+endsplit(void) {
 	List *result;
 
 	if (buffer != NULL) {
 		Term *term = mkstr(sealcountedbuffer(buffer));
-		value = mklist(term, value);
-		buffer = NULL;
+		value      = mklist(term, value);
+		buffer     = NULL;
 	}
 	result = reverse(value);
-	value = NULL;
+	value  = NULL;
 	return result;
 }
 
-extern List *fsplit(const char *sep, List *list, bool coalesce) {
+extern List *
+fsplit(const char *sep, List *list, bool coalesce) {
 	Ref(List *, lp, list);
 	startsplit(sep, coalesce);
 	for (; lp != NULL; lp = lp->next) {

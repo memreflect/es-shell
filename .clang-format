@@ -1,0 +1,279 @@
+---
+Language:        Cpp
+# BasedOnStyle:  LLVM
+AccessModifierOffset: -2
+AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Left
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
+AlignConsecutiveDeclarations: AcrossEmptyLinesAndComments
+AlignEscapedNewlines: Right
+AlignOperands:   AlignAfterOperator
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortLambdasOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: TopLevel
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+AlwaysBreakBeforeMultilineStrings: false
+AlwaysBreakTemplateDeclarations: MultiLine
+AttributeMacros:
+  - __capability
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping:
+  AfterCaseLabel:  false
+  AfterClass:      false
+  AfterControlStatement: Never
+  AfterEnum:       false
+  AfterFunction:   false
+  AfterNamespace:  false
+  AfterObjCDeclaration: false
+  AfterStruct:     false
+  AfterUnion:      false
+  AfterExternBlock: false
+  BeforeCatch:     false
+  BeforeElse:      false
+  BeforeLambdaBody: false
+  BeforeWhile:     false
+  IndentBraces:    false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeBinaryOperators: All
+BreakBeforeConceptDeclarations: true
+BreakBeforeBraces: Attach
+BreakBeforeInheritanceComma: false
+BreakInheritanceList: BeforeColon
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: false
+BreakConstructorInitializers: BeforeColon
+BreakAfterJavaFieldAnnotations: false
+BreakStringLiterals: true
+ColumnLimit:     0
+CommentPragmas:  '^ IWYU pragma:'
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerIndentWidth: 8
+ContinuationIndentWidth: 8
+Cpp11BracedListStyle: true
+DeriveLineEnding: false
+DerivePointerAlignment: false
+DisableFormat:   false
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: LogicalBlock
+ExperimentalAutoDetectBinPacking: false
+FixNamespaceComments: true
+ForEachMacros:
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+IfMacros:
+  - KJ_IF_MAYBE
+IncludeBlocks:   Regroup
+# IncludeCategories results in this:
+#
+# /* esconfig.h first */
+# "esconfig.h"
+#
+# /* sys/*.h next, sorted lexicographically unless the full header name is
+#    specified */
+# <sys/cdefs.h>   # FreeBSD OpenBSD
+# <sys/types.h>   # FreeBSD NetBSD OpenBSD *
+# <sys/param.h>   # FreeBSD NetBSD OpenBSD *
+# <sys/systm.h>   # FreeBSD
+# <sys/*.h>
+# /* FreeBSD and OpenBSD allow either <sys/param.h> OR <sys/types.h>, but
+#    for clang-format purposes, we must allow both.  NetBSD says that
+#    <sys/param.h> should come before <sys/types.h>, so we're breaking that
+#    rule here.  clang-format is not a style linter.  */
+#
+# /* ISO C headers next to distinguish them from POSIX headers */
+# <ctype.h>
+# <stdio.h>
+# <string.h>
+# <time.h>
+#
+# /* POSIX headers sorted lexicographically */
+# <arpa/inet.h>
+# <fnmatch.h>
+# <net/if.h>
+#
+# /* Finally, local headers other than "config.h" */
+# "es.h"
+# "glom.h"
+# "stdenv.h"
+IncludeCategories:
+  # "esconfig.h" always comes first.
+  - Regex:           '^"esconfig.h"$'
+    Priority:        -100
+    SortPriority:    -100
+    CaseSensitive:   false
+  - Regex:           '^"estypes.h"$'
+    Priority:        -100
+    SortPriority:    -99
+  # Then <sys/cdefs.h> if necessary
+  - Regex:           '^<sys/cdefs.h>$'
+    Priority:        1
+    SortPriority:    10
+    CaseSensitive:   false
+  # Then <sys/types.h>
+  - Regex:           '^<sys/types.h>$'
+    Priority:        1
+    SortPriority:    11
+    CaseSensitive:   false
+  # Then <sys/param.h>
+  - Regex:           '^<sys/param.h>$'
+    Priority:        1
+    SortPriority:    12
+    CaseSensitive:   false
+  # Then <sys/systm.h>
+  - Regex:           '^<sys/systm.h>$'
+    Priority:        1
+    SortPriority:    13
+    CaseSensitive:   false
+  # Then <sys/...> headers, per many BSD kernel style guides
+  - Regex:           '^<sys/'
+    Priority:        1
+    SortPriority:    14
+    CaseSensitive:   false
+  # Then standard C headers
+  - Regex:           "^<(\
+assert|\
+complex|ctype|\
+errno|\
+fenv|float|\
+inttypes|iso646|\
+limits|locale|\
+math|\
+setjmp|signal|std[^/]*|string|\
+tgmath|threads|time|\
+uchar\
+wchar|wctype\
+).h>$"
+    Priority:        2
+    SortPriority:    20
+    CaseSensitive:   false
+  # Then POSIX headers
+  - Regex:           "^<(\
+aio|arpa/inet|\
+cpio|\
+dirent|dlfcn|\
+fcntl|fmtmsg|fnmatch|ftw|\
+glob|grp|\
+iconv|\
+langinfo|libgen|\
+monetary|mqueue|\
+ndbm|net/if|netdb|netinet/.*|nl_types|\
+poll|pthread|pwd|\
+regex|\
+sched|search|semaphore|spawn|strings|stropts|syslog|\
+tar|termios|trace|\
+ulimit|unistd|utime|utmpx|\
+wordexp\
+).h>$"
+    Priority:        3
+    SortPriority:    30
+    CaseSensitive:   false
+  # Then other non-project headers
+  - Regex:           '^<'
+    Priority:        4
+    SortPriority:    40
+    CaseSensitive:   false
+  # Then everything else
+IncludeIsMainRegex: '(Test)?$'
+IncludeIsMainSourceRegex: ''
+IndentAccessModifiers: false
+IndentCaseLabels: false
+IndentCaseBlocks: false
+IndentGotoLabels: false
+IndentPPDirectives: AfterHash
+IndentExternBlock: AfterExternBlock
+IndentRequires:  false
+IndentWidth:     4
+IndentWrappedFunctionNames: false
+InsertTrailingCommas: None
+JavaScriptQuotes: Leave
+JavaScriptWrapImports: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+LambdaBodyIndentation: Signature
+MacroBlockBegin: '^ExceptionHandler'
+MacroBlockEnd:   '^EndExceptionHandler'
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+ObjCBinPackProtocolList: Auto
+ObjCBlockIndentWidth: 2
+ObjCBreakBeforeNestedBlockParam: true
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: true
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 60
+PenaltyIndentedWhitespace: 0
+PointerAlignment: Right
+PPIndentWidth:   -1
+ReferenceAlignment: Pointer
+ReflowComments:  false
+ShortNamespaceLines: 1
+SortIncludes:    CaseSensitive
+SortJavaStaticImport: Before
+SortUsingDeclarations: true
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles:  Never
+SpacesInConditionalStatement: false
+SpacesInContainerLiterals: false
+SpacesInCStyleCastParentheses: false
+SpacesInLineCommentPrefix:
+  Minimum:         1
+  Maximum:         -1
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceBeforeSquareBrackets: false
+BitFieldColonSpacing: Both
+Standard:        Latest
+StatementAttributeLikeMacros:
+  - Q_EMIT
+StatementMacros:
+  - CatchException
+  - CatchExceptionIf
+  - Flag
+  - STMT
+  - NOP
+  - NOTREACHED
+TabWidth:        4
+UseCRLF:         false
+UseTab:          AlignWithSpaces
+WhitespaceSensitiveMacros:
+  - STRINGIZE
+  - PP_STRINGIZE
+  - BOOST_PP_STRINGIZE
+  - NS_SWIFT_NAME
+  - CF_SWIFT_NAME
+...
+

@@ -1,31 +1,33 @@
 /* print.c -- formatted printing routines */
 
+#include "print.h"
+
 #include <unistd.h>
 
 #include "es.h"
-#include "print.h"
 
-#define	MAXCONV 256
+#define MAXCONV 256
 
 /*
  * conversion functions
  *	ltrue return -> flag changes only, not a conversion
  */
 
-#define	Flag(name, flag) \
-static bool name(Format *format) { \
-	format->flags |= flag; \
-	return true; \
-}
+#define Flag(name, flag)               \
+	static bool name(Format *format) { \
+		format->flags |= flag;         \
+		return true;                   \
+	}
 
-Flag(uconv,	FMT_unsigned)
-Flag(hconv,	FMT_short)
-Flag(longconv,	FMT_long)
-Flag(altconv,	FMT_altform)
-Flag(leftconv,	FMT_leftside)
-Flag(dotconv,	FMT_f2set)
+Flag(uconv, FMT_unsigned)
+Flag(hconv, FMT_short)
+Flag(longconv, FMT_long)
+Flag(altconv, FMT_altform)
+Flag(leftconv, FMT_leftside)
+Flag(dotconv, FMT_f2set)
 
-static bool digitconv(Format *format) {
+static bool
+digitconv(Format *format) {
 	int c = format->invoker;
 	if (format->flags & FMT_f2set)
 		format->f2 = 10 * format->f2 + c - '0';
@@ -36,24 +38,28 @@ static bool digitconv(Format *format) {
 	return true;
 }
 
-static bool zeroconv(Format *format) {
+static bool
+zeroconv(Format *format) {
 	if (format->flags & (FMT_f1set | FMT_f2set))
 		return digitconv(format);
 	format->flags |= FMT_zeropad;
 	return true;
 }
 
-static void pad(Format *format, long len, int c) {
+static void
+pad(Format *format, long len, int c) {
 	while (len-- > 0)
 		fmtputc(format, c);
 }
 
-static bool sconv(Format *format) {
+static bool
+sconv(Format *format) {
 	char *s = va_arg(format->args, char *);
 	if ((format->flags & FMT_f1set) == 0)
 		fmtcat(format, s);
 	else {
-		size_t len = strlen(s), width = format->f1 - len;
+		size_t len   = strlen(s);
+		size_t width = format->f1 - len;
 		if (format->flags & FMT_leftside) {
 			fmtappend(format, s, len);
 			pad(format, width, ' ');
@@ -65,7 +71,8 @@ static bool sconv(Format *format) {
 	return false;
 }
 
-static char *utostr(unsigned long u, char *t, unsigned int radix, char *digit) {
+static char *
+utostr(unsigned long u, char *t, unsigned int radix, char *digit) {
 	if (u >= radix) {
 		t = utostr(u / radix, t, radix, digit);
 		u %= radix;
@@ -74,16 +81,23 @@ static char *utostr(unsigned long u, char *t, unsigned int radix, char *digit) {
 	return t;
 }
 
-static void intconv(Format *format, unsigned int radix, int upper, char *altform) {
-	static char * table[] = {
-		"0123456789abcdefghijklmnopqrstuvwxyz",
-		"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+static void
+intconv(Format *format, unsigned int radix, int upper, char *altform) {
+	static char *table[] = {
+			"0123456789abcdefghijklmnopqrstuvwxyz",
+			"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 	};
-	char padchar;
-	size_t len, pre, zeroes, padding, width;
-	long n, flags;
+	char          padchar;
+	size_t        len;
+	size_t        pre;
+	size_t        zeroes;
+	size_t        padding;
+	size_t        width;
+	long          n;
+	long          flags;
 	unsigned long u;
-	char number[64], prefix[20];
+	char          number[64];
+	char          prefix[20];
 
 	if (radix > 36)
 		return;
@@ -99,7 +113,7 @@ static void intconv(Format *format, unsigned int radix, int upper, char *altform
 		u = n;
 	else {
 		prefix[pre++] = '-';
-		u = -n;
+		u             = -n;
 	}
 
 	if (flags & FMT_altform)
@@ -107,13 +121,13 @@ static void intconv(Format *format, unsigned int radix, int upper, char *altform
 			prefix[pre++] = *altform++;
 
 	len = utostr(u, number, radix, table[upper]) - number;
-	if ((flags & FMT_f2set) && (size_t) format->f2 > len)
+	if ((flags & FMT_f2set) && (size_t)format->f2 > len)
 		zeroes = format->f2 - len;
 	else
 		zeroes = 0;
 
 	width = pre + zeroes + len;
-	if ((flags & FMT_f1set) && (size_t) format->f1 > width) {
+	if ((flags & FMT_f1set) && (size_t)format->f1 > width) {
 		padding = format->f1 - width;
 	} else
 		padding = 0;
@@ -136,36 +150,41 @@ static void intconv(Format *format, unsigned int radix, int upper, char *altform
 		pad(format, padding, padchar);
 }
 
-static bool cconv(Format *format) {
+static bool
+cconv(Format *format) {
 	fmtputc(format, va_arg(format->args, int));
 	return false;
 }
 
-static bool dconv(Format *format) {
+static bool
+dconv(Format *format) {
 	intconv(format, 10, 0, "");
 	return false;
 }
 
-static bool oconv(Format *format) {
+static bool
+oconv(Format *format) {
 	intconv(format, 8, 0, "0");
 	return false;
 }
 
-static bool xconv(Format *format) {
+static bool
+xconv(Format *format) {
 	intconv(format, 16, 0, "0x");
 	return false;
 }
 
-static bool pctconv(Format *format) {
+static bool
+pctconv(Format *format) {
 	fmtputc(format, '%');
 	return false;
 }
 
-static bool badconv(Format *format) {
+static bool
+badconv(Format *format) {
 	panic("bad conversion character in printfmt: %%%c", format->invoker);
 	return false; /* hush up gcc -Wall */
 }
-
 
 /*
  * conversion table management
@@ -173,10 +192,11 @@ static bool badconv(Format *format) {
 
 static Conv *fmttab;
 
-static void inittab(void) {
+static void
+inittab(void) {
 	int i;
 
-	fmttab = ealloc(MAXCONV * sizeof (Conv));
+	fmttab = ealloc(MAXCONV * sizeof(Conv));
 	for (i = 0; i < MAXCONV; i++)
 		fmttab[i] = badconv;
 
@@ -199,7 +219,8 @@ static void inittab(void) {
 		fmttab[i] = digitconv;
 }
 
-Conv fmtinstall(int c, Conv f) {
+Conv
+fmtinstall(int c, Conv f) {
 	Conv oldf;
 	if (fmttab == NULL)
 		inittab();
@@ -210,12 +231,12 @@ Conv fmtinstall(int c, Conv f) {
 	return oldf;
 }
 
-
 /*
  * functions for inserting strings in the format buffer
  */
 
-extern void fmtappend(Format *format, const char *s, size_t len) {
+extern void
+fmtappend(Format *format, const char *s, size_t len) {
 	while (format->buf + len > format->bufend) {
 		size_t split = format->bufend - format->buf;
 		memcpy(format->buf, s, split);
@@ -228,7 +249,8 @@ extern void fmtappend(Format *format, const char *s, size_t len) {
 	format->buf += len;
 }
 
-extern void fmtcat(Format *format, const char *s) {
+extern void
+fmtcat(Format *format, const char *s) {
 	fmtappend(format, s, strlen(s));
 }
 
@@ -236,8 +258,9 @@ extern void fmtcat(Format *format, const char *s) {
  * printfmt -- the driver routine
  */
 
-extern int printfmt(Format *format, const char *fmt) {
-	unsigned char *s = (unsigned char *) fmt;
+extern int
+printfmt(Format *format, const char *fmt) {
+	unsigned char *s = (unsigned char *)fmt;
 
 	if (fmttab[0] == NULL)
 		inittab();
@@ -260,13 +283,13 @@ extern int printfmt(Format *format, const char *fmt) {
 	}
 }
 
-
 /*
  * the public entry points
  */
 
-extern int fmtprint(Format * format, const char * fmt, ...) {
-	int n = -format->flushed;
+extern int
+fmtprint(Format *format, const char *fmt, ...) {
+	int     n = -format->flushed;
 	va_list saveargs;
 
 	va_copy(saveargs, format->args);
@@ -279,9 +302,10 @@ extern int fmtprint(Format * format, const char * fmt, ...) {
 	return n + format->flushed;
 }
 
-static void fprint_flush(Format *format, size_t more) {
-	size_t n = format->buf - format->bufbegin;
-	char *buf = format->bufbegin;
+static void
+fprint_flush(Format *format, size_t more) {
+	size_t n   = format->buf - format->bufbegin;
+	char  *buf = format->bufbegin;
 
 	format->flushed += n;
 	format->buf = format->bufbegin;
@@ -296,15 +320,16 @@ static void fprint_flush(Format *format, size_t more) {
 	}
 }
 
-static void fdprint(Format *format, int fd, const char *fmt) {
+static void
+fdprint(Format *format, int fd, const char *fmt) {
 	char buf[FPRINT_BUFSIZ];
 
-	format->buf	= buf;
+	format->buf      = buf;
 	format->bufbegin = buf;
-	format->bufend	= buf + sizeof buf;
-	format->grow	= fprint_flush;
-	format->flushed	= 0;
-	format->u.n	= fdmap(fd);
+	format->bufend   = buf + sizeof buf;
+	format->grow     = fprint_flush;
+	format->flushed  = 0;
+	format->u.n      = fdmap(fd);
 
 	gcdisable();
 	printfmt(format, fmt);
@@ -312,7 +337,8 @@ static void fdprint(Format *format, int fd, const char *fmt) {
 	gcenable();
 }
 
-extern int fprint(int fd, const char * fmt, ...) {
+extern int
+fprint(int fd, const char *fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
 	fdprint(&format, fd, fmt);
@@ -320,7 +346,8 @@ extern int fprint(int fd, const char * fmt, ...) {
 	return format.flushed;
 }
 
-extern int print(const char * fmt, ...) {
+extern int
+print(const char *fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
 	fdprint(&format, 1, fmt);
@@ -328,7 +355,8 @@ extern int print(const char * fmt, ...) {
 	return format.flushed;
 }
 
-extern int eprint(const char * fmt, ...) {
+extern int
+eprint(const char *fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
 	fdprint(&format, 2, fmt);
@@ -336,7 +364,8 @@ extern int eprint(const char * fmt, ...) {
 	return format.flushed;
 }
 
-extern _Noreturn void panic(const char * fmt, ...) {
+extern _Noreturn void
+panic(const char *fmt, ...) {
 	Format format;
 	gcdisable();
 	va_start(format.args, fmt);

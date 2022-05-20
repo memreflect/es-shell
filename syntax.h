@@ -1,15 +1,15 @@
 /* syntax.h -- abstract syntax tree interface */
 
-#include "esbool.h"
 #include "estypes.h"
 
-#define	CAR	u[0].p
-#define	CDR	u[1].p
+#include "esbool.h"
 
+#define CAR u[0].p
+#define CDR u[1].p
 
 /* syntax.c */
 
-extern Tree errornode;
+extern Tree  errornode;
 
 extern Tree *treecons(Tree *car, Tree *cdr);
 extern Tree *treecons2(Tree *car, Tree *cdr);
@@ -38,5 +38,5 @@ extern Tree *mkmatch(Tree *subj, Tree *cases);
 
 /* heredoc.c */
 
-extern bool readheredocs(bool endfile);
-extern bool queueheredoc(Tree *t);
+extern bool  readheredocs(bool endfile);
+extern bool  queueheredoc(Tree *t);

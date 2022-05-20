@@ -3,6 +3,6 @@
 #include "estypes.h"
 
 struct Term {
-	char *str;
+	char    *str;
 	Closure *closure;
 };

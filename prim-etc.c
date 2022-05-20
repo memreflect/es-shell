@@ -16,7 +16,7 @@ PRIM(echo) {
 	const char *eol = "\n";
 	if (list != NULL) {
 		if (termeq(list->term, "-n")) {
-			eol = "";
+			eol  = "";
 			list = list->next;
 		} else if (termeq(list->term, "--"))
 			list = list->next;
@@ -36,7 +36,7 @@ PRIM(setnoexport) {
 }
 
 PRIM(version) {
-	return mklist(mkstr((char *) version), NULL);
+	return mklist(mkstr((char *)version), NULL);
 }
 
 PRIM(exec) {
@@ -44,19 +44,31 @@ PRIM(exec) {
 }
 
 PRIM(dot) {
-	int c, fd;
-	Push zero, star;
-	volatile int runflags = (evalflags & eval_inchild);
-	const char * const usage = ". [-einvx] file [arg ...]";
+	int               c;
+	int               fd;
+	Push              zero;
+	Push              star;
+	volatile int      runflags = (evalflags & eval_inchild);
+	const char *const usage    = ". [-einvx] file [arg ...]";
 
 	esoptbegin(list, "$&dot", usage);
 	while ((c = esopt("einvx")) != EOF)
 		switch (c) {
-		case 'e':	runflags |= eval_exitonfalse;	break;
-		case 'i':	runflags |= run_interactive;	break;
-		case 'n':	runflags |= run_noexec;		break;
-		case 'v':	runflags |= run_echoinput;	break;
-		case 'x':	runflags |= run_printcmds;	break;
+		case 'e':
+			runflags |= eval_exitonfalse;
+			break;
+		case 'i':
+			runflags |= run_interactive;
+			break;
+		case 'n':
+			runflags |= run_noexec;
+			break;
+		case 'v':
+			runflags |= run_echoinput;
+			break;
+		case 'x':
+			runflags |= run_printcmds;
+			break;
 		}
 
 	Ref(List *, result, NULL);
@@ -87,7 +99,7 @@ PRIM(flatten) {
 		fail("$&flatten", "usage: %%flatten separator [args ...]");
 	Ref(List *, lp, list);
 	sep = getstr(lp->term);
-	lp = mklist(mkstr(str("%L", lp->next, sep)), NULL);
+	lp  = mklist(mkstr(str("%L", lp->next, sep)), NULL);
 	RefReturn(lp);
 }
 
@@ -123,7 +135,7 @@ PRIM(split) {
 		fail("$&split", "usage: %%split separator [args ...]");
 	Ref(List *, lp, list);
 	sep = getstr(lp->term);
-	lp = fsplit(sep, lp->next, true);
+	lp  = fsplit(sep, lp->next, true);
 	RefReturn(lp);
 }
 
@@ -133,7 +145,7 @@ PRIM(fsplit) {
 		fail("$&fsplit", "usage: %%fsplit separator [args ...]");
 	Ref(List *, lp, list);
 	sep = getstr(lp->term);
-	lp = fsplit(sep, lp->next, false);
+	lp  = fsplit(sep, lp->next, false);
 	RefReturn(lp);
 }
 
@@ -173,11 +185,11 @@ PRIM(parse) {
 			prompt2 = getstr(lp->term);
 	}
 	RefEnd(lp);
-	tree = parse(prompt1, prompt2);
+	tree   = parse(prompt1, prompt2);
 	result = (tree == NULL)
-		   ? NULL
-		   : mklist(mkterm(NULL, mkclosure(mk(nThunk, tree), NULL)),
-			    NULL);
+	               ? NULL
+	               : mklist(mkterm(NULL, mkclosure(mk(nThunk, tree), NULL)),
+	                        NULL);
 	RefEnd2(prompt2, prompt1);
 	return result;
 }
@@ -195,11 +207,12 @@ PRIM(batchloop) {
 	ExceptionHandler
 
 		for (;;) {
-			List *parser, *cmd;
+			List *parser;
+			List *cmd;
 			parser = varlookup("fn-%parse", NULL);
-			cmd = (parser == NULL)
-					? prim("parse", NULL, NULL, 0)
-					: eval(parser, NULL, 0);
+			cmd    = (parser == NULL)
+			               ? prim("parse", NULL, NULL, 0)
+			               : eval(parser, NULL, 0);
 			SIGCHK();
 			dispatch = varlookup("fn-%dispatch", NULL);
 			if (cmd != NULL) {
@@ -210,10 +223,10 @@ PRIM(batchloop) {
 			}
 		}
 
-	CatchException (e)
+	CatchException(e)
 
 		if (!termeq(e->term, "eof"))
-			throw(e);
+			fire(e);
 		RefEnd(dispatch);
 		if (result == ltrue)
 			result = ltrue;
@@ -265,7 +278,7 @@ PRIM(noreturn) {
 
 PRIM(setmaxevaldepth) {
 	char *s;
-	long n;
+	long  n;
 	if (list == NULL) {
 		maxevaldepth = MAXmaxevaldepth;
 		return NULL;
@@ -289,12 +302,12 @@ PRIM(resetterminal) {
 }
 #endif
 
-
 /*
  * initialization
  */
 
-extern Dict *initprims_etc(Dict *primdict) {
+extern Dict *
+initprims_etc(Dict *primdict) {
 	X(echo);
 	X(count);
 	X(version);
