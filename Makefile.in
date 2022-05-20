@@ -43,10 +43,10 @@ SHELL	= /bin/sh
 ## Bison is generating incorrect parsers.  So do not use, for now
 # YACC = @YACC@
 
-CPPFLAGS = $(ADDCPPFLAGS) -I. -I$(srcdir) @CPPFLAGS@
-CFLAGS	= $(ADDCFLAGS) -W -Wall -Wno-implicit-fallthrough -Wno-cast-function-type -Wno-missing-field-initializers -Wno-unused-parameter -Wno-clobbered @CFLAGS@
-LDFLAGS	= $(ADDLDFLAGS) @LDFLAGS@
-LIBS	= $(ADDLIBS) @LIBS@
+CPPFLAGS = -I. -I$(srcdir) @CPPFLAGS@ $(ADDCPPFLAGS)
+CFLAGS	= -W -Wall -Wno-implicit-fallthrough -Wno-cast-function-type -Wno-missing-field-initializers -Wno-unused-parameter -Wno-clobbered @CFLAGS@ $(ADDCFLAGS)
+LDFLAGS	= @LDFLAGS@ $(ADDLDFLAGS)
+LIBS	= @LIBS@ $(ADDLIBS)
 
 VPATH = $(srcdir)
 
@@ -87,9 +87,18 @@ distclean:	clean
 MANIFEST:
 	find . -type f | sed s/..// > MANIFEST
 
-install : es
+install : install-es install-man
+
+install-strip : install-es-strip install-man
+
+install-es-strip : install-es
+	strip $(DESTDIR)$(bindir)/es
+
+install-es: es
 	$(MKDIR_P) $(DESTDIR)$(bindir)
 	$(INSTALL) -s $(srcdir)/es $(DESTDIR)$(bindir)
+
+install-man:
 	$(MKDIR_P) $(DESTDIR)$(mandir)/man1
 	$(INSTALL) $(srcdir)/doc/es.1 $(DESTDIR)$(mandir)/man1
 
