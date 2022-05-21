@@ -23,7 +23,7 @@ List
 		*lfalse = (List *)&lfalselist;
 
 /* istrue -- is this status list ltrue? */
-extern bool
+bool
 istrue(List *status) {
 	for (; status != NULL; status = status->next) {
 		Term *term = status->term;
@@ -40,7 +40,7 @@ istrue(List *status) {
 }
 
 /* exitstatus -- turn a status list into an exit(2) value */
-extern int
+int
 exitstatus(List *status) {
 	Term		 *term;
 	char		 *s;
@@ -64,7 +64,7 @@ exitstatus(List *status) {
 }
 
 /* mkstatus -- turn a unix exit(2) status into a string */
-extern char *
+char *
 mkstatus(int status) {
 	if (WIFSIGNALED(status)) {
 		char *name = signame(WTERMSIG(status));
@@ -76,7 +76,7 @@ mkstatus(int status) {
 }
 
 /* printstatus -- print the status if we should */
-extern void
+void
 printstatus(int pid, int status) {
 	if (WIFSIGNALED(status)) {
 		const char *msg  = sigmessage(WTERMSIG(status));

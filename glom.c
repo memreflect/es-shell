@@ -4,7 +4,7 @@
 #include "gc.h"
 
 /* concat -- cartesion cross product concatenation */
-extern List *
+List *
 concat(List *list1, List *list2) {
 	List **p;
 	List  *result = NULL;
@@ -257,7 +257,7 @@ glom1(Tree *tree, Binding *binding) {
 }
 
 /* glom2 -- glom and produce a quoting list */
-extern List *
+List *
 glom2(Tree *tree, Binding *binding, StrList **quotep) {
 	Ref(List *, result, NULL);
 	Ref(List *, tail, NULL);
@@ -331,7 +331,7 @@ glom2(Tree *tree, Binding *binding, StrList **quotep) {
 }
 
 /* glom -- top level glom dispatching */
-extern List *
+List *
 glom(Tree *tree, Binding *binding, bool globit) {
 	if (globit) {
 		Ref(List *, list, NULL);

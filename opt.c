@@ -10,7 +10,7 @@ static List       *args;
 static Term       *termarg;
 static int         nextchar;
 
-extern void
+void
 esoptbegin(List *list, const char *caller, const char *usagemsg) {
 	static bool initialized = false;
 	if (!initialized) {
@@ -28,7 +28,7 @@ esoptbegin(List *list, const char *caller, const char *usagemsg) {
 	nextchar = 0;
 }
 
-extern int
+int
 esopt(const char *options) {
 	int         c;
 	const char *arg;
@@ -85,7 +85,7 @@ esopt(const char *options) {
 	return c;
 }
 
-extern Term *
+Term *
 esoptarg(void) {
 	Term *t = termarg;
 	assert(t != NULL);
@@ -93,7 +93,7 @@ esoptarg(void) {
 	return t;
 }
 
-extern List *
+List *
 esoptend(void) {
 	List *result = args;
 	args         = NULL;

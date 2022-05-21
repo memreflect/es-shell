@@ -155,10 +155,10 @@ static const Suffix sizesuf[] = {
 };
 static const Suffix *sizesuf_end = sizesuf + arraysize(sizesuf);
 
-static const Suffix  timesuf[] = {
-		 {"h", 60 * 60},
-		 {"m", 60     },
-		 {"s", 1      },
+static const Suffix timesuf[] = {
+		{"h", 60 * 60},
+		{"m", 60     },
+		{"s", 1      },
 };
 static const Suffix *timesuf_end = timesuf + arraysize(timesuf);
 
@@ -446,7 +446,7 @@ PRIM(execfailure) {
 }
 #endif /* !KERNEL_POUNDBANG */
 
-extern Dict *
+Dict *
 initprims_sys(Dict *primdict) {
 	X(newpgrp);
 	X(background);

@@ -424,8 +424,8 @@ read1(int fd) {
 }
 
 PRIM(read) {
-	int            c;
-	int            fd = fdmap(0);
+	int c;
+	int fd = fdmap(0);
 
 	static Buffer *buffer = NULL;
 	if (buffer != NULL)
@@ -446,7 +446,7 @@ PRIM(read) {
 	}
 }
 
-extern Dict *
+Dict *
 initprims_io(Dict *primdict) {
 	X(openfile);
 	X(close);

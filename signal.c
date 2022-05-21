@@ -3,9 +3,9 @@
 #include "es.h"
 #include "sigmsgs.h"
 
-typedef void (*Sighandler)(int);
+typedef void Sighandler(int);
 
-bool             sigint_newline = true;
+bool sigint_newline = true;
 
 sigjmp_buf       slowlabel;
 Atomic           slow        = false;
@@ -28,7 +28,7 @@ static Sigeffect sigeffect[NSIG];
  * name<->signal mappings
  */
 
-extern int
+int
 signumber(const char *name) {
 	int   i;
 	char *suffix;
@@ -43,7 +43,7 @@ signumber(const char *name) {
 	return -1;
 }
 
-extern char *
+char *
 signame(int sig) {
 	int i;
 	for (i = 0; i < nsignals; i++)
@@ -52,7 +52,7 @@ signame(int sig) {
 	return str("sig%d", sig);
 }
 
-extern char *
+char *
 sigmessage(int sig) {
 	int i;
 	for (i = 0; i < nsignals; i++)
@@ -84,8 +84,8 @@ catcher(int sig) {
  * setting and getting signal effects
  */
 
-static Sighandler
-setsignal(int sig, Sighandler handler) {
+static Sighandler *
+setsignal(int sig, Sighandler *handler) {
 	struct sigaction nsa;
 	struct sigaction osa;
 	sigemptyset(&nsa.sa_mask);
@@ -96,7 +96,7 @@ setsignal(int sig, Sighandler handler) {
 	return osa.sa_handler;
 }
 
-extern Sigeffect
+Sigeffect
 esignal(int sig, Sigeffect effect) {
 	Sigeffect old;
 	assert(0 < sig && sig <= NSIG);
@@ -132,14 +132,14 @@ esignal(int sig, Sigeffect effect) {
 	return old;
 }
 
-extern void
+void
 setsigeffects(const Sigeffect effects[]) {
 	int sig;
 	for (sig = 1; sig < NSIG; sig++)
 		esignal(sig, effects[sig]);
 }
 
-extern void
+void
 getsigeffects(Sigeffect effects[]) {
 	memcpy(effects, sigeffect, sizeof sigeffect);
 }
@@ -148,7 +148,7 @@ getsigeffects(Sigeffect effects[]) {
  * initialization
  */
 
-extern void
+void
 initsignals(bool interactive, bool allowdumps) {
 	int  sig;
 	Push settor;
@@ -160,7 +160,7 @@ initsignals(bool interactive, bool allowdumps) {
 					signals[sig].name);
 
 	for (sig = 1; sig < NSIG; sig++) {
-		Sighandler       h;
+		Sighandler      *h;
 		struct sigaction sa;
 		sigaction(sig, NULL, &sa);
 		h = sa.sa_handler;
@@ -172,9 +172,9 @@ initsignals(bool interactive, bool allowdumps) {
 #ifdef __has_feature
 #	if __has_feature(address_sanitizer) || __has_feature(undefined_behavior_sanitizer)
 				if (sig == SIGKILL || sig == SIGFPE
-		            || sig == SIGBUS || sig == SIGSEGV)
+		            || sig == SIGBUS || sig == SIGSEGV) {
 			sigeffect[sig] = sig_default;
-		else
+		} else
 #	endif
 #endif
 			panic(
@@ -198,7 +198,7 @@ initsignals(bool interactive, bool allowdumps) {
 	varpop(&settor);
 }
 
-extern void
+void
 setsigdefaults(void) {
 	int sig;
 	for (sig = 1; sig < NSIG; sig++) {
@@ -212,14 +212,14 @@ setsigdefaults(void) {
  * utility functions
  */
 
-extern bool
+bool
 issilentsignal(List *e) {
 	return (termeq(e->term, "signal"))
 	    && e->next != NULL
 	    && termeq(e->next->term, "sigint");
 }
 
-extern List *
+List *
 mksiglist(void) {
 	int       sig = NSIG;
 	Sigeffect effects[NSIG];
@@ -262,21 +262,21 @@ mksiglist(void) {
 static int blocked = 0;
 
 /* blocksignals -- turn off delivery of signals as exceptions */
-extern void
+void
 blocksignals(void) {
 	assert(blocked >= 0);
 	++blocked;
 }
 
 /* unblocksignals -- turn on delivery of signals as exceptions */
-extern void
+void
 unblocksignals(void) {
 	assert(blocked > 0);
 	--blocked;
 }
 
 /* sigchk -- throw the signal as an exception */
-extern void
+void
 sigchk(void) {
 	int sig;
 

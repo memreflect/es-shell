@@ -7,7 +7,7 @@
 #include "es.h"
 
 /* esstrerror -- a wrapper around sterror(3) */
-extern char *
+char *
 esstrerror(int n) {
 	char *error = strerror(n);
 
@@ -17,7 +17,7 @@ esstrerror(int n) {
 }
 
 /* uerror -- print a unix error, our version of perror */
-extern void
+void
 uerror(char *s) {
 	if (s != NULL)
 		eprint("%s: %s\n", s, esstrerror(errno));
@@ -26,14 +26,14 @@ uerror(char *s) {
 }
 
 /* isabsolute -- test to see if pathname begins with "/", "./", or "../" */
-extern bool
+bool
 isabsolute(char *path) {
 	return path[0] == '/'
 	    || (path[0] == '.' && (path[1] == '/' || (path[1] == '.' && path[2] == '/')));
 }
 
 /* streq2 -- is a string equal to the concatenation of two strings? */
-extern bool
+bool
 streq2(const char *s, const char *t1, const char *t2) {
 	int c;
 	assert(s != NULL && t1 != NULL && t2 != NULL);
@@ -51,7 +51,7 @@ streq2(const char *s, const char *t1, const char *t2) {
  */
 
 /* ealloc -- error checked malloc */
-extern void *
+void *
 ealloc(size_t n) {
 	void *p = malloc(n);
 	if (p == NULL) {
@@ -62,7 +62,7 @@ ealloc(size_t n) {
 }
 
 /* erealloc -- error checked realloc */
-extern void *
+void *
 erealloc(void *p, size_t n) {
 	if (p == NULL)
 		return ealloc(n);
@@ -75,7 +75,7 @@ erealloc(void *p, size_t n) {
 }
 
 /* efree -- error checked free */
-extern void
+void
 efree(void *p) {
 	assert(p != NULL);
 	free(p);
@@ -85,7 +85,7 @@ efree(void *p) {
  * private interfaces to system calls
  */
 
-extern void
+void
 ewrite(int fd, const char *buf, size_t n) {
 	volatile long i;
 	volatile long remain;
@@ -106,7 +106,7 @@ ewrite(int fd, const char *buf, size_t n) {
 	SIGCHK();
 }
 
-extern long
+long
 eread(int fd, char *buf, size_t n) {
 	long r;
 	interrupted = false;

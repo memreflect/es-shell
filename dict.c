@@ -174,12 +174,12 @@ rm(Dict *dict, Assoc *ap) {
  * exported functions
  */
 
-extern Dict *
+Dict *
 mkdict(void) {
 	return mkdict0(INIT_DICT_SIZE);
 }
 
-extern void *
+void *
 dictget(Dict *dict, const char *name) {
 	Assoc *ap = get(dict, name);
 	if (ap == NULL)
@@ -187,7 +187,7 @@ dictget(Dict *dict, const char *name) {
 	return ap->value;
 }
 
-extern Dict *
+Dict *
 dictput(Dict *dict, char *name, void *value) {
 	Assoc *ap = get(dict, name);
 	if (value != NULL)
@@ -200,7 +200,7 @@ dictput(Dict *dict, char *name, void *value) {
 	return dict;
 }
 
-extern void
+void
 dictforall(Dict *dp, void (*proc)(void *, char *, void *), void *arg) {
 	int i;
 	Ref(Dict *, dict, dp);
@@ -214,7 +214,7 @@ dictforall(Dict *dp, void (*proc)(void *, char *, void *), void *arg) {
 }
 
 /* dictget2 -- look up the catenation of two names (such a hack!) */
-extern void *
+void *
 dictget2(Dict *dict, const char *name1, const char *name2) {
 	Assoc        *ap;
 	unsigned long n    = strhash2(name1, name2);

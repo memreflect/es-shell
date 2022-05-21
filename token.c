@@ -76,7 +76,7 @@ const char dnw[] = {
 /* clang-format on */
 
 /* print_prompt2 -- called before all continuation lines */
-extern void
+void
 print_prompt2(void) {
 	input->lineno++;
 #if HAVE_READLINE
@@ -156,7 +156,7 @@ getfds(int fd[2], int c, int default0, int default1) {
 	return true;
 }
 
-extern int
+int
 yylex(void) {
 	static bool dollar = false;
 	int         c;
@@ -458,7 +458,7 @@ redirection:
 	}
 }
 
-extern void
+void
 inityy(void) {
 	newline = false;
 	w       = NW;

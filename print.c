@@ -190,13 +190,13 @@ badconv(Format *format) {
  * conversion table management
  */
 
-static Conv *fmttab;
+static Conv **fmttab;
 
 static void
 inittab(void) {
 	int i;
 
-	fmttab = ealloc(MAXCONV * sizeof(Conv));
+	fmttab = ealloc(MAXCONV * sizeof(Conv *));
 	for (i = 0; i < MAXCONV; i++)
 		fmttab[i] = badconv;
 
@@ -219,9 +219,9 @@ inittab(void) {
 		fmttab[i] = digitconv;
 }
 
-Conv
-fmtinstall(int c, Conv f) {
-	Conv oldf;
+Conv *
+fmtinstall(int c, Conv *f) {
+	Conv *oldf;
 	if (fmttab == NULL)
 		inittab();
 	c &= MAXCONV - 1;
@@ -235,7 +235,7 @@ fmtinstall(int c, Conv f) {
  * functions for inserting strings in the format buffer
  */
 
-extern void
+void
 fmtappend(Format *format, const char *s, size_t len) {
 	while (format->buf + len > format->bufend) {
 		size_t split = format->bufend - format->buf;
@@ -249,7 +249,7 @@ fmtappend(Format *format, const char *s, size_t len) {
 	format->buf += len;
 }
 
-extern void
+void
 fmtcat(Format *format, const char *s) {
 	fmtappend(format, s, strlen(s));
 }
@@ -258,7 +258,7 @@ fmtcat(Format *format, const char *s) {
  * printfmt -- the driver routine
  */
 
-extern int
+int
 printfmt(Format *format, const char *fmt) {
 	unsigned char *s = (unsigned char *)fmt;
 
@@ -287,7 +287,7 @@ printfmt(Format *format, const char *fmt) {
  * the public entry points
  */
 
-extern int
+int
 fmtprint(Format *format, const char *fmt, ...) {
 	int     n = -format->flushed;
 	va_list saveargs;
@@ -337,7 +337,7 @@ fdprint(Format *format, int fd, const char *fmt) {
 	gcenable();
 }
 
-extern int
+int
 fprint(int fd, const char *fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
@@ -346,7 +346,7 @@ fprint(int fd, const char *fmt, ...) {
 	return format.flushed;
 }
 
-extern int
+int
 print(const char *fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
@@ -355,7 +355,7 @@ print(const char *fmt, ...) {
 	return format.flushed;
 }
 
-extern int
+int
 eprint(const char *fmt, ...) {
 	Format format;
 	va_start(format.args, fmt);
@@ -364,7 +364,7 @@ eprint(const char *fmt, ...) {
 	return format.flushed;
 }
 
-extern _Noreturn void
+_Noreturn void
 panic(const char *fmt, ...) {
 	Format format;
 	gcdisable();

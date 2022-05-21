@@ -9,7 +9,7 @@
 
 DefineTag(Closure, static);
 
-extern Closure *
+Closure *
 mkclosure(Tree *tree, Binding *binding) {
 	gcdisable();
 	Ref(Closure *, closure, gcnew(Closure));
@@ -113,7 +113,7 @@ extract(Tree *tree, Binding *bindings) {
 	return bindings;
 }
 
-extern Closure *
+Closure *
 extractbindings(Tree *tree0) {
 	Chain me;
 	Tree *volatile tree        = tree0;
@@ -159,7 +159,7 @@ extractbindings(Tree *tree0) {
 
 DefineTag(Binding, static);
 
-extern Binding *
+Binding *
 mkbinding(char *name, List *defn, Binding *next) {
 	assert(next == NULL || next->name != NULL);
 	validatevar(name);
@@ -172,7 +172,7 @@ mkbinding(char *name, List *defn, Binding *next) {
 	RefReturn(binding);
 }
 
-extern Binding *
+Binding *
 reversebindings(Binding *binding) {
 	if (binding == NULL)
 		return NULL;

@@ -29,7 +29,7 @@ failexec(char *file, List *args) {
 }
 
 /* forkexec -- fork (if necessary) and exec */
-extern List *
+List *
 forkexec(char *file, List *list, bool inchild) {
 	int     pid;
 	int     status;
@@ -272,7 +272,7 @@ extractpattern(Tree *subjectform0, Tree *patternform0, Binding *binding) {
 }
 
 /* walk -- walk through a tree, evaluating nodes */
-extern List *
+List *
 walk(Tree *tree0, Binding *binding0, int flags) {
 	Tree *volatile tree       = tree0;
 	Binding *volatile binding = binding0;
@@ -332,7 +332,7 @@ top:
 }
 
 /* bindargs -- bind an argument list to the parameters of a lambda */
-extern Binding *
+Binding *
 bindargs(Tree *params, List *args, Binding *binding) {
 	if (params == NULL)
 		return mkbinding("*", args, binding);
@@ -363,7 +363,7 @@ bindargs(Tree *params, List *args, Binding *binding) {
 }
 
 /* pathsearch -- evaluate fn %pathsearch + some argument */
-extern List *
+List *
 pathsearch(Term *term) {
 	List *search;
 	List *list;
@@ -375,7 +375,7 @@ pathsearch(Term *term) {
 }
 
 /* eval -- evaluate a list, producing a list */
-extern List *
+List *
 eval(List *list0, Binding *binding0, int flags) {
 	Closure *volatile cp;
 	List *fn;
@@ -479,7 +479,7 @@ done:
 }
 
 /* eval1 -- evaluate a term, producing a list */
-extern List *
+List *
 eval1(Term *term, int flags) {
 	return eval(mklist(term, NULL), NULL, flags);
 }

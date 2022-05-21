@@ -7,7 +7,7 @@
 #include "es.h"
 
 /* mvfd -- duplicate a fd and close the old */
-extern void
+void
 mvfd(int old, int new) {
 	if (old != new) {
 		int fd = dup2(old, new);
@@ -72,20 +72,20 @@ pushdefer(bool parent, int realfd, int userfd) {
 	}
 }
 
-extern int
+int
 defer_mvfd(bool parent, int old, int new) {
 	assert(old >= 0);
 	assert(new >= 0);
 	return pushdefer(parent, old, new);
 }
 
-extern int
+int
 defer_close(bool parent, int fd) {
 	assert(fd >= 0);
 	return pushdefer(parent, -1, fd);
 }
 
-extern void
+void
 undefer(int ticket) {
 	if (ticket != UNREGISTERED) {
 		Defer *defer;
@@ -100,7 +100,7 @@ undefer(int ticket) {
 }
 
 /* fdmap -- turn a deferred (user) fd into a real fd */
-extern int
+int
 fdmap(int fd) {
 	int i = defcount;
 	while (--i >= 0) {
@@ -145,7 +145,7 @@ static int      rescount = 0;
 static int      resmax   = 0;
 
 /* registerfd -- reserve a file descriptor for es */
-extern void
+void
 registerfd(int *fdp, bool closeonfork) {
 #if ASSERTIONS
 	int i;
@@ -162,7 +162,7 @@ registerfd(int *fdp, bool closeonfork) {
 }
 
 /* unregisterfd -- give up our hold on a file descriptor */
-extern void
+void
 unregisterfd(int *fdp) {
 	int i;
 	assert(reserved != NULL);
@@ -176,7 +176,7 @@ unregisterfd(int *fdp) {
 }
 
 /* closefds -- close file descriptors after a fork() */
-extern void
+void
 closefds(void) {
 	int i;
 	remapfds();
@@ -192,7 +192,7 @@ closefds(void) {
 }
 
 /* releasefd -- release a specific file descriptor from its es uses */
-extern void
+void
 releasefd(int n) {
 	int i;
 	assert(n >= 0);
@@ -222,7 +222,7 @@ isdeferred(int fd) {
 }
 
 /* newfd -- return a new, free file descriptor */
-extern int
+int
 newfd(void) {
 	int i;
 	for (i = 3;; i++)

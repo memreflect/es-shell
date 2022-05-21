@@ -28,64 +28,64 @@ extern bool gcinfo; /* -I */
 
 /* initial.c (for es) or dump.c (for esdump) */
 
-extern void runinitial(void);
+void runinitial(void);
 
 /* fd.c */
 
-extern void mvfd(int old, int new);
-extern int  newfd(void);
+void mvfd(int old, int new);
+int  newfd(void);
 
 #define UNREGISTERED (-999)
-extern void registerfd(int *fdp, bool closeonfork);
-extern void unregisterfd(int *fdp);
-extern void releasefd(int fd);
-extern void closefds(void);
+void registerfd(int *fdp, bool closeonfork);
+void unregisterfd(int *fdp);
+void releasefd(int fd);
+void closefds(void);
 
-extern int  fdmap(int fd);
-extern int  defer_mvfd(bool parent, int old, int new);
-extern int  defer_close(bool parent, int fd);
-extern void undefer(int ticket);
+int  fdmap(int fd);
+int  defer_mvfd(bool parent, int old, int new);
+int  defer_close(bool parent, int fd);
+void undefer(int ticket);
 
 /* term.c */
 
 #define mkstr(str) (mkterm((str), NULL))
-extern Term         *mkterm(char *str, Closure *closure);
-extern char         *getstr(Term *term);
-extern Closure      *getclosure(Term *term);
-extern Term         *termcat(Term *t1, Term *t2);
-extern bool          termeq(Term *term, const char *s);
-extern bool          isclosure(Term *term);
+Term    *mkterm(char *str, Closure *closure);
+char    *getstr(Term *term);
+Closure *getclosure(Term *term);
+Term    *termcat(Term *t1, Term *t2);
+bool     termeq(Term *term, const char *s);
+bool     isclosure(Term *term);
 
 /* list.c */
 
-extern List         *mklist(Term *term, List *next);
-extern List         *reverse(List *list);
-extern List         *append(List *head, List *tail);
-extern List         *listcopy(List *list);
-extern int           length(List *list);
-extern List         *listify(int argc, char **argv);
-extern Term         *nth(List *list, int n);
-extern List         *sortlist(List *list);
+List *mklist(Term *term, List *next);
+List *reverse(List *list);
+List *append(List *head, List *tail);
+List *listcopy(List *list);
+int   length(List *list);
+List *listify(int argc, char **argv);
+Term *nth(List *list, int n);
+List *sortlist(List *list);
 
 /* tree.c */
 
-extern Tree         *mk(NodeKind, ...);
+Tree *mk(NodeKind, ...);
 
 /* closure.c */
 
-extern Closure      *mkclosure(Tree *tree, Binding *binding);
-extern Closure      *extractbindings(Tree *tree);
-extern Binding      *mkbinding(char *name, List *defn, Binding *next);
-extern Binding      *reversebindings(Binding *binding);
+Closure *mkclosure(Tree *tree, Binding *binding);
+Closure *extractbindings(Tree *tree);
+Binding *mkbinding(char *name, List *defn, Binding *next);
+Binding *reversebindings(Binding *binding);
 
 /* eval.c */
 
-extern Binding      *bindargs(Tree *params, List *args, Binding *binding);
-extern List         *forkexec(char *file, List *list, bool inchild);
-extern List         *walk(Tree *tree, Binding *binding, int flags);
-extern List         *eval(List *list, Binding *binding, int flags);
-extern List         *eval1(Term *term, int flags);
-extern List         *pathsearch(Term *term);
+Binding *bindargs(Tree *params, List *args, Binding *binding);
+List    *forkexec(char *file, List *list, bool inchild);
+List    *walk(Tree *tree, Binding *binding, int flags);
+List    *eval(List *list, Binding *binding, int flags);
+List    *eval1(Term *term, int flags);
+List    *pathsearch(Term *term);
 
 extern unsigned long evaldepth;
 extern unsigned long maxevaldepth;
@@ -98,119 +98,123 @@ extern unsigned long maxevaldepth;
 
 /* glom.c */
 
-extern List        *glom(Tree *tree, Binding *binding, bool globit);
-extern List        *glom2(Tree *tree, Binding *binding, StrList **quotep);
+List *glom(Tree *tree, Binding *binding, bool globit);
+List *glom2(Tree *tree, Binding *binding, StrList **quotep);
 
 /* glob.c */
 
-extern const char  *QUOTED;
-extern const char  *UNQUOTED;
-extern List        *glob(List *list, StrList *quote);
-extern bool         haswild(const char *pattern, const char *quoting);
+extern const char *QUOTED;
+extern const char *UNQUOTED;
+
+List *glob(List *list, StrList *quote);
+bool  haswild(const char *pattern, const char *quoting);
 
 /* match.c */
-extern bool         match(const char *subject, const char *pattern, const char *quote);
-extern bool         listmatch(List *subject, List *pattern, StrList *quote);
-extern List        *extractmatches(List *subjects, List *patterns, StrList *quotes);
+bool  match(const char *subject, const char *pattern, const char *quote);
+bool  listmatch(List *subject, List *pattern, StrList *quote);
+List *extractmatches(List *subjects, List *patterns, StrList *quotes);
 
 /* var.c */
 
-extern void         initvars(void);
-extern void         initenv(char **envp, bool protected);
-extern void         hidevariables(void);
-extern void         validatevar(const char *var);
-extern List        *varlookup(const char *name, Binding *binding);
-extern List        *varlookup2(char *name1, char *name2, Binding *binding);
-extern void         vardef(char *, Binding *, List *);
-extern Vector      *mkenv(void);
-extern void         setnoexport(List *list);
-extern void         addtolist(void *arg, char *key, void *value);
-extern List        *listvars(bool internal);
+void    initvars(void);
+void    initenv(char **envp, bool protected);
+void    hidevariables(void);
+void    validatevar(const char *var);
+List   *varlookup(const char *name, Binding *binding);
+List   *varlookup2(char *name1, char *name2, Binding *binding);
+void    vardef(char *, Binding *, List *);
+Vector *mkenv(void);
+void    setnoexport(List *list);
+void    addtolist(void *arg, char *key, void *value);
+List   *listvars(bool internal);
 
 typedef struct Push Push;
 extern Push        *pushlist;
-extern void         varpush(Push *, char *, List *);
-extern void         varpop(Push *);
+void                varpush(Push *, char *, List *);
+void                varpop(Push *);
 
 /* status.c */
 
-extern List        *ltrue;
-extern List        *lfalse;
-extern bool         istrue(List *status);
-extern int          exitstatus(List *status);
-extern char        *mkstatus(int status);
-extern void         printstatus(int pid, int status);
+extern List *ltrue;
+extern List *lfalse;
+
+bool  istrue(List *status);
+int   exitstatus(List *status);
+char *mkstatus(int status);
+void  printstatus(int pid, int status);
 
 /* access.c */
 
-extern char        *checkexecutable(char *file);
+char *checkexecutable(char *file);
 
 /* proc.c */
 
-extern bool         hasforked;
-extern int          efork(bool parent, bool background);
-extern int          ewait(int pid, bool interruptible, struct rusage *rusage);
+extern bool hasforked;
+
+int efork(bool parent, bool background);
+int ewait(int pid, bool interruptible, struct rusage *rusage);
 #define ewaitfor(pid) ewait(pid, false, NULL)
 
 /* dict.c */
 
-extern Dict          *mkdict(void);
-extern void           dictforall(Dict *dict, void (*proc)(void *, char *, void *), void *arg);
-extern void          *dictget(Dict *dict, const char *name);
-extern Dict          *dictput(Dict *dict, char *name, void *value);
-extern void          *dictget2(Dict *dict, const char *name1, const char *name2);
+Dict *mkdict(void);
+void  dictforall(Dict *dict, void (*proc)(void *, char *, void *), void *arg);
+void *dictget(Dict *dict, const char *name);
+Dict *dictput(Dict *dict, char *name, void *value);
+void *dictget2(Dict *dict, const char *name1, const char *name2);
 
 /* conv.c */
 
-extern void           initconv(void);
+void initconv(void);
 
 /* print.c -- see print.h for more */
 
-extern int            print(const char *fmt, ...);
-extern int            eprint(const char *fmt, ...);
-extern int            fprint(int fd, const char *fmt, ...);
-extern _Noreturn void panic(const char *fmt, ...);
+int            print(const char *fmt, ...);
+int            eprint(const char *fmt, ...);
+int            fprint(int fd, const char *fmt, ...);
+_Noreturn void panic(const char *fmt, ...);
 
 /* str.c */
 
-extern char          *str(const char *fmt, ...);    /* create a gc space string by printing */
-extern char          *mprint(const char *fmt, ...); /* create an ealloc space string by printing */
-extern StrList       *mkstrlist(char *, StrList *);
+char    *str(const char *fmt, ...);    /* create a gc space string by printing */
+char    *mprint(const char *fmt, ...); /* create an ealloc space string by printing */
+StrList *mkstrlist(char *, StrList *);
 
 /* vec.c */
 
-extern Vector        *mkvector(int n);
-extern Vector        *vectorize(List *list);
-extern void           sortvector(Vector *v);
+Vector *mkvector(int n);
+Vector *vectorize(List *list);
+void    sortvector(Vector *v);
 
 /* util.c */
 
-extern char          *esstrerror(int err);
-extern void           uerror(char *msg);
-extern void          *ealloc(size_t n);
-extern void          *erealloc(void *p, size_t n);
-extern void           efree(void *p);
-extern void           ewrite(int fd, const char *s, size_t n);
-extern long           eread(int fd, char *buf, size_t n);
-extern bool           isabsolute(char *path);
-extern bool           streq2(const char *s, const char *t1, const char *t2);
+char *esstrerror(int err);
+void  uerror(char *msg);
+void *ealloc(size_t n);
+void *erealloc(void *p, size_t n);
+void  efree(void *p);
+void  ewrite(int fd, const char *s, size_t n);
+long  eread(int fd, char *buf, size_t n);
+bool  isabsolute(char *path);
+bool  streq2(const char *s, const char *t1, const char *t2);
 
 /* input.c */
 
-extern char          *prompt;
-extern char          *prompt2;
-extern Tree          *parse(char *esprompt1, char *esprompt2);
-extern Tree          *parsestring(const char *str);
-extern void           sethistory(char *file);
-extern bool           isinteractive(void);
-extern void           initinput(void);
-extern void           resetparser(void);
+extern char *prompt;
+extern char *prompt2;
+
+Tree *parse(char *esprompt1, char *esprompt2);
+Tree *parsestring(const char *str);
+void  sethistory(char *file);
+bool  isinteractive(void);
+void  initinput(void);
+void  resetparser(void);
 #if HAVE_READLINE
-extern void initgetenv(void);
+void initgetenv(void);
 #endif
 
-extern List *runfd(int fd, const char *name, int flags);
-extern List *runstring(const char *str, const char *name, int flags);
+List *runfd(int fd, const char *name, int flags);
+List *runstring(const char *str, const char *name, int flags);
 
 /* eval_* flags are also understood as runflags */
 #define run_interactive 4  /* -i or $0[0] = '-' */
@@ -225,28 +229,28 @@ extern bool resetterminal;
 
 /* opt.c */
 
-extern void  esoptbegin(List *list, const char *caller, const char *usage);
-extern int   esopt(const char *options);
-extern Term *esoptarg(void);
-extern List *esoptend(void);
+void  esoptbegin(List *list, const char *caller, const char *usage);
+int   esopt(const char *options);
+Term *esoptarg(void);
+List *esoptend(void);
 
 /* prim.c */
 
-extern List *prim(char *s, List *list, Binding *binding, int evalflags);
-extern void  initprims(void);
+List *prim(char *s, List *list, Binding *binding, int evalflags);
+void  initprims(void);
 
 /* split.c */
 
-extern void  startsplit(const char *sep, bool coalesce);
-extern void  splitstring(char *in, size_t len, bool endword);
-extern List *endsplit(void);
-extern List *fsplit(const char *sep, List *list, bool coalesce);
+void  startsplit(const char *sep, bool coalesce);
+void  splitstring(char *in, size_t len, bool endword);
+List *endsplit(void);
+List *fsplit(const char *sep, List *list, bool coalesce);
 
 /* signal.c */
 
-extern int   signumber(const char *name);
-extern char *signame(int sig);
-extern char *sigmessage(int sig);
+int   signumber(const char *name);
+char *signame(int sig);
+char *sigmessage(int sig);
 
 #define SIGCHK() sigchk()
 typedef enum {
@@ -257,20 +261,23 @@ typedef enum {
 	sig_noop,
 	sig_special
 } Sigeffect;
-extern Sigeffect  esignal(int sig, Sigeffect effect);
-extern void       setsigeffects(const Sigeffect effects[]);
-extern void       getsigeffects(Sigeffect effects[]);
-extern List      *mksiglist(void);
-extern void       initsignals(bool interactive, bool allowdumps);
+
+Sigeffect esignal(int sig, Sigeffect effect);
+void      setsigeffects(const Sigeffect effects[]);
+void      getsigeffects(Sigeffect effects[]);
+void      initsignals(bool interactive, bool allowdumps);
+void      sigchk(void);
+bool      issilentsignal(List *e);
+void      setsigdefaults(void);
+void      blocksignals(void);
+void      unblocksignals(void);
+
+List *mksiglist(void);
+
 extern Atomic     slow;
 extern Atomic     interrupted;
 extern sigjmp_buf slowlabel;
 extern bool       sigint_newline;
-extern void       sigchk(void);
-extern bool       issilentsignal(List *e);
-extern void       setsigdefaults(void);
-extern void       blocksignals(void);
-extern void       unblocksignals(void);
 
 /* open.c */
 
@@ -282,27 +289,27 @@ typedef enum {
 	oReadCreate,
 	oReadAppend
 } OpenKind;
-extern int         eopen(char *name, OpenKind k);
+int eopen(char *name, OpenKind k);
 
 /* version.c */
 
-extern const char  version[];
+extern const char version[];
 
 /* gc.c -- see gc.h for more */
 
 typedef struct Tag Tag;
 #define gcnew(type) ((type *)gcalloc(sizeof(type), &(CONCAT(type, Tag))))
 
-extern void        *gcalloc(size_t n, Tag *t);       /* allocate n with collection tag t */
-extern char        *gcdup(const char *s);            /* copy a 0-terminated string into gc space */
-extern char        *gcndup(const char *s, size_t n); /* copy a counted string into gc space */
+void *gcalloc(size_t n, Tag *t);       /* allocate n with collection tag t */
+char *gcdup(const char *s);            /* copy a 0-terminated string into gc space */
+char *gcndup(const char *s, size_t n); /* copy a counted string into gc space */
 
-extern void         initgc(void);             /* must be called at the dawn of time */
-extern void         gc(void);                 /* provoke a collection, if enabled */
-extern void         gcreserve(size_t nbytes); /* provoke a collection, if enabled and not enough space */
-extern void         gcenable(void);           /* enable collections */
-extern void         gcdisable(void);          /* disable collections */
-extern bool         gcisblocked();            /* is collection disabled? */
+void initgc(void);             /* must be called at the dawn of time */
+void gc(void);                 /* provoke a collection, if enabled */
+void gcreserve(size_t nbytes); /* provoke a collection, if enabled and not enough space */
+void gcenable(void);           /* enable collections */
+void gcdisable(void);          /* disable collections */
+bool gcisblocked();            /* is collection disabled? */
 
 /*
  * garbage collector tags
@@ -398,7 +405,7 @@ extern Root *rootlist;
 	RefRemove(v1);                 \
 	RefRemove3(v2, v3, v4)
 
-extern void globalroot(void *addr);
+void globalroot(void *addr);
 
 /* struct Push -- varpush() placeholder */
 
@@ -431,16 +438,17 @@ struct Handler {
 	sigjmp_buf    label;
 };
 
-extern Handler       *tophandler;
-extern Handler       *roothandler;
-extern List          *exception;
-extern void           pophandler(Handler *handler);
-extern _Noreturn void fire(List *exc);
-extern _Noreturn void fail(const char *from, const char *name, ...);
-extern void           newchildcatcher(void);
+extern Handler *tophandler;
+extern Handler *roothandler;
+extern List    *exception;
+
+void           pophandler(Handler *handler);
+_Noreturn void fire(List *exc);
+_Noreturn void fail(const char *from, const char *name, ...);
+void           newchildcatcher(void);
 
 #if DEBUG_EXCEPTIONS
-extern List *raised(List *e);
+List *raised(List *e);
 #else
 #	define raised(e) (e)
 #endif

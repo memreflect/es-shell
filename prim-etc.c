@@ -306,7 +306,7 @@ PRIM(resetterminal) {
  * initialization
  */
 
-extern Dict *
+Dict *
 initprims_etc(Dict *primdict) {
 	X(echo);
 	X(count);

@@ -90,7 +90,7 @@ PRIM(catch) {
 	RefReturn(result);
 }
 
-extern Dict *
+Dict *
 initprims_controlflow(Dict *primdict) {
 	X(seq);
 	X(if);

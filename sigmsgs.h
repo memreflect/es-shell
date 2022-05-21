@@ -7,4 +7,4 @@ typedef struct {
 } Sigmsgs;
 extern const Sigmsgs signals[];
 
-extern const int     nsignals;
+extern const int nsignals;

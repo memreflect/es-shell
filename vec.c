@@ -5,7 +5,7 @@
 
 DefineTag(Vector, static);
 
-extern Vector *
+Vector *
 mkvector(int n) {
 	int     i;
 	Vector *v   = gcalloc(offsetof(Vector, vector[n + 1]), &VectorTag);
@@ -34,7 +34,7 @@ VectorScan(void *p) {
 	return offsetof(Vector, vector[v->alloclen + 1]);
 }
 
-extern Vector *
+Vector *
 vectorize(List *list) {
 	int i;
 	int n = length(list);
@@ -54,13 +54,13 @@ vectorize(List *list) {
 }
 
 /* qstrcmp -- a strcmp wrapper for qsort */
-extern int
+int
 qstrcmp(const void *s1, const void *s2) {
 	return strcmp(*(const char **)s1, *(const char **)s2);
 }
 
 /* sortvector */
-extern void
+void
 sortvector(Vector *v) {
 	assert(v->vector[v->count] == NULL);
 	qsort(v->vector, v->count, sizeof(char *), qstrcmp);

@@ -15,7 +15,7 @@ str_grow(Format *f, size_t more) {
 }
 
 /* strv -- print a formatted string into gc space */
-extern char *
+char *
 strv(const char *fmt, va_list args) {
 	Buffer *buf;
 	Format  format;
@@ -39,7 +39,7 @@ strv(const char *fmt, va_list args) {
 }
 
 /* str -- create a string (in garbage collection space) by printing to it */
-extern char *
+char *
 str(const char *fmt, ...) {
 	char   *s;
 	va_list args;
@@ -66,7 +66,7 @@ mprint_grow(Format *format, size_t more) {
 }
 
 /* mprint -- create a string in ealloc space by printing to it */
-extern char *
+char *
 mprint(const char *fmt, ...) {
 	Format format;
 	format.u.n = 1;
@@ -91,7 +91,7 @@ mprint(const char *fmt, ...) {
 
 DefineTag(StrList, static);
 
-extern StrList *
+StrList *
 mkstrlist(char *str, StrList *next) {
 	gcdisable();
 	assert(str != NULL);

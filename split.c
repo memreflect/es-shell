@@ -8,11 +8,11 @@ static bool    splitchars;
 static Buffer *buffer;
 static List   *value;
 
-static bool    ifsvalid = false;
-static char    ifs[10];
-static char    isifs[256];
+static bool ifsvalid = false;
+static char ifs[10];
+static char isifs[256];
 
-extern void
+void
 startsplit(const char *sep, bool coalescef) {
 	static bool initialized = false;
 	if (!initialized) {
@@ -38,7 +38,7 @@ startsplit(const char *sep, bool coalescef) {
 	}
 }
 
-extern void
+void
 splitstring(char *in, size_t len, bool endword) {
 	Buffer        *buf   = buffer;
 	unsigned char *s     = (unsigned char *)in;
@@ -77,7 +77,7 @@ splitstring(char *in, size_t len, bool endword) {
 	buffer = buf;
 }
 
-extern List *
+List *
 endsplit(void) {
 	List *result;
 
@@ -91,7 +91,7 @@ endsplit(void) {
 	return result;
 }
 
-extern List *
+List *
 fsplit(const char *sep, List *list, bool coalesce) {
 	Ref(List *, lp, list);
 	startsplit(sep, coalesce);

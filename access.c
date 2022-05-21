@@ -208,13 +208,13 @@ PRIM(access) {
 	RefReturn(result);
 }
 
-extern Dict *
+Dict *
 initprims_access(Dict *primdict) {
 	X(access);
 	return primdict;
 }
 
-extern char *
+char *
 checkexecutable(char *file) {
 	int err = testfile(file, EXEC, S_IFREG);
 	return err == 0 ? NULL : esstrerror(err);

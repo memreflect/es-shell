@@ -44,7 +44,7 @@ enum { TAGMAGIC = 0xDefaced };
  * allocation
  */
 
-extern void          *gcalloc(size_t, struct Tag *);
+void *gcalloc(size_t, struct Tag *);
 
 typedef struct Buffer Buffer;
 struct Buffer {
@@ -53,13 +53,13 @@ struct Buffer {
 	char   str[1];
 };
 
-extern Buffer *openbuffer(size_t minsize);
-extern Buffer *expandbuffer(Buffer *buf, size_t minsize);
-extern Buffer *bufncat(Buffer *buf, const char *s, size_t len);
-extern Buffer *bufcat(Buffer *buf, const char *s);
-extern Buffer *bufputc(Buffer *buf, char c);
-extern char   *sealbuffer(Buffer *buf);
-extern char   *sealcountedbuffer(Buffer *buf);
-extern void    freebuffer(Buffer *buf);
+Buffer *openbuffer(size_t minsize);
+Buffer *expandbuffer(Buffer *buf, size_t minsize);
+Buffer *bufncat(Buffer *buf, const char *s, size_t len);
+Buffer *bufcat(Buffer *buf, const char *s);
+Buffer *bufputc(Buffer *buf, char c);
+char   *sealbuffer(Buffer *buf);
+char   *sealcountedbuffer(Buffer *buf);
+void    freebuffer(Buffer *buf);
 
-extern void   *forward(void *p);
+void *forward(void *p);

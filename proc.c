@@ -15,7 +15,7 @@
 #	include <sys/time.h>
 #endif
 
-bool                hasforked = false;
+bool hasforked = false;
 
 typedef struct Proc Proc;
 struct Proc {
@@ -33,7 +33,7 @@ struct Proc {
 static Proc *proclist = NULL;
 
 /* mkproc -- create a Proc structure */
-extern Proc *
+Proc *
 mkproc(int pid, bool background) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
@@ -53,7 +53,7 @@ mkproc(int pid, bool background) {
 }
 
 /* efork -- fork (if necessary) and clean up as appropriate */
-extern int
+int
 efork(bool parent, bool background) {
 	if (parent) {
 		int pid = fork();
@@ -123,7 +123,7 @@ reap(int pid, int status) {
 }
 
 /* ewait -- wait for a specific process to die, or any process if pid == 0 */
-extern int
+int
 ewait(int pid, bool interruptible, struct rusage *rusage) {
 	Proc *proc;
 top:
@@ -215,7 +215,7 @@ PRIM(wait) {
 	return mklist(mkstr(mkstatus(ewait(pid, true, NULL))), NULL);
 }
 
-extern Dict *
+Dict *
 initprims_proc(Dict *primdict) {
 	X(apids);
 	X(wait);

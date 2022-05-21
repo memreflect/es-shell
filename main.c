@@ -18,8 +18,8 @@ bool gcinfo = false; /* -I */
 /* extern int getopt (int argc, char **argv, const char *optstring); */
 /* #endif */
 
-extern int    optind;
-extern char  *optarg;
+extern int   optind;
+extern char *optarg;
 
 /* extern int isatty(int fd); */
 extern char **environ;

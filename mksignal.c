@@ -95,7 +95,7 @@ const size_t nsig_posix = arraysize(posix);
  * These are X/Open system interfaces, and some may be obsolescent, notably
  * SIGPOLL used with X/Open STREAMS interfaces and SIGPROF.
  */
-Sigmsgs      std[] = {
+Sigmsgs std[] = {
 #ifdef SIGPOLL
 		{SIGPOLL,   "sigpoll",   "pollable event occurred"        },
 #endif
@@ -134,7 +134,7 @@ const size_t nsig_std = arraysize(std);
  * on some systems, such as SIGLWP and SIGTHR, an arbitrary choice is made
  * which one to prefer.
  */
-Sigmsgs      other[] = {
+Sigmsgs other[] = {
 #ifdef SIGCLD
   /*
   * SIGCLD is equivalent to SIGCHLD on all systems I'm aware of, but on

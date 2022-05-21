@@ -7,7 +7,7 @@
 
 DefineTag(Term, static);
 
-extern Term *
+Term *
 mkterm(char *str, Closure *closure) {
 	gcdisable();
 	Ref(Term *, term, gcnew(Term));
@@ -17,7 +17,7 @@ mkterm(char *str, Closure *closure) {
 	RefReturn(term);
 }
 
-extern Closure *
+Closure *
 getclosure(Term *term) {
 	if (term->closure == NULL) {
 		char *s = term->str;
@@ -41,7 +41,7 @@ getclosure(Term *term) {
 	return term->closure;
 }
 
-extern char *
+char *
 getstr(Term *term) {
 	char    *s       = term->str;
 	Closure *closure = term->closure;
@@ -61,7 +61,7 @@ getstr(Term *term) {
 #endif
 }
 
-extern Term *
+Term *
 termcat(Term *t1, Term *t2) {
 	if (t1 == NULL)
 		return t2;
@@ -91,7 +91,7 @@ TermScan(void *p) {
 	return sizeof(Term);
 }
 
-extern bool
+bool
 termeq(Term *term, const char *s) {
 	assert(term != NULL);
 	if (term->str == NULL)
@@ -99,7 +99,7 @@ termeq(Term *term, const char *s) {
 	return streq(term->str, s);
 }
 
-extern bool
+bool
 isclosure(Term *term) {
 	assert(term != NULL);
 	return term->closure != NULL;

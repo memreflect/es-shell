@@ -9,7 +9,7 @@
 
 DefineTag(List, static);
 
-extern List *
+List *
 mklist(Term *term, List *next) {
 	gcdisable();
 	assert(term != NULL);
@@ -40,7 +40,7 @@ ListScan(void *p) {
  */
 
 /* reverse -- destructively reverse a list */
-extern List *
+List *
 reverse(List *list) {
 	List *prev;
 	List *next;
@@ -56,7 +56,7 @@ reverse(List *list) {
 }
 
 /* append -- merge two lists, non-destructively */
-extern List *
+List *
 append(List *head, List *tail) {
 	List  *lp;
 	List **prevp;
@@ -81,13 +81,13 @@ append(List *head, List *tail) {
 }
 
 /* listcopy -- make a copy of a list */
-extern List *
+List *
 listcopy(List *list) {
 	return append(list, NULL);
 }
 
 /* length -- lenth of a list */
-extern int
+int
 length(List *list) {
 	int len = 0;
 	for (; list != NULL; list = list->next)
@@ -96,7 +96,7 @@ length(List *list) {
 }
 
 /* listify -- turn an argc/argv vector into a list */
-extern List *
+List *
 listify(int argc, char **argv) {
 	Ref(List *, list, NULL);
 	while (argc > 0) {
@@ -107,7 +107,7 @@ listify(int argc, char **argv) {
 }
 
 /* nth -- return nth element of a list, indexed from 1 */
-extern Term *
+Term *
 nth(List *list, int n) {
 	assert(n > 0);
 	for (; list != NULL; list = list->next) {
@@ -119,7 +119,7 @@ nth(List *list, int n) {
 }
 
 /* sortlist */
-extern List *
+List *
 sortlist(List *list) {
 	if (length(list) > 1) {
 		Vector *v = vectorize(list);

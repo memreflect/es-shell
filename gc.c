@@ -282,7 +282,7 @@ deprecate(Space *space) {
 }
 
 /* isinspace -- does an object lie inside a given Space? */
-extern bool
+bool
 isinspace(Space *space, void *p) {
 	for (; space != NULL; space = space->next)
 		if (INSPACE(p, space)) {
@@ -297,7 +297,7 @@ isinspace(Space *space, void *p) {
  */
 
 /* globalroot -- add an external to the list of global roots */
-extern void
+void
 globalroot(void *addr) {
 	Root *root;
 #if ASSERTIONS
@@ -317,7 +317,7 @@ globalroot(void *addr) {
 #define FOLLOW(tagp)    ((void *)(((char *)tagp) - 1))
 
 /* forward -- forward an individual pointer from old space */
-extern void *
+void *
 forward(void *p) {
 	Tag  *tag;
 	void *np;
@@ -384,7 +384,7 @@ scanspace(void) {
  */
 
 /* gcenable -- enable collections */
-extern void
+void
 gcenable(void) {
 	assert(gcblocked > 0);
 	--gcblocked;
@@ -393,14 +393,14 @@ gcenable(void) {
 }
 
 /* gcdisable -- disable collections */
-extern void
+void
 gcdisable(void) {
 	assert(gcblocked >= 0);
 	++gcblocked;
 }
 
 /* gcreserve -- provoke a collection if there's not a certain amount of space around */
-extern void
+void
 gcreserve(size_t minfree) {
 	if (SPACEFREE(new) < (int)minfree) {
 		if (minspace < minfree)
@@ -414,14 +414,14 @@ gcreserve(size_t minfree) {
 }
 
 /* gcisblocked -- is collection disabled? */
-extern bool
+bool
 gcisblocked(void) {
 	assert(gcblocked >= 0);
 	return gcblocked != 0;
 }
 
 /* gc -- actually do a garbage collection */
-extern void
+void
 gc(void) {
 	do {
 		size_t livedata;
@@ -491,7 +491,7 @@ gc(void) {
 }
 
 /* initgc -- initialize the garbage collector */
-extern void
+void
 initgc(void) {
 #if GCPROTECT
 	initmmu();
@@ -509,7 +509,7 @@ initgc(void) {
  */
 
 /* gcalloc -- allocate an object in new space */
-extern void *
+void *
 gcalloc(size_t nbytes, Tag *tag) {
 	size_t n = ALIGN(nbytes + sizeof(Tag *));
 #if GCALWAYS
@@ -540,7 +540,7 @@ gcalloc(size_t nbytes, Tag *tag) {
 #define notstatic
 DefineTag(String, notstatic);
 
-extern char *
+char *
 gcndup(const char *s, size_t n) {
 	char *ns;
 
@@ -555,7 +555,7 @@ gcndup(const char *s, size_t n) {
 	RefReturn(result);
 }
 
-extern char *
+char *
 gcdup(const char *s) {
 	return gcndup(s, strlen(s));
 }
@@ -579,7 +579,7 @@ StringScan(void *p) {
  *	contain pointers or '\0' until after sealbuffer() has been called.
  */
 
-extern Buffer *
+Buffer *
 openbuffer(size_t minsize) {
 	Buffer *buf;
 	if (minsize < 500)
@@ -590,28 +590,28 @@ openbuffer(size_t minsize) {
 	return buf;
 }
 
-extern Buffer *
+Buffer *
 expandbuffer(Buffer *buf, size_t minsize) {
 	buf->len += (minsize > buf->len) ? minsize : buf->len;
 	buf = erealloc(buf, offsetof(Buffer, str[buf->len]));
 	return buf;
 }
 
-extern char *
+char *
 sealbuffer(Buffer *buf) {
 	char *s = gcdup(buf->str);
 	efree(buf);
 	return s;
 }
 
-extern char *
+char *
 sealcountedbuffer(Buffer *buf) {
 	char *s = gcndup(buf->str, buf->current);
 	efree(buf);
 	return s;
 }
 
-extern Buffer *
+Buffer *
 bufncat(Buffer *buf, const char *s, size_t len) {
 	while (buf->current + len >= buf->len)
 		buf = expandbuffer(buf, buf->current + len - buf->len);
@@ -620,17 +620,17 @@ bufncat(Buffer *buf, const char *s, size_t len) {
 	return buf;
 }
 
-extern Buffer *
+Buffer *
 bufcat(Buffer *buf, const char *s) {
 	return bufncat(buf, s, strlen(s));
 }
 
-extern Buffer *
+Buffer *
 bufputc(Buffer *buf, char c) {
 	return bufncat(buf, &c, 1);
 }
 
-extern void
+void
 freebuffer(Buffer *buf) {
 	efree(buf);
 }
@@ -791,7 +791,7 @@ dump(Tag *t, void *p) {
 	return 0;
 }
 
-extern void
+void
 memdump(void) {
 	Space *sp;
 	for (sp = new; sp != NULL; sp = sp->next) {

@@ -47,9 +47,9 @@
  * globals
  */
 
-Input	   *input;
-char		*prompt;
-char		*prompt2;
+Input *input;
+char  *prompt;
+char  *prompt2;
 
 bool         disablehistory = false;
 bool         resetterminal  = false;
@@ -77,7 +77,7 @@ locate(Input *in, char *s) {
 static char *error = NULL;
 
 /* yyerror -- yacc error entry point */
-extern void
+void
 yyerror(char *s) {
 	if (error == NULL) /* first error is generally the most informative */
 		error = locate(input, s);
@@ -130,7 +130,7 @@ writeit:;
 }
 
 /* sethistory -- change the file for the history log */
-extern void
+void
 sethistory(char *file) {
 	if (historyfd != -1) {
 		close(historyfd);
@@ -166,7 +166,7 @@ ungetfill(Input *in) {
 }
 
 /* unget -- push back one character */
-extern void
+void
 unget(Input *in, int c) {
 	if (in->ungot > 0) {
 		assert(in->ungot < MAXUNGET);
@@ -303,7 +303,7 @@ getenv(const char *name) {
 	return realgetenv(name);
 }
 
-extern void
+void
 initgetenv(void) {
 	realgetenv = esgetenv;
 }
@@ -367,7 +367,7 @@ fdfill(Input *in) {
  */
 
 /* parse -- call yyparse(), but disable garbage collection and catch errors */
-extern Tree *
+Tree *
 parse(char *pr1, char *pr2) {
 	int result;
 	assert(error == NULL);
@@ -406,13 +406,13 @@ parse(char *pr1, char *pr2) {
 }
 
 /* resetparser -- clear parser errors in the signal handler */
-extern void
+void
 resetparser(void) {
 	error = NULL;
 }
 
 /* runinput -- run from an input source */
-extern List *
+List *
 runinput(Input *in, int runflags) {
 	List *volatile result = NULL;
 	volatile int flags    = runflags;
@@ -479,7 +479,7 @@ fdcleanup(Input *in) {
 }
 
 /* runfd -- run commands from a file descriptor */
-extern List *
+List *
 runfd(int fd, const char *name, int flags) {
 	Input in;
 	List *result;
@@ -516,7 +516,7 @@ stringfill(Input *in) {
 }
 
 /* runstring -- run commands from a string */
-extern List *
+List *
 runstring(const char *str, const char *name, int flags) {
 	Input          in;
 	List		  *result;
@@ -543,7 +543,7 @@ runstring(const char *str, const char *name, int flags) {
 }
 
 /* parseinput -- turn an input source into a tree */
-extern Tree *
+Tree *
 parseinput(Input *in) {
 	Tree *volatile result = NULL;
 
@@ -568,7 +568,7 @@ parseinput(Input *in) {
 }
 
 /* parsestring -- turn a string into a tree; must be exactly one tree */
-extern Tree *
+Tree *
 parsestring(const char *str) {
 	Input          in;
 	Tree		  *result;
@@ -597,7 +597,7 @@ parsestring(const char *str) {
 }
 
 /* isinteractive -- is the innermost input source interactive? */
-extern bool
+bool
 isinteractive(void) {
 	return input == NULL ? false : ((input->runflags & run_interactive) != 0);
 }
@@ -607,7 +607,7 @@ isinteractive(void) {
  */
 
 /* initinput -- called at dawn of time from main() */
-extern void
+void
 initinput(void) {
 	input = NULL;
 

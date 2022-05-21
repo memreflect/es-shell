@@ -10,7 +10,7 @@ List    *exception   = NULL;
 Push    *pushlist    = NULL;
 
 /* pophandler -- remove a handler */
-extern void
+void
 pophandler(Handler *handler) {
 	assert(tophandler == handler);
 	assert(handler->rootlist == rootlist);
@@ -18,7 +18,7 @@ pophandler(Handler *handler) {
 }
 
 /* throw -- raise an exception */
-extern _Noreturn void
+_Noreturn void
 fire(List *e) {
 	Handler *handler = tophandler;
 
@@ -45,7 +45,7 @@ fire(List *e) {
 }
 
 /* fail -- pass a user catchable error up the exception chain */
-extern _Noreturn void
+_Noreturn void
 fail(const char *from, const char *fmt, ...) {
 	char   *s;
 	va_list args;
@@ -63,14 +63,14 @@ fail(const char *from, const char *fmt, ...) {
 }
 
 /* newchildcatcher -- remove the current handler chain for a new child */
-extern void
+void
 newchildcatcher(void) {
 	tophandler = roothandler;
 }
 
 #if DEBUG_EXCEPTIONS
 /* raised -- print exceptions as we climb the exception stack */
-extern List *
+List *
 raised(List *e) {
 	eprint("raised (sp @ %x) %L\n", &e, e, " ");
 	return e;

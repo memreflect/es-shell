@@ -8,7 +8,7 @@
 
 static Dict *prims;
 
-extern List *
+List *
 prim(char *s, List *list, Binding *binding, int evalflags) {
 	PrimFunc *p;
 	p = (PrimFunc *)dictget(prims, s);
@@ -27,7 +27,7 @@ PRIM(primitives) {
 	return primlist;
 }
 
-extern void
+void
 initprims(void) {
 	prims = mkdict();
 	globalroot(&prims);

@@ -14,10 +14,10 @@ struct Format {
 	long    f2;
 	int     invoker;
 	/* for the buffer maintainence routines */
-	char   *buf;
-	char   *bufbegin;
-	char   *bufend;
-	int     flushed;
+	char *buf;
+	char *bufbegin;
+	char *bufend;
+	int   flushed;
 	void (*grow)(Format *, size_t);
 	union {
 		int   n;
@@ -37,19 +37,19 @@ enum {
 	FMT_f2set    = 128 /* %.<n> */
 };
 
-typedef bool (*Conv)(Format *);
+typedef bool Conv(Format *);
 
-extern Conv  fmtinstall(int, Conv);
-extern int   printfmt(Format *, const char *);
-extern int   fmtprint(Format *, const char *, ...);
-extern void  fmtappend(Format *, const char *, size_t);
-extern void  fmtcat(Format *, const char *);
+Conv *fmtinstall(int, Conv *);
+int   printfmt(Format *, const char *);
+int   fmtprint(Format *, const char *, ...);
+void  fmtappend(Format *, const char *, size_t);
+void  fmtcat(Format *, const char *);
 
-extern int   print(const char *fmt, ...);
-extern int   eprint(const char *fmt, ...);
-extern int   fprint(int fd, const char *fmt, ...);
+int print(const char *fmt, ...);
+int eprint(const char *fmt, ...);
+int fprint(int fd, const char *fmt, ...);
 
-extern char *strv(const char *fmt, va_list args); /* varargs interface to str() */
+char *strv(const char *fmt, va_list args); /* varargs interface to str() */
 
 #define FPRINT_BUFSIZ 1024
 

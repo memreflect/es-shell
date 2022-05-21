@@ -89,7 +89,7 @@ iscounting(const char *name) {
  */
 
 /* validatevar -- ensure that a variable name is valid */
-extern void
+void
 validatevar(const char *var) {
 	if (*var == '\0')
 		fail("es:var", "zero-length variable name");
@@ -112,7 +112,7 @@ isexported(const char *name) {
 }
 
 /* setnoexport -- mark a list of variable names not for export */
-extern void
+void
 setnoexport(List *list) {
 	isdirty = true;
 	if (list == NULL) {
@@ -126,7 +126,7 @@ setnoexport(List *list) {
 }
 
 /* varlookup -- lookup a variable in the current context */
-extern List *
+List *
 varlookup(const char *name, Binding *bp) {
 	Var *var;
 
@@ -148,7 +148,7 @@ varlookup(const char *name, Binding *bp) {
 	return var->defn;
 }
 
-extern List *
+List *
 varlookup2(char *name1, char *name2, Binding *bp) {
 	Var *var;
 
@@ -181,7 +181,7 @@ callsettor(char *name, List *defn) {
 	RefReturn(lp);
 }
 
-extern void
+void
 vardef(char *name, Binding *binding, List *defn) {
 	Var *var;
 
@@ -213,7 +213,7 @@ vardef(char *name, Binding *binding, List *defn) {
 	RefRemove(name);
 }
 
-extern void
+void
 varpush(Push *push, char *name, List *defn) {
 	Var *var;
 
@@ -249,7 +249,7 @@ varpush(Push *push, char *name, List *defn) {
 	rootlist            = &push->defnroot;
 }
 
-extern void
+void
 varpop(Push *push) {
 	Var *var;
 
@@ -304,7 +304,7 @@ mkenv0(void *dummy, char *key, void *value) {
 	}
 }
 
-extern Vector *
+Vector *
 mkenv(void) {
 	if (isdirty || rebound) {
 		env->count = envmin;
@@ -324,7 +324,7 @@ mkenv(void) {
 }
 
 /* addtolist -- dictforall procedure to create a list */
-extern void
+void
 addtolist(void *arg, char *key, void *value) {
 	List **listp = arg;
 	Term  *term  = mkstr(key);
@@ -344,7 +344,7 @@ listinternal(void *arg, char *key, void *value) {
 }
 
 /* listvars -- return a list of all the (dynamic) variables */
-extern List *
+List *
 listvars(bool internal) {
 	Ref(List *, varlist, NULL);
 	dictforall(vars, internal ? listinternal : listexternal, &varlist);
@@ -359,13 +359,13 @@ hide(void *dummy, char *key, void *value) {
 }
 
 /* hidevariables -- mark all variables as internal */
-extern void
+void
 hidevariables(void) {
 	dictforall(vars, hide, NULL);
 }
 
 /* initvars -- initialize the variable machinery */
-extern void
+void
 initvars(void) {
 	globalroot(&vars);
 	globalroot(&noexport);
@@ -434,7 +434,7 @@ importvar(char *name0, char *value) {
 }
 
 #if HAVE_READLINE
-extern int
+int
 setenv(const char *name, const char *value, int overwrite) {
 	Ref(char *, envname, NULL);
 	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
@@ -450,7 +450,7 @@ setenv(const char *name, const char *value, int overwrite) {
 	RefEnd(envname);
 	return 0;
 }
-extern int
+int
 unsetenv(const char *name) {
 	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
 		errno = EINVAL;
@@ -459,7 +459,7 @@ unsetenv(const char *name) {
 	vardef(str(ENV_DECODE, name), NULL, NULL);
 	return 0;
 }
-extern int
+int
 putenv(char *envstr) {
 	size_t n = strcspn(envstr, "=");
 	char  *envname;
@@ -478,7 +478,7 @@ putenv(char *envstr) {
 #endif
 
 /* initenv -- load variables from the environment */
-extern void
+void
 initenv(char **envp, bool protected) {
 	char  *envstr;
 	size_t bufsize = 1024;

@@ -60,7 +60,7 @@ rangematch(const char *p, const char *q, char c) {
 }
 
 /* match -- match a single pattern against a single string. */
-extern bool
+bool
 match(const char *s, const char *p, const char *q) {
 	int i;
 	if (q == QUOTED)
@@ -118,7 +118,7 @@ match(const char *s, const char *p, const char *q) {
  *	() matches (), but otherwise null patterns match nothing.
  */
 
-extern bool
+bool
 listmatch(List *subject, List *pattern, StrList *quote) {
 	if (subject == NULL) {
 		if (pattern == NULL)
@@ -238,7 +238,7 @@ extractsinglematch(const char *subject, const char *pattern, const char *quoting
  *	subjects as the result.
  */
 
-extern List *
+List *
 extractmatches(List *subjects, List *patterns, StrList *quotes) {
 	List **prevp;
 	List  *subject;

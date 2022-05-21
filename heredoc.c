@@ -16,7 +16,7 @@ struct Here {
 static Here *hereq;
 
 /* getherevar -- read a variable from a here doc */
-extern Tree *
+Tree *
 getherevar(void) {
 	int     c;
 	char   *s;
@@ -36,7 +36,7 @@ getherevar(void) {
 }
 
 /* snarfheredoc -- read a heredoc until the eof marker */
-extern Tree *
+Tree *
 snarfheredoc(const char *eof, bool quoted) {
 	Tree		  *tree;
 	Tree		 **tailp;
@@ -102,7 +102,7 @@ snarfheredoc(const char *eof, bool quoted) {
 }
 
 /* readheredocs -- read all the heredocs at the end of a line (or fail if at end of file) */
-extern bool
+bool
 readheredocs(bool endfile) {
 	for (; hereq != NULL; hereq = hereq->next) {
 		Tree *marker;
@@ -121,7 +121,7 @@ readheredocs(bool endfile) {
 }
 
 /* queueheredoc -- add a heredoc to the queue to process at the end of the line */
-extern bool
+bool
 queueheredoc(Tree *t) {
 	Tree *eof;
 	Here *here;
@@ -146,7 +146,7 @@ queueheredoc(Tree *t) {
 	return true;
 }
 
-extern void
+void
 emptyherequeue(void) {
 	hereq          = NULL;
 	disablehistory = false;

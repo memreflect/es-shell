@@ -17,7 +17,7 @@ hastilde(const char *s, const char *q) {
 }
 
 /* haswild -- ltrue iff some unquoted character is a wildcard character */
-extern bool
+bool
 haswild(const char *s, const char *q) {
 	if (q == QUOTED)
 		return false;
@@ -127,14 +127,14 @@ listglob(List *list, char *pattern, char *quote, size_t slashcount) {
 /* glob1 -- glob pattern path against the file system */
 static List *
 glob1(const char *pattern, const char *quote) {
-	const char   *s;
-	const char   *q;
-	char		 *d;
-	char		 *p;
-	char		 *qd;
-	char		 *qp;
-	size_t        psize;
-	List		 *matched;
+	const char *s;
+	const char *q;
+	char       *d;
+	char       *p;
+	char       *qd;
+	char       *qp;
+	size_t      psize;
+	List       *matched;
 
 	static char  *dir   = NULL;
 	static char  *pat   = NULL;
@@ -282,7 +282,7 @@ expandhome(char *s, StrList *qp) {
 }
 
 /* glob -- globbing prepass (glob if we need to, and dispatch for tilde expansion) */
-extern List *
+List *
 glob(List *list, StrList *quote) {
 	List    *lp;
 	StrList *qp;

@@ -329,7 +329,7 @@ TreeTypes
 	print("%s\n\n", PPSTRING(TreeTypes));
 }
 
-extern _Noreturn void
+_Noreturn void
 runinitial(void) {
 	List *title = runfd(0, "initial.es", 0);
 
