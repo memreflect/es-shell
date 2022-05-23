@@ -408,12 +408,11 @@ static void importvar(char *name0, char *value) {
 
 #if READLINE
 extern int setenv(const char *name, const char *value, int overwrite) {
-	Ref(char *, envname, NULL);
 	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
 		errno = EINVAL;
 		return -1;
 	}
-	envname = str(ENV_DECODE, name);
+	Ref(char *, envname, str(ENV_DECODE, name));
 	if (!overwrite && varlookup(envname, NULL) != NULL) {
 		RefPop(envname);
 		return 0;
