@@ -141,7 +141,7 @@ extern List *lfalse;
 bool  istrue(List *status);
 int   exitstatus(List *status);
 char *mkstatus(int status);
-void  printstatus(int pid, int status);
+void  printstatus(pid_t pid, int status);
 
 /* access.c */
 
@@ -152,7 +152,7 @@ char *checkexecutable(char *file);
 extern bool hasforked;
 
 int efork(bool parent, bool background);
-int ewait(int pid, bool interruptible, struct rusage *rusage);
+int ewait(pid_t pid, bool interruptible, struct rusage *rusage);
 #define ewaitfor(pid) ewait(pid, false, NULL)
 
 /* dict.c */

@@ -140,9 +140,9 @@ PRIM(close) {
 }
 
 /* pipefork -- create a pipe and fork */
-static int
+static pid_t
 pipefork(int p[2], int *extra) {
-	volatile int pid = 0;
+	volatile pid_t pid = 0;
 
 	if (pipe(p) == -1)
 		fail(caller, "pipe: %s", esstrerror(errno));
@@ -170,7 +170,6 @@ pipefork(int p[2], int *extra) {
 }
 
 REDIR(here) {
-	int    pid;
 	int    p[2];
 	List  *doc;
 	List  *tail;
@@ -182,7 +181,7 @@ REDIR(here) {
 	doc    = (list == tail) ? NULL : list;
 	*tailp = NULL;
 
-	if ((pid = pipefork(p, NULL)) == 0) { /* child that writes to pipe */
+	if (pipefork(p, NULL) == 0) { /* child that writes to pipe */
 		close(p[0]);
 		fprint(p[1], "%L", doc, "");
 		exit(0);
@@ -201,11 +200,11 @@ PRIM(here) {
 }
 
 PRIM(pipe) {
-	int         n;
-	int         infd;
-	int         inpipe;
-	static int *pids   = NULL;
-	static int  pidmax = 0;
+	int           n;
+	int           infd;
+	int           inpipe;
+	static pid_t  pidmax = 0;
+	static pid_t *pids   = NULL;
 
 	caller = "$&pipe";
 	n      = length(list);
@@ -221,8 +220,8 @@ PRIM(pipe) {
 	infd = inpipe = -1;
 
 	for (;; list = list->next) {
-		int p[2];
-		int pid;
+		int   p[2];
+		pid_t pid;
 
 		pid = (list->next == NULL) ? efork(true, false) : pipefork(p, &inpipe);
 
@@ -265,10 +264,10 @@ PRIM(pipe) {
 
 #if HAVE_DEV_FD
 PRIM(readfrom) {
-	int  p[2];
-	int  pid;
-	int  status;
-	Push push;
+	int   p[2];
+	pid_t pid;
+	Push  push;
+	int   status;
 
 	caller = "$&readfrom";
 	if (length(list) != 3)
@@ -307,10 +306,10 @@ PRIM(readfrom) {
 }
 
 PRIM(writeto) {
-	int  p[2];
-	int  pid;
-	int  status;
-	Push push;
+	int   p[2];
+	pid_t pid;
+	Push  push;
+	int   status;
 
 	caller = "$&writeto";
 	if (length(list) != 3)
@@ -371,9 +370,9 @@ restart:
 }
 
 PRIM(backquote) {
-	int p[2];
-	int pid;
-	int status;
+	int   p[2];
+	pid_t pid;
+	int   status;
 
 	caller = "$&backquote";
 	if (list == NULL)

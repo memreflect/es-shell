@@ -474,11 +474,11 @@ gc(void) {
 #if GCINFO
 		if (gcinfo)
 			eprint(
-					"[GC: old %8d  live %8d  min %8d  (pid %5d)]\n",
+					"[GC: old %8d  live %8d  min %8d  (pid %5ld)]\n",
 					olddata,
 					livedata,
 					minspace,
-					getpid());
+					(long)getpid());
 #endif
 
 		if (minspace < livedata * 2)

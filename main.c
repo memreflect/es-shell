@@ -53,7 +53,7 @@ initpath(void) {
 /* initpid -- set $pid for this shell */
 static void
 initpid(void) {
-	vardef("pid", NULL, mklist(mkstr(str("%d", getpid())), NULL));
+	vardef("pid", NULL, mklist(mkstr(str("%ld", (long)getpid())), NULL));
 }
 
 /* runesrc -- run the user's profile, if it exists */

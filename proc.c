@@ -19,7 +19,7 @@ bool hasforked = false;
 
 typedef struct Proc Proc;
 struct Proc {
-	int   pid;
+	pid_t pid;
 	int   status;
 	bool  alive;
 	bool  background;
@@ -34,7 +34,7 @@ static Proc *proclist = NULL;
 
 /* mkproc -- create a Proc structure */
 Proc *
-mkproc(int pid, bool background) {
+mkproc(pid_t pid, bool background) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid) {   /* are we recycling pids? */
@@ -56,7 +56,7 @@ mkproc(int pid, bool background) {
 int
 efork(bool parent, bool background) {
 	if (parent) {
-		int pid = fork();
+		pid_t pid = fork();
 		switch (pid) {
 		default: { /* parent */
 			Proc *proc = mkproc(pid, background);
@@ -108,7 +108,7 @@ dowait(int *statusp) {
 
 /* reap -- mark a process as dead and attach its exit status */
 static void
-reap(int pid, int status) {
+reap(pid_t pid, int status) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid) {
@@ -124,15 +124,15 @@ reap(int pid, int status) {
 
 /* ewait -- wait for a specific process to die, or any process if pid == 0 */
 int
-ewait(int pid, bool interruptible, struct rusage *rusage) {
+ewait(pid_t pid, bool interruptible, struct rusage *rusage) {
 	Proc *proc;
 top:
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid || (pid == 0 && !proc->alive)) {
 			int status;
 			if (proc->alive) {
-				int deadpid;
-				int seen_eintr = false;
+				pid_t deadpid;
+				int   seen_eintr = false;
 				while ((deadpid = dowait(&proc->status)) != pid)
 					if (deadpid != -1)
 						reap(deadpid, proc->status);
@@ -180,7 +180,7 @@ top:
 		reap(pid, status);
 		goto top;
 	}
-	fail("es:ewait", "wait: %d is not a child of this shell", pid);
+	fail("es:ewait", "wait: %ld is not a child of this shell", (long)pid);
 	NOTREACHED;
 }
 
@@ -199,13 +199,13 @@ PRIM(apids) {
 }
 
 PRIM(wait) {
-	int pid;
+	pid_t pid;
 	if (list == NULL)
 		pid = 0;
 	else if (list->next == NULL) {
 		pid = strtol(getstr(list->term), NULL, 0);
 		if (pid <= 0) {
-			fail("$&wait", "wait: %d: bad pid", pid);
+			fail("$&wait", "wait: %ld: bad pid", (long)pid);
 			NOTREACHED;
 		}
 	} else {

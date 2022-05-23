@@ -9,18 +9,12 @@
 #	define WCOREDUMP(status) ((status)&0x80)
 #endif
 
-static const Term
-		ltrueterm
-		= {"0", NULL},
-		lfalseterm = {"1", NULL};
-static const List
-		ltruelist
-		= {(Term *)&ltrueterm, NULL},
-		lfalselist = {(Term *)&lfalseterm, NULL};
-List
-		*ltrue
-		= (List *)&ltruelist,
-		*lfalse = (List *)&lfalselist;
+static const Term ltrueterm  = {"0", NULL};
+static const Term lfalseterm = {"1", NULL};
+static const List ltruelist  = {(Term *)&ltrueterm, NULL};
+static const List lfalselist = {(Term *)&lfalseterm, NULL};
+List			 *ltrue      = (List *)&ltruelist;
+List			 *lfalse     = (List *)&lfalselist;
 
 /* istrue -- is this status list ltrue? */
 bool
@@ -77,7 +71,7 @@ mkstatus(int status) {
 
 /* printstatus -- print the status if we should */
 void
-printstatus(int pid, int status) {
+printstatus(pid_t pid, int status) {
 	if (WIFSIGNALED(status)) {
 		const char *msg  = sigmessage(WTERMSIG(status));
 		const char *tail = "";
@@ -90,7 +84,7 @@ printstatus(int pid, int status) {
 			if (pid == 0)
 				eprint("%s%s\n", msg, tail);
 			else
-				eprint("%d: %s%s\n", pid, msg, tail);
+				eprint("%ld: %s%s\n", (long)pid, msg, tail);
 		}
 	}
 }

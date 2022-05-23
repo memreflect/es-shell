@@ -1,4 +1,6 @@
 /* stdenv.h -- set up an environment we can use */
+#ifndef ES_STDENV_H
+#define ES_STDENV_H 1
 
 #include "esconfig.h"
 
@@ -98,3 +100,5 @@ typedef volatile sig_atomic_t Atomic;
 enum { UNREACHABLE = 0 };
 
 #define NOTREACHED STMT(assert(UNREACHABLE))
+
+#endif /* !ES_STDENV_H */

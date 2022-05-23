@@ -20,7 +20,7 @@
 #include "prim.h"
 
 PRIM(newpgrp) {
-	int pid;
+	pid_t pid;
 	if (list != NULL)
 		fail("$&newpgrp", "usage: newpgrp");
 	pid = getpid();
@@ -34,7 +34,7 @@ PRIM(newpgrp) {
 }
 
 PRIM(background) {
-	int pid = efork(true, true);
+	pid_t pid = efork(true, true);
 	if (pid == 0) {
 #if JOB_PROTECT
 		/* job control safe version: put it in a new pgroup. */
@@ -43,13 +43,12 @@ PRIM(background) {
 		mvfd(eopen("/dev/null", oOpen), 0);
 		exit(exitstatus(eval(list, NULL, evalflags | eval_inchild)));
 	}
-	return mklist(mkstr(str("%d", pid)), NULL);
+	return mklist(mkstr(str("%ld", (long)pid)), NULL);
 }
 
 PRIM(fork) {
-	int pid;
-	int status;
-	pid = efork(true, false);
+	int   status;
+	pid_t pid = efork(true, false);
 	if (pid == 0)
 		exit(exitstatus(eval(list, NULL, evalflags | eval_inchild)));
 	status = ewaitfor(pid);
@@ -343,8 +342,8 @@ PRIM(limit) {
 
 #if BUILTIN_TIME
 PRIM(time) {
-	int           pid;
 	int           status;
+	pid_t         pid;
 	time_t        t0;
 	time_t        t1;
 	struct rusage r;

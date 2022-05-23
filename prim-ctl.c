@@ -35,9 +35,9 @@ PRIM(if) {
 PRIM(forever) {
 	Ref(List *, body, list);
 	for (;;)
-		list = eval(body, NULL, evalflags & eval_exitonfalse);
+		eval(body, NULL, evalflags & eval_exitonfalse);
 	RefEnd(body);
-	return list;
+	return NULL;
 }
 
 PRIM(throw) {

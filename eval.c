@@ -31,7 +31,7 @@ failexec(char *file, List *args) {
 /* forkexec -- fork (if necessary) and exec */
 List *
 forkexec(char *file, List *list, bool inchild) {
-	int     pid;
+	pid_t   pid;
 	int     status;
 	Vector *env;
 	gcdisable();
