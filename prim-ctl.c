@@ -15,12 +15,21 @@ PRIM(seq) {
 PRIM(if) {
 	Ref(List *, lp, list);
 	for (; lp != NULL; lp = lp->next) {
-		List *cond = eval1(lp->term, evalflags & (lp->next == NULL ? eval_inchild : 0));
-		lp = lp->next;
-		if (lp == NULL) {
+		List *cond;
+		if (lp->next == NULL) {
+			cond = eval1(lp->term, evalflags & eval_inchild);
 			RefPop(lp);
 			return cond;
 		}
+
+		ExceptionHandler
+			cond = eval1(lp->term, 0);
+			lp   = lp->next;
+		CatchException(fromcond)
+			lp   = lp->next;
+			continue;
+		EndExceptionHandler
+
 		if (istrue(cond)) {
 			List *result = eval1(lp->term, evalflags);
 			RefPop(lp);
