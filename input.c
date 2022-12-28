@@ -439,7 +439,7 @@ runinput(Input *in, int runflags) {
 		                               + ((flags & run_noexec) ? 2 : 0)],
 		                    NULL);
 		if (flags & eval_exitonfalse)
-			dispatch = mklist(mkstr("%exit-on-lfalse"), dispatch);
+			dispatch = mklist(mkstr("%exit-on-false"), dispatch);
 		varpush(&push, "fn-%dispatch", dispatch);
 
 		repl = varlookup((flags & run_interactive)
