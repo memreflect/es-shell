@@ -13,7 +13,7 @@ struct Format {
 	long    f1;
 	long    f2;
 	int     invoker;
-	/* for the buffer maintainence routines */
+	/* for the buffer maintenance routines */
 	char *buf;
 	char *bufbegin;
 	char *bufend;
