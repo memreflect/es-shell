@@ -1,6 +1,7 @@
 /* main.c -- initialization for es ($Revision: 1.3 $) */
 
 #include "es.h"
+#include "getopt.c"
 
 #if GCVERBOSE
 Boolean gcverbose	= FALSE;	/* -G */
@@ -13,8 +14,8 @@ Boolean gcinfo		= FALSE;	/* -I */
 /* extern int getopt (int argc, char **argv, const char *optstring); */
 /* #endif */
 
-extern int optind;
-extern char *optarg;
+/* extern int optind; */
+/* extern char *optarg; */
 
 /* extern int isatty(int fd); */
 extern char **environ;
@@ -34,7 +35,7 @@ static void checkfd(int fd, OpenKind r) {
 static void initpath(void) {
 	int i;
 	static const char * const path[] = { INITIAL_PATH };
-	
+
 	Ref(List *, list, NULL);
 	for (i = arraysize(path); i-- > 0;) {
 		Term *t = mkstr((char *) path[i]);
@@ -125,9 +126,10 @@ int main(int argc, char **argv) {
 	if (*argv[0] == '-')
 		loginshell = TRUE;
 
-	while ((c = getopt(argc, argv, "eilxvnpodsc:?GIL")) != EOF)
+	getopt_reset();
+	while ((c = getopt_internal(argc, argv, "eilxvnpodsc:?GIL")) != -1)
 		switch (c) {
-		case 'c':	cmd = optarg;			break;
+		case 'c':	cmd = getopt_info.arg;			break;
 		case 'e':	runflags |= eval_exitonfalse;	break;
 		case 'i':	runflags |= run_interactive;	break;
 		case 'n':	runflags |= run_noexec;		break;
@@ -165,7 +167,7 @@ getopt_done:
 
 	if (
 		cmd == NULL
-	     && (optind == argc || cmd_stdin)
+	     && (getopt_info.ind == argc || cmd_stdin)
 	     && (runflags & run_interactive) == 0
 	     && isatty(0)
 	)
@@ -180,31 +182,31 @@ getopt_done:
 		initinput();
 		initprims();
 		initvars();
-	
+
 		runinitial();
-	
+
 		initpath();
 		initpid();
 		initsignals(runflags & run_interactive, allowquit);
 		hidevariables();
 		initenv(environ, protected);
-	
+
 		if (loginshell)
 			runesrc();
-	
-		if (cmd == NULL && !cmd_stdin && optind < ac) {
+
+		if (cmd == NULL && !cmd_stdin && getopt_info.ind < ac) {
 			int fd;
-			char *file = av[optind++];
+			char *file = av[getopt_info.ind++];
 			if ((fd = eopen(file, oOpen)) == -1) {
 				eprint("%s: %s\n", file, esstrerror(errno));
 				return 1;
 			}
-			vardef("*", NULL, listify(ac - optind, av + optind));
+			vardef("*", NULL, listify(ac - getopt_info.ind, av + getopt_info.ind));
 			vardef("0", NULL, mklist(mkstr(file), NULL));
 			return exitstatus(runfd(fd, file, runflags));
 		}
-	
-		vardef("*", NULL, listify(ac - optind, av + optind));
+
+		vardef("*", NULL, listify(ac - getopt_info.ind, av + getopt_info.ind));
 		vardef("0", NULL, mklist(mkstr(av[0]), NULL));
 		if (cmd != NULL)
 			return exitstatus(runstring(cmd, NULL, runflags));
