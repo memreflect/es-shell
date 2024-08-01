@@ -179,11 +179,15 @@ static void enclose(Format *f, Binding *binding, const char *sep) {
 	if (binding != NULL) {
 		Binding *next = binding->next;
 		enclose(f, next, ";");
+#if !ABRIDGE_CLOSURES
+		fmtprint(f, "%S%s", binding->name, sep);
+#else
 		fmtprint(f, "%S=%#L%s", binding->name, binding->defn, " ", sep);
+#endif
 	}
 }
 
-#if 0
+#if ABRIDGE_CLOSURES
 typedef struct Chain Chain;
 struct Chain {
 	Closure *closure;
@@ -199,7 +203,7 @@ static Boolean Cconv(Format *f) {
 	Binding *binding = closure->binding;
 	Boolean altform = (f->flags & FMT_altform) != 0;
 
-#if 0
+#if ABRIDGE_CLOSURES
 	int i;
 	Chain me, *cp;
 	assert(tree->kind == nThunk || tree->kind == nLambda || tree->kind == nPrim);
@@ -226,7 +230,7 @@ static Boolean Cconv(Format *f) {
 		fmtprint(f, "%T", tree);
 	}
 
-#if 0
+#if ABRIDGE_CLOSURES
 	chain = chain->next;	/* TODO: exception unwinding? */
 #endif
 	return FALSE;

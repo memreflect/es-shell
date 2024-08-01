@@ -15,6 +15,13 @@
  *	line definitions.  (That is, remember to do the #ifndef dance.)
  *
  *
+ *	ABRIDGE_CLOSURES
+ *		if on, produce closure strings without the values bound in a closure:
+ *			%closure(x;y;x)@ * {...}
+ *		else:
+ *			%closure(x=1;y=4;x=9)@ * {...}
+ *		this is particularly useful when dealing with "nested bindings".
+ *
  *	ASSERTIONS
  *		if this is on, asserts will be checked, raising errors on
  *		actual assertion failure.
@@ -275,6 +282,10 @@
 /*
  * default defaults -- don't change this section
  */
+
+#ifndef	ABRIDGE_CLOSURES
+#define	ABRIDGE_CLOSURES	1
+#endif
 
 #ifndef	ASSERTIONS
 #define	ASSERTIONS		1
