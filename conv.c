@@ -14,12 +14,14 @@ static Boolean Lconv(Format *f) {
 	lp = va_arg(f->args, List *);
 	sep = va_arg(f->args, char *);
 	for (; lp != NULL; lp = next) {
+#if ABRIDGE_CLOSURES
 		Closure *closure = getclosure(lp->term);
-		next = lp->next;
-		if (closure == NULL)
-			arg = getstr(lp->term);
-		else
+		if (closure != NULL)
 			arg = str((f->flags & FMT_zeropad) ? "%0C" : "%C", closure);
+		else
+#endif
+			arg = getstr(lp->term);
+		next = lp->next;
 		fmtprint(f, fmt, arg, next == NULL ? "" : sep);
 	}
 	return FALSE;
