@@ -18,7 +18,11 @@ PRIM(echo) {
 		} else if (termeq(list->term, "--"))
 			list = list->next;
 	}
+#if ABRIDGE_CLOSURES
+	print("%0L%s", list, " ", eol);
+#else
 	print("%L%s", list, " ", eol);
+#endif
 	return true;
 }
 

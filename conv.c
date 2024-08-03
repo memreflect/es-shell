@@ -9,12 +9,18 @@ static Boolean Lconv(Format *f) {
 	List *lp, *next;
 	char *sep;
 	const char *fmt = (f->flags & FMT_altform) ? "%S%s" : "%s%s";
+	const char *arg;
 
 	lp = va_arg(f->args, List *);
 	sep = va_arg(f->args, char *);
 	for (; lp != NULL; lp = next) {
+		Closure *closure = getclosure(lp->term);
 		next = lp->next;
-		fmtprint(f, fmt, getstr(lp->term), next == NULL ? "" : sep);
+		if (closure == NULL)
+			arg = getstr(lp->term);
+		else
+			arg = str((f->flags & FMT_zeropad) ? "%0C" : "%C", closure);
+		fmtprint(f, fmt, arg, next == NULL ? "" : sep);
 	}
 	return FALSE;
 }
@@ -178,23 +184,23 @@ top:
 static void enclose(Format *f, Binding *binding, const char *sep) {
 	if (binding != NULL) {
 		Binding *next = binding->next;
+		long flags = f->flags;
 		enclose(f, next, ";");
-#if !ABRIDGE_CLOSURES
-		fmtprint(f, "%S%s", binding->name, sep);
-#else
-		fmtprint(f, "%S=%#L%s", binding->name, binding->defn, " ", sep);
+#if ABRIDGE_CLOSURES
+		if (flags & FMT_zeropad)
+			fmtprint(f, "%S%s", binding->name, sep);
+		else
 #endif
+			fmtprint(f, "%S=%#L%s", binding->name, binding->defn, " ", sep);
 	}
 }
 
-#if ABRIDGE_CLOSURES
 typedef struct Chain Chain;
 struct Chain {
 	Closure *closure;
 	Chain *next;
 };
 static Chain *chain = NULL;
-#endif
 
 /* %C -- print a closure */
 static Boolean Cconv(Format *f) {
@@ -202,8 +208,9 @@ static Boolean Cconv(Format *f) {
 	Tree *tree = closure->tree;
 	Binding *binding = closure->binding;
 	Boolean altform = (f->flags & FMT_altform) != 0;
+	Boolean abridgec = (f->flags & FMT_zeropad) != 0;
 
-#if ABRIDGE_CLOSURES
+if (!abridgec) {
 	int i;
 	Chain me, *cp;
 	assert(tree->kind == nThunk || tree->kind == nLambda || tree->kind == nPrim);
@@ -217,22 +224,23 @@ static Boolean Cconv(Format *f) {
 	me.closure = closure;
 	me.next = chain;
 	chain = &me;
-#endif
+}
 
 	if (altform)
-		fmtprint(f, "%S", str("%C", closure));
+		fmtprint(f, "%S", str(abridgec ? "%0C" : "%C", closure));
 	else {
 		if (binding != NULL) {
+			long flags = f->flags;
 			fmtprint(f, "%%closure(");
+			f->flags = flags;
 			enclose(f, binding, "");
 			fmtprint(f, ")");
 		}
 		fmtprint(f, "%T", tree);
 	}
 
-#if ABRIDGE_CLOSURES
-	chain = chain->next;	/* TODO: exception unwinding? */
-#endif
+	if (!abridgec)
+		chain = chain->next;	/* TODO: exception unwinding? */
 	return FALSE;
 }
 
