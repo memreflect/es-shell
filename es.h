@@ -280,8 +280,8 @@ extern Boolean streq2(const char *s, const char *t1, const char *t2);
 /* input.c */
 
 extern char *prompt, *prompt2;
-extern Tree *parse(char *esprompt1, char *esprompt2);
-extern Tree *parsestring(const char *str);
+extern Tree *parse(char *esprompt1, char *esprompt2, Boolean fail_badsyntax);
+extern Tree *parsestring(const char *str, Boolean fail_badsyntax);
 extern void sethistory(char *file);
 extern Boolean isinteractive(void);
 extern void initinput(void);

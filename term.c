@@ -35,7 +35,7 @@ extern Closure *getclosure(Term *term) {
 			|| hasprefix(s, "%closure")
 		) {
 			Ref(Term *, tp, term);
-			Ref(Tree *, np, parsestring(s));
+			Ref(Tree *, np, parsestring(s, FALSE));
 			if (np == NULL) {
 				RefPop2(np, tp);
 				return NULL;

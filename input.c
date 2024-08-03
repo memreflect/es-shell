@@ -347,7 +347,7 @@ static int fdfill(Input *in) {
  */
 
 /* parse -- call yyparse(), but disable garbage collection and catch errors */
-extern Tree *parse(char *pr1, char *pr2) {
+extern Tree *parse(char *pr1, char *pr2, Boolean fail_badsyntax) {
 	int result;
 	assert(error == NULL);
 
@@ -370,7 +370,9 @@ extern Tree *parse(char *pr1, char *pr2) {
 	result = yyparse();
 	gcenable();
 
-	if (result || error != NULL) {
+	if (!fail_badsyntax)
+		error = NULL;
+	else if (result || error != NULL) {
 		char *e;
 		assert(error != NULL);
 		e = error;
@@ -515,7 +517,7 @@ extern List *runstring(const char *str, const char *name, int flags) {
 }
 
 /* parseinput -- turn an input source into a tree */
-extern Tree *parseinput(Input *in) {
+extern Tree *parseinput(Input *in, Boolean fail_badsyntax) {
 	Tree * volatile result = NULL;
 
 	in->prev = input;
@@ -524,7 +526,7 @@ extern Tree *parseinput(Input *in) {
 	input = in;
 
 	ExceptionHandler
-		result = parse(NULL, NULL);
+		result = parse(NULL, NULL, fail_badsyntax);
 		if (get(in) != EOF)
 			fail("$&parse", "more than one value in term");
 	CatchException (e)
@@ -539,7 +541,7 @@ extern Tree *parseinput(Input *in) {
 }
 
 /* parsestring -- turn a string into a tree; must be exactly one tree */
-extern Tree *parsestring(const char *str) {
+extern Tree *parsestring(const char *str, Boolean fail_badsyntax) {
 	Input in;
 	Tree *result;
 	unsigned char *buf;
@@ -561,7 +563,7 @@ extern Tree *parsestring(const char *str) {
 	in.cleanup = stringcleanup;
 
 	RefAdd(in.name);
-	result = parseinput(&in);
+	result = parseinput(&in, fail_badsyntax);
 	RefRemove(in.name);
 	return result;
 }
