@@ -3,7 +3,6 @@
 #include "es.h"
 #include "print.h"
 
-
 /* %L -- print a list */
 static Boolean Lconv(Format *f) {
 	List *lp, *next;
@@ -211,22 +210,23 @@ static Boolean Cconv(Format *f) {
 	Binding *binding = closure->binding;
 	Boolean altform = (f->flags & FMT_altform) != 0;
 	Boolean abridgec = (f->flags & FMT_zeropad) != 0;
+	Chain me;
 
-if (!abridgec) {
-	int i;
-	Chain me, *cp;
-	assert(tree->kind == nThunk || tree->kind == nLambda || tree->kind == nPrim);
-	assert(binding == NULL || tree->kind != nPrim);
+	if (!abridgec) {
+		int i;
+		Chain *cp;
+		assert(tree->kind == nThunk || tree->kind == nLambda || tree->kind == nPrim);
+		assert(binding == NULL || tree->kind != nPrim);
 
-	for (cp = chain, i = 0; cp != NULL; cp = cp->next, i++)
-		if (cp->closure == closure) {
-			fmtprint(f, "%d $&nestedbinding", i);
-			return FALSE;
-		}
-	me.closure = closure;
-	me.next = chain;
-	chain = &me;
-}
+		for (cp = chain, i = 0; cp != NULL; cp = cp->next, i++)
+			if (cp->closure == closure) {
+				fmtprint(f, "%d $&nestedbinding", i);
+				return FALSE;
+			}
+		me.closure = closure;
+		me.next = chain;
+		chain = &me;
+	}
 
 	if (altform)
 		fmtprint(f, "%S", str(abridgec ? "%0C" : "%C", closure));
