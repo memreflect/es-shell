@@ -96,7 +96,7 @@ PRIM(whatis) {
 	if (getclosure(term) == NULL) {
 		List *fn;
 		Ref(char *, prog, getstr(term));
-		assert(prog != NULL);
+		es_assert(prog != NULL);
 		fn = varlookup2("fn-", prog, binding);
 		if (fn != NULL)
 			list = fn;

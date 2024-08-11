@@ -29,7 +29,7 @@ extern Proc *mkproc(int pid, Boolean background) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid) {		/* are we recycling pids? */
-			assert(!proc->alive);	/* if false, violates unix semantics */
+			es_assert(!proc->alive);	/* if false, violates unix semantics */
 			break;
 		}
 	if (proc == NULL) {
@@ -100,7 +100,7 @@ static void reap(int pid, int status) {
 	Proc *proc;
 	for (proc = proclist; proc != NULL; proc = proc->next)
 		if (proc->pid == pid) {
-			assert(proc->alive);
+			es_assert(proc->alive);
 			proc->alive = FALSE;
 			proc->status = status;
 #if HAVE_WAIT3
@@ -152,7 +152,7 @@ top:
 			if (rusage != NULL)
 				memcpy(rusage, &proc->rusage, sizeof (struct rusage));
 #else
-			assert(rusage == NULL);
+			es_assert(rusage == NULL);
 #endif
 			return status;
 		}

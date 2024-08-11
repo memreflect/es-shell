@@ -11,7 +11,7 @@ DefineTag(List, static);
 
 extern List *mklist(Term *term, List *next) {
 	gcdisable();
-	assert(term != NULL);
+	es_assert(term != NULL);
 	Ref(List *, list, gcnew(List));
 	list->term = term;
 	list->next = next;
@@ -100,7 +100,7 @@ extern List *listify(int argc, char **argv) {
 /* nth -- return nth element of a list, indexed from 1 */
 extern Term *nth(List *list, int n) {
 	for (; n > 0 && list != NULL; list = list->next) {
-		assert(list->term != NULL);
+		es_assert(list->term != NULL);
 		if (--n == 0)
 			return list->term;
 	}

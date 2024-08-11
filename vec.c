@@ -55,6 +55,6 @@ extern int qstrcmp(const void *s1, const void *s2) {
 
 /* sortvector */
 extern void sortvector(Vector *v) {
-	assert(v->vector[v->count] == NULL);
+	es_assert(v->vector[v->count] == NULL);
 	qsort(v->vector, v->count, sizeof (char *), qstrcmp);
 }

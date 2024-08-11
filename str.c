@@ -89,7 +89,7 @@ DefineTag(StrList, static);
 
 extern StrList *mkstrlist(char *str, StrList *next) {
 	gcdisable();
-	assert(str != NULL);
+	es_assert(str != NULL);
 	Ref(StrList *, list, gcnew(StrList));
 	list->str = str;
 	list->next = next;

@@ -35,10 +35,10 @@ static void binding(Format *f, char *keyword, Tree *tree) {
 	fmtprint(f, "%s(", keyword);
 	for (np = tree->u[0].p; np != NULL; np = np->u[1].p) {
 		Tree *binding;
-		assert(np->kind == nList);
+		es_assert(np->kind == nList);
 		binding = np->u[0].p;
-		assert(binding != NULL);
-		assert(binding->kind == nAssign);
+		es_assert(binding != NULL);
+		es_assert(binding->kind == nAssign);
 		fmtprint(f, "%s%#T=%T", sep, binding->u[0].p, binding->u[1].p);
 		sep = ";";
 	}
@@ -160,7 +160,7 @@ top:
 		default:
 			fmtprint(f, "(%T", n->u[0].p);
 			while ((n = n->u[1].p) != NULL) {
-				assert(n->kind == nList);
+				es_assert(n->kind == nList);
 				fmtprint(f, " %T", n->u[0].p);
 			}
 			fmtputc(f, ')');
@@ -202,8 +202,8 @@ static Boolean Cconv(Format *f) {
 #if 0
 	int i;
 	Chain me, *cp;
-	assert(tree->kind == nThunk || tree->kind == nLambda || tree->kind == nPrim);
-	assert(binding == NULL || tree->kind != nPrim);
+	es_assert(tree->kind == nThunk || tree->kind == nLambda || tree->kind == nPrim);
+	es_assert(binding == NULL || tree->kind != nPrim);
 
 	for (cp = chain, i = 0; cp != NULL; cp = cp->next, i++)
 		if (cp->closure == closure) {
@@ -458,7 +458,7 @@ static Boolean Bconv(Format *f) {
 	case nList: {
 		fmtprint(f, "(list");
 		do {
-			assert(n->kind == nList);
+			es_assert(n->kind == nList);
 			fmtprint(f, " %B", n->u[0].p);
 		} while ((n = n->u[1].p) != NULL);
 		fmtprint(f, ")");

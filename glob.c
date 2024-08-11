@@ -65,7 +65,7 @@ static List *dirmatch(const char *prefix, const char *dirname, const char *patte
 		return mklist(mkstr(name), NULL);
 	}
 
-	assert(gcisblocked());
+	es_assert(gcisblocked());
 
 	dirp = opendir(dirname);
 	if (dirp == NULL)
@@ -93,8 +93,8 @@ static List *listglob(List *list, char *pattern, char *quote, size_t slashcount)
 		static char *prefix = NULL;
 		static size_t prefixlen = 0;
 
-		assert(list->term != NULL);
-		assert(!isclosure(list->term));
+		es_assert(list->term != NULL);
+		es_assert(!isclosure(list->term));
 		
 		dir = getstr(list->term);
 		dirlen = strlen(dir);
@@ -123,7 +123,7 @@ static List *glob1(const char *pattern, const char *quote) {
 	static char *dir = NULL, *pat = NULL, *qdir = NULL, *qpat = NULL, *raw = NULL;
 	static size_t dsize = 0;
 
-	assert(quote != QUOTED);
+	es_assert(quote != QUOTED);
 
 	if ((psize = strlen(pattern) + 1) > dsize || pat == NULL) {
 		pat = erealloc(pat, psize);
@@ -200,8 +200,8 @@ static char *expandhome(char *s, StrList *qp) {
 	size_t slash;
 	List *fn = varlookup("fn-%home", NULL);
 
-	assert(*s == '~');
-	assert(qp->str == UNQUOTED || *qp->str == 'r');
+	es_assert(*s == '~');
+	es_assert(qp->str == UNQUOTED || *qp->str == 'r');
 
 	if (fn == NULL)
 		return s;
@@ -266,10 +266,10 @@ extern List *glob(List *list, StrList *quote) {
 
 	for (lp = list, qp = quote; lp != NULL; lp = lp->next, qp = qp->next)
 		if (qp->str != QUOTED) {
-			assert(lp->term != NULL);
-			assert(!isclosure(lp->term));
+			es_assert(lp->term != NULL);
+			es_assert(!isclosure(lp->term));
 			Ref(char *, str, getstr(lp->term));
-			assert(qp->str == UNQUOTED || strlen(qp->str) == strlen(str));
+			es_assert(qp->str == UNQUOTED || strlen(qp->str) == strlen(str));
 			if (hastilde(str, qp->str)) {
 				Term *tmp;
 				Ref(List *, l0, list);

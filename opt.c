@@ -17,7 +17,7 @@ extern void esoptbegin(List *list, const char *caller, const char *usagemsg, Boo
 		globalroot(&args);
 		globalroot(&termarg);
 	}
-	assert(usage == NULL);
+	es_assert(usage == NULL);
 	usage = usagemsg;
 	invoker = caller;
 	args = list;
@@ -30,12 +30,12 @@ extern int esopt(const char *options) {
 	int c;
 	const char *arg, *opt;
 
-	assert(!throwonerr || usage != NULL);
-	assert(termarg == NULL);
+	es_assert(!throwonerr || usage != NULL);
+	es_assert(termarg == NULL);
 	if (nextchar == 0) {
 		if (args == NULL)
 			return EOF;
-		assert(args->term != NULL);
+		es_assert(args->term != NULL);
 		arg = getstr(args->term);
 		if (*arg != '-')
 			return EOF;
@@ -45,7 +45,7 @@ extern int esopt(const char *options) {
 		}
 		nextchar = 1;
 	} else {
-		assert(args != NULL && args->term != NULL);
+		es_assert(args != NULL && args->term != NULL);
 		arg = getstr(args->term);
 	}
 
@@ -86,7 +86,7 @@ extern int esopt(const char *options) {
 
 extern Term *esoptarg(void) {
 	Term *t = termarg;
-	assert(t != NULL);
+	es_assert(t != NULL);
 	termarg = NULL;
 	return t;
 }

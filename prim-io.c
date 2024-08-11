@@ -20,7 +20,7 @@ static List *redir(List *(*rop)(int *fd, List *list), List *list, int evalflags)
 	volatile int inparent = (evalflags & eval_inchild) == 0;
 	volatile int ticket = UNREGISTERED;
 
-	assert(list != NULL);
+	es_assert(list != NULL);
 	Ref(List *, lp, list);
 	destfd = getnumber(getstr(lp->term));
 	lp = (*rop)(&srcfd, lp->next);
@@ -62,7 +62,7 @@ REDIR(openfile) {
 		{ NULL, 0 }
 	};
 
-	assert(length(list) == 3);
+	es_assert(length(list) == 3);
 	Ref(List *, lp, list);
 
 	mode = getstr(lp->term);
@@ -99,7 +99,7 @@ PRIM(openfile) {
 
 REDIR(dup) {
 	int fd;
-	assert(length(list) == 2);
+	es_assert(length(list) == 2);
 	Ref(List *, lp, list);
 	fd = dup(fdmap(getnumber(getstr(lp->term))));
 	if (fd == -1)
@@ -161,7 +161,7 @@ REDIR(here) {
 	int pid, p[2];
 	List *doc, *tail, **tailp;
 
-	assert(list != NULL);
+	es_assert(list != NULL);
 	for (tailp = &list; (tail = *tailp)->next != NULL; tailp = &tail->next)
 		;
 	doc = (list == tail) ? NULL : list;
@@ -209,7 +209,7 @@ PRIM(pipe) {
 
 		if (pid == 0) {		/* child */
 			if (inpipe != -1) {
-				assert(infd != -1);
+				es_assert(infd != -1);
 				releasefd(infd);
 				mvfd(inpipe, infd);
 			}

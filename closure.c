@@ -38,7 +38,7 @@ static Tree *revtree(Tree *tree) {
 		return NULL;
 	prev = NULL;
 	do {
-		assert(tree->kind == nList);
+		es_assert(tree->kind == nList);
 		next = tree->u[1].p;
 		tree->u[1].p = prev;
 		prev = tree;
@@ -54,22 +54,22 @@ struct Chain {
 static Chain *chain = NULL;
 
 static Binding *extract(Tree *tree, Binding *bindings) {
-	assert(gcisblocked());
+	es_assert(gcisblocked());
 
 	for (; tree != NULL; tree = tree->u[1].p) {
 		Tree *defn = tree->u[0].p;
-		assert(tree->kind == nList);
+		es_assert(tree->kind == nList);
 		if (defn != NULL) {
 			List *list = NULL;
 			Tree *name = defn->u[0].p;
-			assert(name->kind == nWord || name->kind == nQword);
+			es_assert(name->kind == nWord || name->kind == nQword);
 			defn = revtree(defn->u[1].p);
 			for (; defn != NULL; defn = defn->u[1].p) {
 				Term *term;
 				Tree *word = defn->u[0].p;
 				NodeKind k = word->kind;
-				assert(defn->kind == nList);
-				assert(k == nWord || k == nQword || k == nPrim);
+				es_assert(defn->kind == nList);
+				es_assert(k == nWord || k == nQword || k == nPrim);
 				if (k == nPrim) {
 					char *prim = word->u[0].s;
 					if (streq(prim, "nestedbinding")) {
@@ -156,7 +156,7 @@ extern Closure *extractbindings(Tree *tree0) {
 DefineTag(Binding, static);
 
 extern Binding *mkbinding(char *name, List *defn, Binding *next) {
-	assert(next == NULL || next->name != NULL);
+	es_assert(next == NULL || next->name != NULL);
 	validatevar(name);
 	gcdisable();
 	Ref(Binding *, binding, gcnew(Binding));

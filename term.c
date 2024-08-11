@@ -28,7 +28,7 @@ extern Term *mkstr(char *str) {
 extern Closure *getclosure(Term *term) {
 	if (term->closure == NULL) {
 		char *s = term->str;
-		assert(s != NULL);
+		es_assert(s != NULL);
 		if (
 			((*s == '{' || *s == '@') && s[strlen(s) - 1] == '}')
 			|| (*s == '$' && s[1] == '&')
@@ -52,7 +52,7 @@ extern Closure *getclosure(Term *term) {
 extern char *getstr(Term *term) {
 	char *s = term->str;
 	Closure *closure = term->closure;
-	assert((s == NULL) != (closure == NULL));
+	es_assert((s == NULL) != (closure == NULL));
 	if (s != NULL)
 		return s;
 
@@ -97,13 +97,13 @@ static size_t TermScan(void *p) {
 }
 
 extern Boolean termeq(Term *term, const char *s) {
-	assert(term != NULL);
+	es_assert(term != NULL);
 	if (term->str == NULL)
 		return FALSE;
 	return streq(term->str, s);
 }
 
 extern Boolean isclosure(Term *term) {
-	assert(term != NULL);
+	es_assert(term != NULL);
 	return term->closure != NULL;
 }

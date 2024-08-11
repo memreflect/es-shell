@@ -38,7 +38,7 @@ extern Tree *snarfheredoc(const char *eof, Boolean quoted) {
 	Buffer *buf;
 	unsigned char *s;
 
-	assert(quoted || strchr(eof, '$') == NULL);	/* can never be typed (whew!) */
+	es_assert(quoted || strchr(eof, '$') == NULL);	/* can never be typed (whew!) */
 	if (strchr(eof, '\n') != NULL) {
 		yyerror("here document eof-marker contains a newline");
 		return NULL;
@@ -118,16 +118,16 @@ extern Boolean queueheredoc(Tree *t) {
 	Tree *eof;
 	Here *here;
 
-	assert(hereq == NULL || hereq->marker->kind == nList);
-	assert(t->kind == nList);
-	assert(t->CAR->kind == nWord);
+	es_assert(hereq == NULL || hereq->marker->kind == nList);
+	es_assert(t->kind == nList);
+	es_assert(t->CAR->kind == nWord);
 #if !REISER_CPP
-	assert(streq(t->CAR->u[0].s, "%heredoc"));
+	es_assert(streq(t->CAR->u[0].s, "%heredoc"));
 #endif
 	t->CAR->u[0].s = "%here";
-	assert(t->CDR->kind == nList);
+	es_assert(t->CDR->kind == nList);
 	eof = t->CDR->CDR;
-	assert(eof->kind == nList);
+	es_assert(eof->kind == nList);
 	if (!eof->CAR || (eof->CAR->kind != nWord && eof->CAR->kind != nQword)) {
 		yyerror("here document eof-marker not a single literal word");
 		return FALSE;

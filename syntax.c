@@ -15,13 +15,13 @@ extern void initparse(void) {
 
 /* treecons -- create new tree list cell */
 extern Tree *treecons(Tree *car, Tree *cdr) {
-	assert(cdr == NULL || cdr->kind == nList);
+	es_assert(cdr == NULL || cdr->kind == nList);
 	return mk(nList, car, cdr);
 }
 
 /* treecons2 -- create new tree list cell or do nothing if car is NULL */
 extern Tree *treecons2(Tree *car, Tree *cdr) {
-	assert(cdr == NULL || cdr->kind == nList);
+	es_assert(cdr == NULL || cdr->kind == nList);
 	return car == NULL ? cdr : mk(nList, car, cdr);
 }
 
@@ -29,7 +29,7 @@ extern Tree *treecons2(Tree *car, Tree *cdr) {
 extern Tree *treeappend(Tree *head, Tree *tail) {
 	Tree *p, **prevp;
 	for (p = head, prevp = &head; p != NULL; p = *(prevp = &p->CDR))
-		assert(p->kind == nList || p->kind == nRedir);
+		es_assert(p->kind == nList || p->kind == nRedir);
 	*prevp = tail;
 	return head;
 }
@@ -42,7 +42,7 @@ extern Tree *treeconsend(Tree *head, Tree *tail) {
 /* treeconsend2 -- destructive add node at end for tree lists or nothing if tail is NULL */
 extern Tree *treeconsend2(Tree *head, Tree *tail) {
 	if (tail == NULL) {
-		assert(head == NULL || head->kind == nList || head->kind == nRedir);
+		es_assert(head == NULL || head->kind == nList || head->kind == nRedir);
 		return head;
 	}
 	return treeappend(head, treecons(tail, NULL));
@@ -65,7 +65,7 @@ static Boolean firstis(Tree *t, const char *s) {
 	t = t->CAR;
 	if (t == NULL || t->kind != nWord)
 		return FALSE;
-	assert(t->u[0].s != NULL);
+	es_assert(t->u[0].s != NULL);
 	return streq(t->u[0].s, s);
 }
 
@@ -158,8 +158,8 @@ extern Tree *redirect(Tree *t) {
 	for (; r->kind == nRedir; r = r->CDR)
 		t = treeappend(t, r->CAR);
 	for (p = r; p->CAR != &placeholder; p = p->CDR) {
-		assert(p != NULL);
-		assert(p->kind == nList);
+		es_assert(p != NULL);
+		es_assert(p->kind == nList);
 	}
 	if (firstis(r, "%heredoc"))
 		if (!queueheredoc(r))
@@ -224,10 +224,10 @@ extern Tree *redirappend(Tree *tree, Tree *r) {
 	Tree *t, **tp;
 	for (; r->kind == nRedir; r = r->CDR)
 		tree = treeappend(tree, r->CAR);
-	assert(r->kind == nList);
+	es_assert(r->kind == nList);
 	for (t = tree, tp = &tree; t != NULL && t->kind == nRedir; t = *(tp = &t->CDR))
 		;
-	assert(t == NULL || t->kind == nList);
+	es_assert(t == NULL || t->kind == nList);
 	*tp = mk(nRedir, r, t);
 	return tree;
 }
@@ -274,7 +274,7 @@ extern Tree *firstprepend(Tree *first, Tree *args) {
 		return args;
 	for (t = args, tp = &args; t != NULL && t->kind == nRedir; t = *(tp = &t->CDR))
 		;
-	assert(t == NULL || t->kind == nList);
+	es_assert(t == NULL || t->kind == nList);
 	*tp = treecons(first, t);
 	if (args->kind == nRedir)
 		return args;

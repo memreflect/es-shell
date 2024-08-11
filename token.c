@@ -403,7 +403,7 @@ top:	while ((c = GETC()) == ' ' || c == '\t')
 	}
 
 	default:
-		assert(c != '\0');
+		es_assert(c != '\0');
 		w = NW;
 		return c; /* don't know what it is, let yacc barf on it */
 	}

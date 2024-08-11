@@ -188,7 +188,7 @@ static void initmmu(void) {
 
 /* mkspace -- create a new ``half'' space in debugging mode */
 static Space *mkspace(Space *space, Space *next) {
-	assert(space == NULL || (&spaces[0] <= space && space < &spaces[NSPACES]));
+	es_assert(space == NULL || (&spaces[0] <= space && space < &spaces[NSPACES]));
 
 	if (space != NULL) {
 		Space *sp;
@@ -247,10 +247,10 @@ static Space *newspace(Space *next) {
 static void deprecate(Space *space) {
 #if GCPROTECT
 	Space *base;
-	assert(space != NULL);
+	es_assert(space != NULL);
 	for (base = space; base->next != NULL; base = base->next)
 		;
-	assert(&spaces[0] <= base && base < &spaces[NSPACES]);
+	es_assert(&spaces[0] <= base && base < &spaces[NSPACES]);
 	for (;;) {
 		invalidate(space->bot, SPACESIZE(space));
 		if (space == base)
@@ -276,7 +276,7 @@ static void deprecate(Space *space) {
 extern Boolean isinspace(Space *space, void *p) {
 	for (; space != NULL; space = space->next)
 		if (INSPACE(p, space)) {
-		 	assert((char *) p < space->current);
+		 	es_assert((char *) p < space->current);
 		 	return TRUE;
 		}
 	return FALSE;
@@ -292,7 +292,7 @@ extern void globalroot(void *addr) {
 	Root *root;
 #if ASSERTIONS
 	for (root = globalrootlist; root != NULL; root = root->next)
-		assert(root->p != addr);
+		es_assert(root->p != addr);
 #endif
 	root = ealloc(sizeof (Root));
 	root->p = addr;
@@ -305,7 +305,7 @@ extern void exceptionroot(Root *root, List **e) {
 	Root *r;
 #if ASSERTIONS
 	for (r = exceptionrootlist; r != NULL; r = r->next)
-		assert(r->p != (void **)e);
+		es_assert(r->p != (void **)e);
 #endif
 	root->p = (void **)e;
 	root->next = exceptionrootlist;
@@ -314,7 +314,7 @@ extern void exceptionroot(Root *root, List **e) {
 
 /* exceptionunroot -- remove an exception from the list of rooted exceptions */
 extern void exceptionunroot(void) {
-	assert(exceptionrootlist != NULL);
+	es_assert(exceptionrootlist != NULL);
 	exceptionrootlist = exceptionrootlist->next;
 }
 
@@ -337,13 +337,13 @@ extern void *forward(void *p) {
 	VERBOSE(("GC %8ux : ", p));
 
 	tag = TAG(p);
-	assert(tag != NULL);
+	es_assert(tag != NULL);
 	if (FORWARDED(tag)) {
 		np = FOLLOW(tag);
-		assert(TAG(np)->magic == TAGMAGIC);
+		es_assert(TAG(np)->magic == TAGMAGIC);
 		VERBOSE(("%s	-> %8ux (followed)\n", TAG(np)->typename, np));
 	} else {
-		assert(tag->magic == TAGMAGIC);
+		es_assert(tag->magic == TAGMAGIC);
 		np = (*tag->copy)(p);
 		VERBOSE(("%s	-> %8ux (forwarded)\n", tag->typename, np));
 		TAG(p) = FOLLOWTO(np);
@@ -367,11 +367,11 @@ static void scanspace(void) {
 		Space *front = new;
 		for (sp = new; sp != scanned; sp = sp->next) {
 			char *scan;
-			assert(sp != NULL);
+			es_assert(sp != NULL);
 			scan = sp->bot;
 			while (scan < sp->current) {
 				Tag *tag = *(Tag **) scan;
-				assert(tag->magic == TAGMAGIC);
+				es_assert(tag->magic == TAGMAGIC);
 				scan += sizeof (Tag *);
 				VERBOSE(("GC %8ux : %s	scan\n", scan, tag->typename));
 				scan += ALIGN((*tag->scan)(scan));
@@ -390,7 +390,7 @@ static void scanspace(void) {
 
 /* gcenable -- enable collections */
 extern void gcenable(void) {
-	assert(gcblocked > 0);
+	es_assert(gcblocked > 0);
 	--gcblocked;
 	if (!gcblocked && new->next != NULL)
 		gc();
@@ -398,7 +398,7 @@ extern void gcenable(void) {
 
 /* gcdisable -- disable collections */
 extern void gcdisable(void) {
-	assert(gcblocked >= 0);
+	es_assert(gcblocked >= 0);
 	++gcblocked;
 }
 
@@ -417,7 +417,7 @@ extern void gcreserve(size_t minfree) {
 
 /* gcisblocked -- is collection disabled? */
 extern Boolean gcisblocked(void) {
-	assert(gcblocked >= 0);
+	es_assert(gcblocked >= 0);
 	return gcblocked != 0;
 }
 
@@ -434,13 +434,13 @@ extern void gc(void) {
 				olddata += SPACEUSED(space);
 #endif
 
-		assert(gcblocked >= 0);
+		es_assert(gcblocked >= 0);
 		if (gcblocked > 0)
 			return;
 		++gcblocked;
 
-		assert(new != NULL);
-		assert(old == NULL);
+		es_assert(new != NULL);
+		es_assert(old == NULL);
 		old = new;
 #if GCPROTECT
 		for (; new->next != NULL; new = new->next)
@@ -514,7 +514,7 @@ extern void *gcalloc(size_t nbytes, Tag *tag) {
 #if GCALWAYS
 	gc();
 #endif
-	assert(tag == NULL || tag->magic == TAGMAGIC);
+	es_assert(tag == NULL || tag->magic == TAGMAGIC);
 	for (;;) {
 		Tag **p = (void *) new->current;
 		char *q = ((char *) p) + n;
@@ -547,7 +547,7 @@ extern char *gcndup(const char *s, size_t n) {
 	ns = gcalloc((n + 1) * sizeof (char), &StringTag);
 	memcpy(ns, s, n);
 	ns[n] = '\0';
-	assert(strlen(ns) == n);
+	es_assert(strlen(ns) == n);
 
 	Ref(char *, result, ns);
 	gcenable();
@@ -762,7 +762,7 @@ extern void memdump(void) {
 		char *scan = sp->bot;
 		while (scan < sp->current) {
 			Tag *tag = *(Tag **) scan;
-			assert(tag->magic == TAGMAGIC);
+			es_assert(tag->magic == TAGMAGIC);
 			scan += sizeof (Tag *);
 			scan += ALIGN(dump(tag, scan));
 		}

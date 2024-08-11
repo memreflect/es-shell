@@ -31,7 +31,7 @@ static Boolean hasbindings(List *list) {
 	for (; list != NULL; list = list->next)
 		if (isclosure(list->term)) {
 			Closure *closure = getclosure(list->term);
-			assert(closure != NULL);
+			es_assert(closure != NULL);
 			if (closure->binding != NULL)
 				return TRUE;
 		}
@@ -236,9 +236,9 @@ extern void varpop(Push *push) {
 	Var *var;
 	List *except = NULL;
 
-	assert(pushlist == push);
-	assert(rootlist == &push->defnroot);
-	assert(rootlist->next == &push->nameroot);
+	es_assert(pushlist == push);
+	es_assert(rootlist == &push->defnroot);
+	es_assert(rootlist->next == &push->nameroot);
 
 	if (isexported(push->name))
 		isdirty = TRUE;
@@ -278,7 +278,7 @@ extern void varpop(Push *push) {
 
 static void mkenv0(void *dummy, char *key, void *value) {
 	Var *var = value;
-	assert(gcisblocked());
+	es_assert(gcisblocked());
 	if (
 		   var == NULL
 		|| var->defn == NULL
@@ -290,7 +290,7 @@ static void mkenv0(void *dummy, char *key, void *value) {
 		char *envstr = str(ENV_FORMAT, key, var->defn);
 		var->env = envstr;
 	}
-	assert(env->count < env->alloclen);
+	es_assert(env->count < env->alloclen);
 	env->vector[env->count++] = var->env;
 	if (env->count == env->alloclen) {
 		Vector *newenv = mkvector(env->alloclen * 2);

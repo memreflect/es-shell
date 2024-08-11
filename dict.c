@@ -30,7 +30,7 @@ static unsigned long strhash2(const char *str1, const char *str2) {
 	int c;
 	unsigned long n = 0;
 	unsigned char *s = (unsigned char *) str1;
-	assert(str1 != NULL);
+	es_assert(str1 != NULL);
 	while (1) {
 		ADVANCE();
 		n += (c << 17) ^ (c << 11) ^ (c << 5) ^ (c >> 1);
@@ -114,8 +114,8 @@ static Assoc *get(Dict *dict, const char *name) {
 static Dict *put(Dict *dict, char *name, void *value) {
 	unsigned long n, mask;
 	Assoc *ap;
-	assert(get(dict, name) == NULL);
-	assert(value != NULL);
+	es_assert(get(dict, name) == NULL);
+	es_assert(value != NULL);
 
 	if (dict->remain <= 1) {
 		Dict *new;
@@ -145,7 +145,7 @@ static Dict *put(Dict *dict, char *name, void *value) {
 
 static void rm(Dict *dict, Assoc *ap) {
 	unsigned long n, mask;
-	assert(dict->table <= ap && ap < &dict->table[dict->size]);
+	es_assert(dict->table <= ap && ap < &dict->table[dict->size]);
 
 	ap->name = DEAD;
 	ap->value = NULL;

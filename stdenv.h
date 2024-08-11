@@ -218,7 +218,7 @@ typedef GETGROUPS_T gidset_t;
  */
 
 #if ASSERTIONS
-#define	assert(expr) \
+#define	es_assert(expr) \
 	STMT( \
 		if (!(expr)) { \
 			eprint("%s:%d: assertion failed (%s)\n", \
@@ -227,13 +227,13 @@ typedef GETGROUPS_T gidset_t;
 		} \
 	)
 #else
-#define	assert(ignore)	NOP
+#define	es_assert(ignore)	NOP
 #endif
 
 enum { UNREACHABLE = 0 };
 
 
-#define	NOTREACHED	STMT(assert(UNREACHABLE))
+#define	NOTREACHED	STMT(es_assert(UNREACHABLE))
 
 /*
  * system calls -- can we get these from some standard header uniformly?

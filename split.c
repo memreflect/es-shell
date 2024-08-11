@@ -45,7 +45,7 @@ extern char *stepsplit(char *in, size_t len, Boolean endword) {
 		Term *term;
 
 		if (*s == '\0') return NULL;
-		assert(buf == NULL);
+		es_assert(buf == NULL);
 
 		end = *(s + 1) == '\0';
 

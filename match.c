@@ -122,7 +122,7 @@ extern Boolean listmatch(List *subject, List *pattern, StrList *quote) {
 		for (; p != NULL; p = p->next, q = q->next) {
 			/* one or more stars match null */
 			char *pw = getstr(p->term), *qw;
-			assert(q != NULL);
+			es_assert(q != NULL);
 			qw = q->str;
 			if (*pw != '\0' && qw != QUOTED) {
 				int i;
@@ -148,9 +148,9 @@ extern Boolean listmatch(List *subject, List *pattern, StrList *quote) {
 	Ref(StrList *, q, quote);
 
 	for (; p != NULL; p = p->next, q = q->next) {
-		assert(q != NULL);
-		assert(p->term != NULL);
-		assert(q->str != NULL);
+		es_assert(q != NULL);
+		es_assert(p->term != NULL);
+		es_assert(q->str != NULL);
 		Ref(char *, pw, getstr(p->term));
 		Ref(char *, qw, q->str);
 		Ref(List *, t, s);
@@ -194,7 +194,7 @@ static List *extractsinglematch(const char *subject, const char *pattern,
 					return mklist(mkstr(gcdup(s)), result);
 				for (begin = s;; s++) {
 					const char *q = TAILQUOTE(quoting, i);
-					assert(*s != '\0');
+					es_assert(*s != '\0');
 					if (match(s, pattern + i, q)) {
 						result = mklist(mkstr(gcndup(begin, s - begin)), result);
 						return haswild(pattern + i, q)
@@ -205,9 +205,9 @@ static List *extractsinglematch(const char *subject, const char *pattern,
 			    }
 			    case '[': {
 				int j = rangematch(pattern + i, TAILQUOTE(quoting, i), *s);
-				assert(j != RANGE_FAIL);
+				es_assert(j != RANGE_FAIL);
 				if (j == RANGE_ERROR) {
-					assert(*s == '[');
+					es_assert(*s == '[');
 					break;
 				}
 				i += j;
@@ -249,7 +249,7 @@ extern List *extractmatches(List *subjects, List *patterns, StrList *quotes) {
 		     pattern = pattern->next, quote = quote->next) {
 			List *match;
 			char *pat = getstr(pattern->term);
-			assert(quote != NULL);
+			es_assert(quote != NULL);
 			match = extractsinglematch(getstr(subject->term),
 						   pat, quote->str, NULL);
 			if (match != NULL) {

@@ -6,7 +6,7 @@ unsigned long evaldepth = 0, maxevaldepth = MAXmaxevaldepth;
 
 static noreturn failexec(char *file, List *args) {
 	List *fn;
-	assert(gcisblocked());
+	es_assert(gcisblocked());
 	fn = varlookup("fn-%exec-failure", NULL);
 	if (fn != NULL) {
 		int olderror = errno;
@@ -87,12 +87,12 @@ static Binding *letbindings(Tree *defn0, Binding *outer0,
 	Ref(Tree *, defn, defn0);
 
 	for (; defn != NULL; defn = defn->u[1].p) {
-		assert(defn->kind == nList);
+		es_assert(defn->kind == nList);
 		if (defn->u[0].p == NULL)
 			continue;
 
 		Ref(Tree *, assign, defn->u[0].p);
-		assert(assign->kind == nAssign);
+		es_assert(assign->kind == nAssign);
 		Ref(List *, vars, glom(assign->u[0].p, context, FALSE));
 		Ref(List *, values, glom(assign->u[1].p, context, TRUE));
 
@@ -170,11 +170,11 @@ static List *forloop(Tree *defn0, Tree *body0,
 
 	Ref(Tree *, defn, defn0);
 	for (; defn != NULL; defn = defn->u[1].p) {
-		assert(defn->kind == nList);
+		es_assert(defn->kind == nList);
 		if (defn->u[0].p == NULL)
 			continue;
 		Ref(Tree *, assign, defn->u[0].p);
-		assert(assign->kind == nAssign);
+		es_assert(assign->kind == nAssign);
 		Ref(List *, vars, glom(assign->u[0].p, outer, FALSE));
 		Ref(List *, list, glom(assign->u[1].p, outer, TRUE));
 		if (vars == NULL)
@@ -201,7 +201,7 @@ static List *forloop(Tree *defn0, Tree *body0,
 				Ref(List *, value, NULL);
 				if (lp->defn != &MULTIPLE)
 					sequence = lp;
-				assert(sequence != NULL);
+				es_assert(sequence != NULL);
 				if (sequence->defn != NULL) {
 					value = mklist(sequence->defn->term,
 						       NULL);
@@ -325,9 +325,9 @@ extern Binding *bindargs(Tree *params, List *args, Binding *binding) {
 	for (; params != NULL; params = params->u[1].p) {
 		Tree *param;
 		List *value;
-		assert(params->kind == nList);
+		es_assert(params->kind == nList);
 		param = params->u[0].p;
-		assert(param->kind == nWord || param->kind == nQword);
+		es_assert(param->kind == nWord || param->kind == nQword);
 		if (args == NULL)
 			value = NULL;
 		else if (params->u[1].p == NULL || args->next == NULL) {
@@ -373,12 +373,12 @@ restart:
 		--evaldepth;
 		return true;
 	}
-	assert(list->term != NULL);
+	es_assert(list->term != NULL);
 
 	if ((cp = getclosure(list->term)) != NULL) {
 		switch (cp->tree->kind) {
 		    case nPrim:
-			assert(cp->binding == NULL);
+			es_assert(cp->binding == NULL);
 			list = prim(cp->tree->u[0].s, list->next, binding, flags);
 			break;
 		    case nThunk:

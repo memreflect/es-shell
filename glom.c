@@ -27,7 +27,7 @@ static char *qcat(const char *q1, const char *q2, Term *t1, Term *t2) {
 	size_t len1, len2;
 	char *result, *s;
 
-	assert(gcisblocked());
+	es_assert(gcisblocked());
 
 	if (q1 == QUOTED && q2 == QUOTED)
 		return QUOTED;
@@ -155,7 +155,7 @@ static List *glom1(Tree *tree, Binding *binding) {
 	Ref(Tree *, tp, tree);
 	Ref(Binding *, bp, binding);
 
-	assert(!gcisblocked());
+	es_assert(!gcisblocked());
 
 	while (tp != NULL) {
 		Ref(List *, list, NULL);
@@ -250,8 +250,8 @@ extern List *glom2(Tree *tree, Binding *binding, StrList **quotep) {
 	Ref(Tree *, tp, tree);
 	Ref(Binding *, bp, binding);
 
-	assert(!gcisblocked());
-	assert(quotep != NULL);
+	es_assert(!gcisblocked());
+	es_assert(quotep != NULL);
 
 	/*
 	 * this loop covers only the cases where we might produce some
@@ -296,17 +296,17 @@ extern List *glom2(Tree *tree, Binding *binding, StrList **quotep) {
 
 		if (list != NULL) {
 			if (result == NULL) {
-				assert(*quotep == NULL);
+				es_assert(*quotep == NULL);
 				result = tail = list;
 				*quotep = qtail = qlist;
 			} else {
-				assert(*quotep != NULL);
+				es_assert(*quotep != NULL);
 				tail->next = list;
 				qtail->next = qlist;
 			}
 			for (; tail->next != NULL; tail = tail->next, qtail = qtail->next)
 				;
-			assert(qtail->next == NULL);
+			es_assert(qtail->next == NULL);
 		}
 		RefEnd2(qlist, list);
 	}

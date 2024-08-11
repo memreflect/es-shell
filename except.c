@@ -11,8 +11,8 @@ Push *pushlist = NULL;
 
 /* pophandler -- remove a handler */
 extern void pophandler(Handler *handler) {
-	assert(tophandler == handler);
-	assert(handler->rootlist == rootlist);
+	es_assert(tophandler == handler);
+	es_assert(handler->rootlist == rootlist);
 	tophandler = handler->up;
 }
 
@@ -20,9 +20,9 @@ extern void pophandler(Handler *handler) {
 extern noreturn throw(List *e) {
 	Handler *handler = tophandler;
 
-	assert(!gcisblocked());
-	assert(e != NULL);
-	assert(handler != NULL);
+	es_assert(!gcisblocked());
+	es_assert(e != NULL);
+	es_assert(handler != NULL);
 	tophandler = handler->up;
 
 	{
@@ -38,7 +38,7 @@ extern noreturn throw(List *e) {
 
 #if ASSERTIONS
 	for (; rootlist != handler->rootlist; rootlist = rootlist->next)
-		assert(rootlist != NULL);
+		es_assert(rootlist != NULL);
 #else
 	rootlist = handler->rootlist;
 #endif

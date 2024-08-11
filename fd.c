@@ -9,7 +9,7 @@ extern void mvfd(int old, int new) {
 		int fd = dup2(old, new);
 		if (fd == -1)
 			fail("es:mvfd", "dup2: %s", esstrerror(errno));
-		assert(fd == new);
+		es_assert(fd == new);
 		close(old);
 	}
 }
@@ -31,13 +31,13 @@ static Defer *deftab;
 static int defcount = 0, defmax = 0;
 
 static void dodeferred(int realfd, int userfd) {
-	assert(userfd >= 0);
+	es_assert(userfd >= 0);
 	releasefd(userfd);
 
 	if (realfd == -1)
 		close(userfd);
 	else {
-		assert(realfd >= 0);
+		es_assert(realfd >= 0);
 		mvfd(realfd, userfd);
 	}
 }
@@ -66,23 +66,23 @@ static int pushdefer(Boolean parent, int realfd, int userfd) {
 }
 
 extern int defer_mvfd(Boolean parent, int old, int new) {
-	assert(old >= 0);
-	assert(new >= 0);
+	es_assert(old >= 0);
+	es_assert(new >= 0);
 	return pushdefer(parent, old, new);
 }
 
 extern int defer_close(Boolean parent, int fd) {
-	assert(fd >= 0);
+	es_assert(fd >= 0);
 	return pushdefer(parent, -1, fd);
 }
 
 extern void undefer(int ticket) {
 	if (ticket != UNREGISTERED) {
 		Defer *defer;
-		assert(ticket >= 0);
-		assert(defcount > 0);
+		es_assert(ticket >= 0);
+		es_assert(defcount > 0);
 		defer = &deftab[--defcount];
-		assert(ticket == defcount);
+		es_assert(ticket == defcount);
 		unregisterfd(&defer->realfd);
 		if (defer->realfd != -1)
 			close(defer->realfd);
@@ -136,7 +136,7 @@ extern void registerfd(int *fdp, Boolean closeonfork) {
 #if ASSERTIONS
 	int i;
 	for (i = 0; i < rescount; i++)
-		assert(fdp != reserved[i].fdp);
+		es_assert(fdp != reserved[i].fdp);
 #endif
 	if (rescount >= resmax) {
 		resmax += 10;
@@ -150,8 +150,8 @@ extern void registerfd(int *fdp, Boolean closeonfork) {
 /* unregisterfd -- give up our hold on a file descriptor */
 extern void unregisterfd(int *fdp) {
 	int i;
-	assert(reserved != NULL);
-	assert(rescount > 0);
+	es_assert(reserved != NULL);
+	es_assert(rescount > 0);
 	for (i = 0; i < rescount; i++)
 		if (reserved[i].fdp == fdp) {
 			reserved[i] = reserved[--rescount];
@@ -178,14 +178,14 @@ extern void closefds(void) {
 /* releasefd -- release a specific file descriptor from its es uses */
 extern void releasefd(int n) {
 	int i;
-	assert(n >= 0);
+	es_assert(n >= 0);
 	for (i = 0; i < rescount; i++) {
 		int *fdp = reserved[i].fdp;
 		int fd = *fdp;
 		if (fd == n) {
 			*fdp = dup(fd);
 			if (*fdp == -1) {
-				assert(errno != EBADF);
+				es_assert(errno != EBADF);
 				fail("es:releasefd", "%s", esstrerror(errno));
 			}
 			close(fd);

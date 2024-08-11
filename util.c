@@ -43,7 +43,7 @@ extern Boolean isabsolute(char *path) {
 /* streq2 -- is a string equal to the concatenation of two strings? */
 extern Boolean streq2(const char *s, const char *t1, const char *t2) {
 	int c;
-	assert(s != NULL && t1 != NULL && t2 != NULL);
+	es_assert(s != NULL && t1 != NULL && t2 != NULL);
 	while ((c = *t1++) != '\0')
 		if (c != *s++)
 			return FALSE;
@@ -85,7 +85,7 @@ extern void *erealloc(void *p, size_t n) {
 /* efree -- error checked free */
 extern void efree(void *p) {
 	extern void free(void *);
-	assert(p != NULL);
+	es_assert(p != NULL);
 	free(p);
 }
 

@@ -131,13 +131,13 @@ extern void sethistory(char *file) {
 /* ungetfill -- input->fill routine for ungotten characters */
 static int ungetfill(Input *in) {
 	int c;
-	assert(in->ungot > 0);
+	es_assert(in->ungot > 0);
 	c = in->unget[--in->ungot];
 	if (in->ungot == 0) {
-		assert(in->rfill != NULL);
+		es_assert(in->rfill != NULL);
 		in->fill = in->rfill;
 		in->rfill = NULL;
-		assert(in->rbuf != NULL);
+		es_assert(in->rbuf != NULL);
 		in->buf = in->rbuf;
 		in->rbuf = NULL;
 	}
@@ -147,18 +147,18 @@ static int ungetfill(Input *in) {
 /* unget -- push back one character */
 extern void unget(Input *in, int c) {
 	if (in->ungot > 0) {
-		assert(in->ungot < MAXUNGET);
+		es_assert(in->ungot < MAXUNGET);
 		in->unget[in->ungot++] = c;
 	} else if (in->bufbegin < in->buf && in->buf[-1] == c && (input->runflags & run_echoinput) == 0)
 		--in->buf;
 	else {
-		assert(in->rfill == NULL);
+		es_assert(in->rfill == NULL);
 		in->rfill = in->fill;
 		in->fill = ungetfill;
-		assert(in->rbuf == NULL);
+		es_assert(in->rbuf == NULL);
 		in->rbuf = in->buf;
 		in->buf = in->bufend;
-		assert(in->ungot == 0);
+		es_assert(in->ungot == 0);
 		in->ungot = 1;
 		in->unget[0] = c;
 	}
@@ -193,7 +193,7 @@ static int getverbose(Input *in) {
 
 /* eoffill -- report eof when called to fill input buffer */
 static int eoffill(Input *in) {
-	assert(in->fd == -1);
+	es_assert(in->fd == -1);
 	return EOF;
 }
 
@@ -293,8 +293,8 @@ initgetenv(void)
 /* fdfill -- fill input buffer by reading from a file descriptor */
 static int fdfill(Input *in) {
 	long nread;
-	assert(in->buf == in->bufend);
-	assert(in->fd >= 0);
+	es_assert(in->buf == in->bufend);
+	es_assert(in->fd >= 0);
 
 #if READLINE
 	if (in->runflags & run_interactive && in->fd == 0) {
@@ -348,7 +348,7 @@ static int fdfill(Input *in) {
 /* parse -- call yyparse(), but disable garbage collection and catch errors */
 extern Tree *parse(char *pr1, char *pr2) {
 	int result;
-	assert(error == NULL);
+	es_assert(error == NULL);
 
 	inityy();
 	emptyherequeue();
@@ -371,7 +371,7 @@ extern Tree *parse(char *pr1, char *pr2) {
 
 	if (result || error != NULL) {
 		char *e;
-		assert(error != NULL);
+		es_assert(error != NULL);
 		e = error;
 		error = NULL;
 		fail("$&parse", "%s", e);
@@ -493,7 +493,7 @@ extern List *runstring(const char *str, const char *name, int flags) {
 	List *result;
 	unsigned char *buf;
 
-	assert(str != NULL);
+	es_assert(str != NULL);
 
 	memzero(&in, sizeof (Input));
 	in.fd = -1;
@@ -543,7 +543,7 @@ extern Tree *parsestring(const char *str) {
 	Tree *result;
 	unsigned char *buf;
 
-	assert(str != NULL);
+	es_assert(str != NULL);
 
 	/* TODO: abstract out common code with runstring */
 

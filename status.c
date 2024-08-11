@@ -21,7 +21,7 @@ extern Boolean istrue(List *status) {
 			return FALSE;
 		else {
 			const char *str = term->str;
-			assert(str != NULL);
+			es_assert(str != NULL);
 			if (*str != '\0' && (*str != '0' || str[1] != '\0'))
 				return FALSE;
 		}

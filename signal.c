@@ -108,7 +108,7 @@ static Sighandler setsignal(int sig, Sighandler handler) {
 
 extern Sigeffect esignal(int sig, Sigeffect effect) {
 	Sigeffect old;
-	assert(0 < sig && sig <= NSIG);
+	es_assert(0 < sig && sig <= NSIG);
 	old = sigeffect[sig];
 	if (effect != sig_nochange && effect != old) {
 		switch (effect) {
@@ -260,13 +260,13 @@ static int blocked = 0;
 
 /* blocksignals -- turn off delivery of signals as exceptions */
 extern void blocksignals(void) {
-	assert(blocked >= 0);
+	es_assert(blocked >= 0);
 	++blocked;
 }
 
 /* unblocksignals -- turn on delivery of signals as exceptions */
 extern void unblocksignals(void) {
-	assert(blocked > 0);
+	es_assert(blocked > 0);
 	--blocked;
 }
 
@@ -302,7 +302,7 @@ extern void sigchk(void) {
 		throw(e);
 		NOTREACHED;
 	case sig_special:
-		assert(sig == SIGINT);
+		es_assert(sig == SIGINT);
 		/* this is the newline you see when you hit ^C while typing a command */
 		if (sigint_newline)
 			eprint("\n");
