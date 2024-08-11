@@ -21,18 +21,15 @@ extern char *strv(const char *fmt, va_list args) {
 	gcdisable();
 	buf = openbuffer(0);
 	format.u.p	= buf;
-#if NO_VA_LIST_ASSIGN
-	memcpy(format.args, args, sizeof(va_list));
-#else
-	format.args	= args;
-#endif
 	format.buf	= buf->str;
 	format.bufbegin	= buf->str;
 	format.bufend	= buf->str + buf->len;
 	format.grow	= str_grow;
 	format.flushed	= 0;
 
+	es_va_copy(format.args, args);
 	printfmt(&format, fmt);
+	va_end(format.args);
 	fmtputc(&format, '\0');
 	gcenable();
 
