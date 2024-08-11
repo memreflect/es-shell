@@ -246,6 +246,7 @@ PRIM(isinteractive) {
 	return isinteractive() ? true : false;
 }
 
+#undef noreturn
 PRIM(noreturn) {
 	if (list == NULL)
 		fail("$&noreturn", "usage: $&noreturn lambda args ...");

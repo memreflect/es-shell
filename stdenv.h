@@ -6,17 +6,6 @@
 #endif
 
 /*
- * type qualifiers
- */
-
-#if !USE_VOLATILE
-# ifndef volatile
-#  define volatile
-# endif
-#endif
-
-
-/*
  * protect the rest of es source from the dance of the includes
  */
 
@@ -84,7 +73,9 @@ extern Dirent *readdir(DIR *);
 #endif
 
 /* stdlib */
-#if __GNUC__
+#if __GNUC__ >= 3
+#define noreturn __attribute__((__noreturn__)) void
+#elif __GNUC__
 typedef volatile void noreturn;
 #else
 typedef void noreturn;
