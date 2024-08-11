@@ -201,12 +201,26 @@ typedef GETGROUPS_T gidset_t;
 #define	VA_START(ap, var)		va_start(ap)
 
 /* __va_* are defined by the compiler */
+#ifndef va_start
 #define va_start(ap)		__va_start(ap)
-#define va_copy(dest, src)	__va_copy(dest, src)
+#endif
+#ifndef va_end
 #define va_end(ap)		__va_end(ap)
+#endif
 
 #endif
 
+#if VA_COPY_STANDARD
+# define es_va_copy(dest, src)		va_copy(dest, src)
+#elif VA_COPY_SYSTEM
+# define es_va_copy(dest, src)		__va_copy(dest, src)
+#elif VA_COPY_BUILTIN
+# define es_va_copy(dest, src)		__builtin_va_copy(dest, src)
+#elif VA_COPY_ASSIGN
+# define es_va_copy(dest, src)		(dest) = (src)
+#else
+# define es_va_copy(dest, src)		memcpy(&dest, &src, sizeof (src))
+#endif
 
 /*
  * assertion checking
