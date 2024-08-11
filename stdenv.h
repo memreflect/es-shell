@@ -165,7 +165,11 @@ extern void *qsort(
 
 #undef FALSE
 #undef TRUE
+#if __STDC_VERSION__ >= 202311L
+typedef enum : bool { FALSE, TRUE } Boolean;
+#else
 typedef enum { FALSE, TRUE } Boolean;
+#endif
 
 
 #if USE_SIG_ATOMIC_T
