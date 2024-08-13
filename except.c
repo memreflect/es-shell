@@ -17,7 +17,7 @@ extern void pophandler(Handler *handler) {
 }
 
 /* throw -- raise an exception */
-extern noreturn throw(List *e) {
+es_noreturn extern void throw(List *e) {
 	Handler *handler = tophandler;
 
 	es_assert(!gcisblocked());
@@ -48,7 +48,7 @@ extern noreturn throw(List *e) {
 }
 
 /* fail -- pass a user catchable error up the exception chain */
-extern noreturn fail VARARGS2(const char *, from, const char *, fmt) {
+es_noreturn extern void fail VARARGS2(const char *, from, const char *, fmt) {
 	char *s;
 	va_list args;
 

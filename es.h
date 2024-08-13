@@ -247,7 +247,7 @@ extern void initconv(void);
 extern int print(const char *fmt VARARGS);
 extern int eprint(const char *fmt VARARGS);
 extern int fprint(int fd, const char *fmt VARARGS);
-extern noreturn panic(const char *fmt VARARGS);
+es_noreturn extern void panic(const char *fmt VARARGS);
 
 
 /* str.c */
@@ -484,8 +484,8 @@ struct Handler {
 extern Handler *tophandler, *roothandler;
 extern List *exception;
 extern void pophandler(Handler *handler);
-extern noreturn throw(List *exc);
-extern noreturn fail(const char *from, const char *name VARARGS);
+es_noreturn extern void throw(List *exc);
+es_noreturn extern void fail(const char *from, const char *name VARARGS);
 extern void newchildcatcher(void);
 
 #if DEBUG_EXCEPTIONS

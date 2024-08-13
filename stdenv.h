@@ -73,19 +73,23 @@ extern Dirent *readdir(DIR *);
 #endif
 
 /* stdlib */
-#if __GNUC__ >= 3
-#define noreturn __attribute__((__noreturn__)) void
+#if __STDC_VERSION__ >= 202311L
+# define es_noreturn	[[noreturn]]
+#elif __STDC_VERSION__ >= 201112L
+# define es_noreturn	_Noreturn
+#elif __GNUC__ >= 3
+# define es_noreturn	__attribute__((__noreturn__))
 #elif __GNUC__
-typedef volatile void noreturn;
+# define es_noreturn	volatile
 #else
-typedef void noreturn;
+# define es_noreturn	/*nothing*/
 #endif
 
 #if STDC_HEADERS
 # include <stdlib.h>
 #else
-extern noreturn exit(int);
-extern noreturn abort(void);
+es_noreturn extern void exit(int);
+es_noreturn extern void abort(void);
 extern long strtol(const char *num, char **end, int base);
 extern void *qsort(
 	void *base, size_t nmemb, size_t size,
