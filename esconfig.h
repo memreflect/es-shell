@@ -132,10 +132,6 @@
  *		the signal handler after it is invoked.  This behavior
  *		is also known as ``unreliable signals.''
  *
- *	USE_CONST
- *		allow const declarations.  if your compiler supports 'em,
- *		use 'em.
- *
  *	USE_DIRENT
  *		if on, <dirent.h> is used; if off, <sys/direct.h>.
  *
@@ -154,14 +150,6 @@
  *	USE_SIG_ATOMIC_T
  *		define this on a system which has its own typedef for
  *		sig_atomic_t.
- *
- *	USE_STDARG
- *		define this if you have an ansi compiler and the <stdarg.h>
- *		header file.  if not, es will try to use <varargs.h>, but
- *		you may need to hack a bit to get that working.
- *
- *	USE_UNISTD
- *		define this if you have the include file <unistd.h>
  *
  *	USE_WAIT3
  *		this option should be on if your system supports the
