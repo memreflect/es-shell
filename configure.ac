@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT
-AC_CONFIG_SRCDIR([access.c])
+AC_CONFIG_SRCDIR([initial.es])
 AC_CONFIG_HEADER(config.h)
 
 

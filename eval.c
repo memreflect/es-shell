@@ -446,9 +446,14 @@ restart:
 		goto restart;
 	}
 	if (isabsolute(name)) {
-		char *error = checkexecutable(name);
-		if (error != NULL)
+		if (!isexecutable(name)) {
+			char *error;
+			if (errno != 0)
+				error = esstrerror(errno);
+			else
+				error = "not executable";
 			fail("$&whatis", "%s: %s", name, error);
+		}
 		list = forkexec(name, list, flags & eval_inchild);
 		RefPop(name);
 		goto done;

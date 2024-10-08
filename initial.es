@@ -64,7 +64,6 @@
 #	See the manual page for details on what they do.
 
 fn-.		= $&dot
-fn-access	= $&access
 fn-break	= $&break
 fn-catch	= $&catch
 fn-echo		= $&echo
@@ -74,6 +73,7 @@ fn-fork		= $&fork
 fn-if		= $&if
 fn-newpgrp	= $&newpgrp
 fn-result	= $&result
+fn-stat		= $&stat
 fn-throw	= $&throw
 fn-umask	= $&umask
 fn-wait		= $&wait
@@ -567,11 +567,24 @@ if {~ <=$&primitives writeto} {
 
 fn-%home	= $&home
 
-#	Path searching used to be a primitive, but the access function
-#	means that it can be written easier in es.  Is is not called for
+#	Path searching used to be a primitive, but the stat function
+#	means that it can be written easier in es.  It is not called for
 #	absolute path names or for functions.
 
-fn %pathsearch name { access -n $name -1e -xf $path }
+fn %pathsearch names {
+	if {~ $names ()} {
+		throw error $0 'usage: '^$0^' name...'
+	}
+	for (n = $names) {
+		for (p = $path) {
+			p = $p/$n
+			if {~ <={catch @ {result} {stat -P $p}} f*x} {
+				return $p
+			}
+		}
+	}
+	throw error $0 'no matching name(s) in path'
+}
 
 #	The exec-failure hook is called in the child if an exec() fails.
 #	A default version is provided (under conditional compilation) for

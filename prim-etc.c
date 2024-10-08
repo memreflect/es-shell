@@ -102,9 +102,14 @@ PRIM(whatis) {
 			list = fn;
 		else {
 			if (isabsolute(prog)) {
-				char *error = checkexecutable(prog);
-				if (error != NULL)
+				if (!isexecutable(prog)) {
+					char *error;
+					if (errno != 0)
+						error = esstrerror(errno);
+					else
+						error = "not executable";
 					fail("$&whatis", "%s: %s", prog, error);
+				}
 			} else
 				list = pathsearch(term);
 		}

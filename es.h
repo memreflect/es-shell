@@ -216,7 +216,7 @@ extern void printstatus(int pid, int status);
 
 /* access.c */
 
-extern char *checkexecutable(char *file);
+extern Boolean isexecutable(char *file);
 
 
 /* proc.c */

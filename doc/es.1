@@ -1859,69 +1859,6 @@ as input to
 and executes its contents.
 The options are a subset of the invocation options for the shell (see below).
 .TP
-.Cr "access \fR[\fP-n \fIname\fP\fR]\fP \fR[\fP-1e\fR]\fP \fR[\fP-rwx\fR]\fP  \fR[\fP-fdcblsp\fR]\fP \fIpath ...\fP"
-Tests if the named paths are accessible according to the options presented.
-Normally,
-.Cr access
-returns zero (true) for files which are accessible and a
-printable error message (which evaluates as false, according to shell rules)
-for files which are not accessible.
-If the
-.Cr \-1
-option is used, the name of the first file which the test succeeds for is returned;
-if the test succeeds for no file, the empty list is returned.
-However, if the
-.Cr \-e
-option was used,
-.Cr access
-raises an
-.Cr error
-exception.
-If the
-.Cr \-n
-option is used, the pathname arguments are treated as a list of
-directories, and the
-.I name
-option argument is used as a file in those directories
-.Rc "(i.e., " \-n
-is used for path searching).
-.sp 1v
-The default test is whether a file exists.
-These options change the test:
-.IS
-.TP
-.Cr \-r
-Is the file readable (by the current user)?
-.TP
-.Cr \-w
-Is the file writable?
-.TP
-.Cr \-x
-Is the file executable?
-.sp .7v
-.TP
-.Cr \-f
-Is the file a plain file?
-.TP
-.Cr \-d
-Is the file a directory?
-.TP
-.Cr \-c
-Is the file a character device?
-.TP
-.Cr \-b
-Is the file a block device?
-.TP
-.Cr \-l
-Is the file a symbolic link?
-.TP
-.Cr \-s
-Is the file a socket?
-.TP
-.Cr \-p
-Is the file a named pipe (FIFO)?
-.IE
-.TP
 .Cr "break \fIvalue\fP"
 Exits the current loop.
 .I Value
@@ -2123,6 +2060,68 @@ identity function.
 Causes the current function to exit,
 returning the named
 .IR value .
+.TP
+.Cr "stat \fR[\fP\-P\fR]\fP \fIpath\fP"
+Return a string describing the file type and the access permissions to
+.IR path :
+.Ds
+.Cr "{type}[r][w][x]"
+.De
+.TP
+\&
+The path types are:
+.IS
+.TP
+.Cr f
+regular file
+.TP
+.Cr d
+directory
+.TP
+.Cr c
+character device
+.TP
+.Cr b
+block device
+.TP
+.Cr l
+symbolic link, a.k.a. "symlink"
+.TP
+.Cr s
+socket
+.TP
+.Cr p
+FIFO, a.k.a. "named pipe"
+.IE
+.TP
+\&
+The path type may be followed by up to 3 additional characters in the
+following order to indicate the permissions granted to the user:
+.IS
+.TP
+.Cr r
+read permission granted
+.TP
+.Cr w
+write permission granted
+.TP
+.Cr x
+execute permission granted
+.IE
+.TP
+\&
+For example, the result \fIlrx\fP indicates that the named path is a
+symlink (\fIl\fP), and the user has both read (\fIr\fP) and execute
+(\fIx\fP) permissions.
+.sp
+By default, lstat(2) is used to access the path, allowing one to
+detect whether a file is a symlink or not.
+If the
+.Cr \-P
+flag is provided, stat(2) will be used to access the path instead, and
+the returned string will reflect the file type and access permissions
+of the path contained in a symlink; it has no effect on file types
+other than symlinks.
 .TP
 .Cr "throw \fIexception arg ...\fP"
 Raise the named exception, passing all of the arguments to
