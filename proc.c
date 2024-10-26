@@ -60,7 +60,6 @@ static pid_t estpgrp0;
 static pid_t espgid;
 
 extern void origpgrp(void) {
-	setpgid(0, estpgrp0);
 	espgid = estpgrp0;
 }
 
