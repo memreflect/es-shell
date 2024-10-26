@@ -209,6 +209,8 @@ PRIM(batchloop) {
 
 	CatchException (e)
 
+		origpgrp();
+		tctakepgrp();
 		if (!termeq(e->term, "eof"))
 			throw(e);
 		RefEnd(dispatch);

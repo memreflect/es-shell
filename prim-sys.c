@@ -30,6 +30,14 @@ PRIM(newpgrp) {
 	return ltrue;
 }
 
+PRIM(origpgrp) {
+	if (list != NULL)
+		fail("$&newpgrp", "usage: newpgrp");
+	origpgrp();
+	tctakepgrp();
+	return ltrue;
+}
+
 PRIM(background) {
 	int pid = efork(TRUE, TRUE);
 	if (pid == 0) {
@@ -428,6 +436,7 @@ PRIM(execfailure) {
 
 extern Dict *initprims_sys(Dict *primdict) {
 	X(newpgrp);
+	X(origpgrp);
 	X(background);
 	X(umask);
 	X(cd);

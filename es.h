@@ -223,6 +223,7 @@ extern char *checkexecutable(char *file);
 
 extern Boolean hasforked;
 extern int efork(Boolean parent, Boolean background);
+extern void origpgrp(void);
 extern void newpgrp(void);
 extern void tctakepgrp(void);
 extern int ewait(int pid, Boolean interruptible, void *rusage);

@@ -52,17 +52,29 @@ extern int efork(Boolean parent, Boolean background) {
 	return 0;
 }
 
+/* estpgrp0 - original terminal process group
+ * espgid   - current process group
+ * both are 0 unless newpgrp() gets called
+ */
+static pid_t estpgrp0;
 static pid_t espgid;
 
+extern void origpgrp(void) {
+	setpgid(0, estpgrp0);
+	espgid = estpgrp0;
+}
+
 extern void newpgrp(void) {
+	if (espgid == 0)
+		estpgrp0 = tcgetpgrp(2);
 	setpgid(0, 0);
-	espgid = getpgid(0);
+	espgid = getpgrp();
 }
 
 extern void tctakepgrp(void) {
 	Sigeffect tstp, ttin, ttou;
 	if (espgid == 0)
-		espgid = getpgid(0);
+		espgid = getpgrp();
 	if (tcgetpgrp(2) == espgid)
 		return;
 	tstp = esignal(SIGTSTP, sig_ignore);

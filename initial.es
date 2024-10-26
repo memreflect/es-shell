@@ -73,6 +73,7 @@ fn-forever	= $&forever
 fn-fork		= $&fork
 fn-if		= $&if
 fn-newpgrp	= $&newpgrp
+fn-origpgrp	= $&origpgrp
 fn-result	= $&result
 fn-throw	= $&throw
 fn-umask	= $&umask
@@ -634,12 +635,19 @@ fn %interactive-loop {
 	let (result = <=true) {
 		catch @ e type msg {
 			if {~ $e eof} {
+				origpgrp
 				return $result
 			} {~ $e exit} {
+				origpgrp
 				throw $e $type $msg
 			} {~ $e error} {
 				echo >[1=2] $msg
-				$fn-%dispatch false
+				catch @ e {
+					origpgrp
+					throw $e
+				} {
+					$fn-%dispatch false
+				}
 			} {~ $e signal} {
 				if {!~ $type sigint sigterm sigquit} {
 					echo >[1=2] caught unexpected signal: $type
