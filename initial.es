@@ -632,22 +632,19 @@ fn-%batch-loop	= $&batchloop
 fn-%is-interactive = $&isinteractive
 
 fn %interactive-loop {
-	let (result = <=true) {
+	catch @ e {
+		origpgrp
+		throw $e
+	} {
+		let (result = <=true)
 		catch @ e type msg {
 			if {~ $e eof} {
-				origpgrp
 				return $result
 			} {~ $e exit} {
-				origpgrp
 				throw $e $type $msg
 			} {~ $e error} {
 				echo >[1=2] $msg
-				catch @ e {
-					origpgrp
-					throw $e
-				} {
-					$fn-%dispatch false
-				}
+				$fn-%dispatch false
 			} {~ $e signal} {
 				if {!~ $type sigint sigterm sigquit} {
 					echo >[1=2] caught unexpected signal: $type
