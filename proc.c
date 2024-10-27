@@ -64,7 +64,7 @@ extern void origpgrp(void) {
 }
 
 extern void newpgrp(void) {
-	if (espgid == 0)
+	if (estpgrp0 == 0)
 		estpgrp0 = tcgetpgrp(2);
 	setpgid(0, 0);
 	espgid = getpgrp();
@@ -72,6 +72,8 @@ extern void newpgrp(void) {
 
 extern void tctakepgrp(void) {
 	Sigeffect tstp, ttin, ttou;
+	if (estpgrp0 == 0)
+		estpgrp0 = getpgrp();
 	if (espgid == 0)
 		espgid = getpgrp();
 	if (tcgetpgrp(2) == espgid)
