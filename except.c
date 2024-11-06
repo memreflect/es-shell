@@ -53,7 +53,7 @@ extern Noreturn fail VARARGS2(const char *, from, const char *, fmt) {
 	va_list args;
 
 	VA_START(args, fmt);
-	s = strv(fmt, args);
+	s = strv(fmt, &args);
 	va_end(args);
 
 	gcdisable();

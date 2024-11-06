@@ -10,8 +10,8 @@ static Boolean Lconv(Format *f) {
 	char *sep;
 	const char *fmt = (f->flags & FMT_altform) ? "%S%s" : "%s%s";
 
-	lp = va_arg(f->args, List *);
-	sep = va_arg(f->args, char *);
+	lp = va_arg(*f->pargs, List *);
+	sep = va_arg(*f->pargs, char *);
 	for (; lp != NULL; lp = next) {
 		next = lp->next;
 		fmtprint(f, fmt, getstr(lp->term), next == NULL ? "" : sep);
@@ -47,7 +47,7 @@ static void binding(Format *f, char *keyword, Tree *tree) {
 
 /* %T -- print a tree */
 static Boolean Tconv(Format *f) {
-	Tree *n = va_arg(f->args, Tree *);
+	Tree *n = va_arg(*f->pargs, Tree *);
 	Boolean group = (f->flags & FMT_altform) != 0;
 
 
@@ -199,7 +199,7 @@ static Chain *chain = NULL;
 
 /* %C -- print a closure */
 static Boolean Cconv(Format *f) {
-	Closure *closure = va_arg(f->args, Closure *);
+	Closure *closure = va_arg(*f->pargs, Closure *);
 	Tree *tree = closure->tree;
 	Binding *binding = closure->binding;
 	Boolean altform = (f->flags & FMT_altform) != 0;
@@ -239,7 +239,7 @@ static Boolean Cconv(Format *f) {
 
 /* %E -- print a term */
 static Boolean Econv(Format *f) {
-	Term *term = va_arg(f->args, Term *);
+	Term *term = va_arg(*f->pargs, Term *);
 	Closure *closure = getclosure(term);
 
 	if (closure != NULL)
@@ -256,7 +256,7 @@ static Boolean Sconv(Format *f) {
 	const unsigned char *s, *t;
 	extern const char nw[];
 
-	s = va_arg(f->args, const unsigned char *);
+	s = va_arg(*f->pargs, const unsigned char *);
 	if (f->flags & FMT_altform || *s == '\0')
 		goto quoteit;
 	for (t = s; (c = *t) != '\0'; t++)
@@ -314,8 +314,8 @@ static Boolean Zconv(Format *f) {
 	StrList *lp, *next;
 	char *sep;
 
-	lp = va_arg(f->args, StrList *);
-	sep = va_arg(f->args, char *);
+	lp = va_arg(*f->pargs, StrList *);
+	sep = va_arg(*f->pargs, char *);
 	for (; lp != NULL; lp = next) {
 		next = lp->next;
 		fmtprint(f, "%s%s", lp->str, next == NULL ? "" : sep);
@@ -328,7 +328,7 @@ static Boolean Fconv(Format *f) {
 	int c;
 	unsigned char *name, *s;
 
-	name = va_arg(f->args, unsigned char *);
+	name = va_arg(*f->pargs, unsigned char *);
 
 	for (s = name; (c = *s) != '\0'; s++)
 		if ((s == name ? isalpha(c) : isalnum(c))
@@ -342,7 +342,7 @@ static Boolean Fconv(Format *f) {
 /* %N -- undo %F */
 static Boolean Nconv(Format *f) {
 	int c;
-	unsigned char *s = va_arg(f->args, unsigned char *);
+	unsigned char *s = va_arg(*f->pargs, unsigned char *);
 
 	while ((c = *s++) != '\0') {
 		if (c == '_' && *s == '_') {
@@ -363,7 +363,7 @@ static Boolean Nconv(Format *f) {
 static Boolean Wconv(Format *f) {
 	List *lp, *next;
 
-	for (lp = va_arg(f->args, List *); lp != NULL; lp = next) {
+	for (lp = va_arg(*f->pargs, List *); lp != NULL; lp = next) {
 		int c;
 		const char *s;
 		for (s = getstr(lp->term); (c = *s) != '\0'; s++) {
@@ -381,7 +381,7 @@ static Boolean Wconv(Format *f) {
 
 #if LISPTREES
 static Boolean Bconv(Format *f) {
-	Tree *n = va_arg(f->args, Tree *);
+	Tree *n = va_arg(*f->pargs, Tree *);
 	if (n == NULL) {
 		fmtprint(f, "nil");
 		return FALSE;

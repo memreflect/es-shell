@@ -15,18 +15,14 @@ static int str_grow(Format *f, size_t more) {
 }
 
 /* strv -- print a formatted string into gc space */
-static char *sstrv(char *(*seal)(Buffer *), const char *fmt, va_list args) {
+static char *sstrv(char *(*seal)(Buffer *), const char *fmt, va_list *pargs) {
 	Buffer *buf;
 	Format format;
 
 	gcdisable();
 	buf = openbuffer(0);
 	format.u.p	= buf;
-#if NO_VA_LIST_ASSIGN
-	memcpy(format.args, args, sizeof(va_list));
-#else
-	format.args	= args;
-#endif
+	format.pargs	= pargs;
 	format.buf	= buf->str;
 	format.bufbegin	= buf->str;
 	format.bufend	= buf->str + buf->len;
@@ -40,8 +36,8 @@ static char *sstrv(char *(*seal)(Buffer *), const char *fmt, va_list args) {
 	return seal(format.u.p);
 }
 
-extern char *strv(const char *fmt, va_list args) {
-	return sstrv(sealbuffer, fmt, args);
+extern char *strv(const char *fmt, va_list *pargs) {
+	return sstrv(sealbuffer, fmt, pargs);
 }
 
 /* str -- create a string (in garbage collection space) by printing to it */
@@ -49,7 +45,7 @@ extern char *str VARARGS1(const char *, fmt) {
 	char *s;
 	va_list args;
 	VA_START(args, fmt);
-	s = strv(fmt, args);
+	s = strv(fmt, &args);
 	va_end(args);
 	return s;
 }
@@ -59,7 +55,7 @@ extern char *pstr VARARGS1(const char *, fmt) {
 	char *s;
 	va_list args;
 	VA_START(args, fmt);
-	s = sstrv(psealbuffer, fmt, args);
+	s = sstrv(psealbuffer, fmt, &args);
 	va_end(args);
 	return s;
 }
@@ -84,9 +80,11 @@ static int mprint_grow(Format *format, size_t more) {
 /* mprint -- create a string in ealloc space by printing to it */
 extern char *mprint VARARGS1(const char *, fmt) {
 	Format format;
-	format.u.n = 1;
-	VA_START(format.args, fmt);
+	va_list args;
+	VA_START(args, fmt);
 
+	format.u.n	= 1;
+	format.pargs	= &args;
 	format.buf	= ealloc(PRINT_ALLOCSIZE);
 	format.bufbegin	= format.buf;
 	format.bufend	= format.buf + PRINT_ALLOCSIZE - 1;
@@ -94,8 +92,8 @@ extern char *mprint VARARGS1(const char *, fmt) {
 	format.flushed	= 0;
 
 	printfmt(&format, fmt);
-	*format.buf = '\0';
-	va_end(format.args);
+	va_end(args);
+	fmtputc(&format, '\0');
 	return format.bufbegin;
 }
 

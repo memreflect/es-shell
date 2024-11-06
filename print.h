@@ -3,7 +3,7 @@
 typedef struct Format Format;
 struct Format {
     /* for the formatting routines */
-	va_list args;
+	va_list *pargs;
 	long flags, f1, f2;
 	int invoker;
     /* for the buffer maintenance routines */
@@ -38,7 +38,7 @@ extern int print(const char *fmt VARARGS);
 extern int eprint(const char *fmt VARARGS);
 extern int fprint(int fd, const char *fmt VARARGS);
 
-extern char *strv(const char *fmt, va_list args);	/* varargs interface to str() */
+extern char *strv(const char *fmt, va_list *pargs);	/* varargs interface to str() */
 
 #define	FPRINT_BUFSIZ	1024
 

@@ -47,7 +47,7 @@ static void pad(Format *format, long len, int c) {
 }
 
 static Boolean sconv(Format *format) {
-	char *s = va_arg(format->args, char *);
+	char *s = va_arg(*format->pargs, char *);
 	if ((format->flags & FMT_f1set) == 0)
 		fmtcat(format, s);
 	else {
@@ -88,9 +88,9 @@ static void intconv(Format *format, unsigned int radix, int upper, char *altform
 
 	flags = format->flags;
 	if (flags & FMT_long)
-		n = va_arg(format->args, long);
+		n = va_arg(*format->pargs, long);
 	else
-		n = va_arg(format->args, int);
+		n = va_arg(*format->pargs, int);
 
 	pre = 0;
 	if ((flags & FMT_unsigned) || n >= 0)
@@ -135,7 +135,7 @@ static void intconv(Format *format, unsigned int radix, int upper, char *altform
 }
 
 static Boolean cconv(Format *format) {
-	fmtputc(format, va_arg(format->args, int));
+	fmtputc(format, va_arg(*format->pargs, int));
 	return FALSE;
 }
 
@@ -268,19 +268,15 @@ extern int printfmt(Format *format, const char *fmt) {
 #endif
 
 extern int fmtprint VARARGS2(Format *, format, const char *, fmt) {
+	va_list args;
+	va_list *save = format->pargs;
 	int n = -format->flushed;
-#if NO_VA_LIST_ASSIGN
-	va_list saveargs;
 
-	memcpy(saveargs, format->args, sizeof(va_list));
-#else
-	va_list saveargs = format->args;
-#endif
-
-	VA_START(format->args, fmt);
+	VA_START(args, fmt);
+	format->pargs = &args;
 	n += printfmt(format, fmt);
-	va_end(format->args);
-	va_copy(format->args, saveargs);
+	format->pargs = save;
+	va_end(args);
 
 	return n + format->flushed;
 }
@@ -300,30 +296,34 @@ static int fprint_flush(Format *format, size_t UNUSED more) {
 	return 0;
 }
 
-static int fdprint(Format *format, int fd, const char *fmt) {
+static int fdprint(int fd, const char *fmt, va_list *pargs) {
+	Format format;
 	char buf[FPRINT_BUFSIZ];
 	int err;
 
-	format->buf	= buf;
-	format->bufbegin = buf;
-	format->bufend	= buf + sizeof buf;
-	format->grow	= fprint_flush;
-	format->flushed	= 0;
-	format->u.n	= fdmap(fd);
+	format.pargs	= pargs;
+	format.buf	= buf;
+	format.bufbegin = buf;
+	format.bufend	= buf + sizeof buf;
+	format.grow	= fprint_flush;
+	format.flushed	= 0;
+	format.u.n	= fdmap(fd);
 
+	if (format.u.n == -1)
+		return EBADF;
 	gcdisable();
-	printfmt(format, fmt);
-	err = fprint_flush(format, 0);
+	printfmt(&format, fmt);
+	err = fprint_flush(&format, 0);
 	gcenable();
 	return err;
 }
 
 extern int fprint VARARGS2(int, fd, const char *, fmt) {
 	int err;
-	Format format;
-	VA_START(format.args, fmt);
-	err = fdprint(&format, fd, fmt);
-	va_end(format.args);
+	va_list args;
+	VA_START(args, fmt);
+	err = fdprint(fd, fmt, &args);
+	va_end(args);
 	if (err != 0)
 		fail("es:fprint", "fprint: %s", esstrerror(err));
 	return format.flushed;
@@ -331,10 +331,10 @@ extern int fprint VARARGS2(int, fd, const char *, fmt) {
 
 extern int print VARARGS1(const char *, fmt) {
 	int err;
-	Format format;
-	VA_START(format.args, fmt);
-	err = fdprint(&format, 1, fmt);
-	va_end(format.args);
+	va_list args;
+	VA_START(args, fmt);
+	err = fdprint(1, fmt, &args);
+	va_end(args);
 	if (err != 0)
 		fail("es:print", "print: %s", esstrerror(err));
 	return format.flushed;
@@ -342,25 +342,25 @@ extern int print VARARGS1(const char *, fmt) {
 
 extern int eprint VARARGS1(const char *, fmt) {
 	int err;
-	Format format;
-	VA_START(format.args, fmt);
-	err = fdprint(&format, 2, fmt);
-	va_end(format.args);
+	va_list args;
+	VA_START(args, fmt);
+	err = fdprint(2, fmt, &args);
+	va_end(args);
 	if (err != 0)
 		fail("es:eprint", "eprint: %s", esstrerror(err));
 	return format.flushed;
 }
 
 extern Noreturn panic VARARGS1(const char *, fmt) {
-	Format format;
+	va_list args;
 	gcdisable();
-	VA_START(format.args, fmt);
 	/* ignore the exception, we're already busy dying */
 	ExceptionHandler
 		eprint("es panic: ");
 	EndExceptionHandler
-	fdprint(&format, 2, fmt);
-	va_end(format.args);
+	VA_START(args, fmt);
+	fdprint(2, fmt, &args);
+	va_end(args);
 	eprint("\n");
 	esexit(1);
 }
