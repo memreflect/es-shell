@@ -318,6 +318,7 @@ extern List *esoptend(void);
 
 /* prim.c */
 
+extern void addprim(const char *name, List *(*impl)(List *, Binding *, int));
 extern List *prim(char *s, List *list, Binding *binding, int evalflags);
 extern void initprims(void);
 extern List *primswithprefix(char *prefix);
@@ -506,7 +507,7 @@ extern List *raised(List *e);
 		_localhandler.up = tophandler; \
 		tophandler = &_localhandler; \
 		if (!setjmp(_localhandler.label)) {
-	
+
 #define CatchException(e) \
 			pophandler(&_localhandler); \
 		} else { \

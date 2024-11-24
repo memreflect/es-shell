@@ -435,7 +435,7 @@ PRIM(execfailure) {
 }
 #endif /* !KERNEL_POUNDBANG */
 
-extern Dict *initprims_sys(Dict *primdict) {
+extern void initprims_sys(void) {
 	X(newpgrp);
 	X(background);
 	X(umask);
@@ -452,5 +452,4 @@ extern Dict *initprims_sys(Dict *primdict) {
 #if !KERNEL_POUNDBANG
 	X(execfailure);
 #endif /* !KERNEL_POUNDBANG */
-	return primdict;
 }

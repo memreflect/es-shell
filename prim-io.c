@@ -349,7 +349,7 @@ restart:
 
 PRIM(backquote) {
 	int pid, p[2], status;
-	
+
 	caller = "$&backquote";
 	if (list == NULL)
 		fail(caller, "usage: backquote separator command [args ...]");
@@ -420,7 +420,7 @@ PRIM(read) {
 	}
 }
 
-extern Dict *initprims_io(Dict *primdict) {
+extern void initprims_io(void) {
 	X(openfile);
 	X(close);
 	X(dup);
@@ -433,5 +433,4 @@ extern Dict *initprims_io(Dict *primdict) {
 	X(writeto);
 #endif
 	X(read);
-	return primdict;
 }

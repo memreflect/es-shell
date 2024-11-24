@@ -89,11 +89,10 @@ PRIM(catch) {
 	RefReturn(result);
 }
 
-extern Dict *initprims_controlflow(Dict *primdict) {
+extern void initprims_controlflow(void) {
 	X(seq);
 	X(if);
 	X(throw);
 	X(forever);
 	X(catch);
-	return primdict;
 }

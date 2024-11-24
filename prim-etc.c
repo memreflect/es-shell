@@ -311,7 +311,7 @@ PRIM(resetterminal) {
  * initialization
  */
 
-extern Dict *initprims_etc(Dict *primdict) {
+extern void initprims_etc(void) {
 	X(echo);
 	X(count);
 	X(version);
@@ -339,5 +339,4 @@ extern Dict *initprims_etc(Dict *primdict) {
 	X(resetterminal);
 	X(setmaxhistorylength);
 #endif
-	return primdict;
 }

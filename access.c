@@ -174,9 +174,8 @@ PRIM(access) {
 	RefReturn(result);
 }
 
-extern Dict *initprims_access(Dict *primdict) {
+extern void initprims_access(void) {
 	X(access);
-	return primdict;
 }
 
 extern char *checkexecutable(char *file) {

@@ -121,7 +121,7 @@ extern void setnoexport(List *list) {
 	}
 	gcdisable();
 	for (noexport = mkdict(); list != NULL; list = list->next)
-		noexport = dictput(noexport, getstr(list->term), (void *) setnoexport);
+		noexport = dictput(noexport, getstr(list->term), list->term);
 	gcenable();
 }
 
@@ -149,7 +149,7 @@ extern List *varlookup(const char *name, Binding *bp) {
 
 extern List *varlookup2(char *name1, char *name2, Binding *bp) {
 	Var *var;
-	
+
 	for (; bp != NULL; bp = bp->next)
 		if (streq2(bp->name, name1, name2))
 			return bp->defn;
@@ -311,7 +311,7 @@ static void mkenv0(void UNUSED *dummy, char *key, void *value) {
 	assert(env->count < env->alloclen);
 	VECPUSH(env, var->env);
 }
-	
+
 extern Vector *mkenv(void) {
 	if (isdirty || rebound) {
 		env->count = envmin;

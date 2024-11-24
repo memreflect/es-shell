@@ -3,15 +3,14 @@
 #define	PRIM(name)	static List *CONCAT(prim_,name)( \
 				List UNUSED *list, Binding UNUSED *binding, int UNUSED evalflags \
 			)
-#define	X(name)		(primdict = dictput( \
-				primdict, \
+#define	X(name)		addprim( \
 				STRING(name), \
-				(void *) CONCAT(prim_,name) \
-			))
+				CONCAT(prim_,name) \
+			)
 
-extern Dict *initprims_controlflow(Dict *primdict);	/* prim-ctl.c */
-extern Dict *initprims_io(Dict *primdict);		/* prim-io.c */
-extern Dict *initprims_etc(Dict *primdict);		/* prim-etc.c */
-extern Dict *initprims_sys(Dict *primdict);		/* prim-sys.c */
-extern Dict *initprims_proc(Dict *primdict);		/* proc.c */
-extern Dict *initprims_access(Dict *primdict);		/* access.c */
+extern void initprims_controlflow(void);	/* prim-ctl.c */
+extern void initprims_io(void);			/* prim-io.c */
+extern void initprims_etc(void);		/* prim-etc.c */
+extern void initprims_sys(void);		/* prim-sys.c */
+extern void initprims_proc(void);		/* proc.c */
+extern void initprims_access(void);		/* access.c */
