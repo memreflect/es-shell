@@ -9,8 +9,9 @@ static int prim_cmp(const void *a, const void *b) {
 }
 
 extern void addprim(const char *name, List *(*impl)(List *, Binding *, int)) {
-	const struct prim key = { (char *)name , 0 };
-	struct prim *p = bsearch(&key, prims, nprims, sizeof key, prim_cmp);
+	struct prim *p, key = {0, 0};
+	key.name = (char *)name;
+	p = bsearch(&key, prims, nprims, sizeof key, prim_cmp);
 	assert(p != NULL && p->impl == 0);
 	p->impl = impl;
 }
@@ -26,8 +27,9 @@ static void validateprims(void) {
 }
 
 static List *(*getprim(const char *name))(List *, Binding *, int) {
-	const struct prim key = { (char *)name , 0 };
-	struct prim *p = bsearch(&key, prims, nprims, sizeof key, prim_cmp);
+	struct prim *p, key = {0, 0};
+	key.name = (char *)name;
+	p = bsearch(&key, prims, nprims, sizeof key, prim_cmp);
 	if (p == NULL)
 		return NULL;
 	return p->impl;
