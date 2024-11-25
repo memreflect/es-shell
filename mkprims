@@ -2,18 +2,22 @@
 
 set -Cefu
 
-if [ $# = 0 ] || { [ "${0%%/*}" = "$0" ] && [ "$0" != mkprims ] ;}
+if [ $# -lt 3 ] || { [ "${0%%/*}" = "$0" ] && [ "$0" != mkprims ] ;}
 then bad_usage=true
 else bad_usage=false
 fi
 
 if $bad_usage ; then
-    echo 'usage: sh [path/to/]mkprims filename...' >&2
+    echo "usage: sh [path/to/]mkprims '[path/to/]cpp' 'cpp flags' filename..." >&2
     exit 2
 fi
 
 # ensure CPP doesn't have issues with missing prims.h
 echo 'extern int n;' >| prims.h
+
+CPP=$1
+CPPFLAGS=$2
+shift 2
 
 for f in "$@" ; do
 
@@ -28,7 +32,7 @@ for f in "$@" ; do
     fi
 
     # execute CPP with $f as the file to preprocess
-    $CPP $CFLAGS "$f"
+    $CPP $CPPFLAGS "$f"
 
 done |
     sed -ne '/^static List[^=]*prim_\([^()]*\)(/s,,\1,p' |

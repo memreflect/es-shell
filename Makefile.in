@@ -117,7 +117,7 @@ sigmsgs.c : mksignal $(SIGFILES)
 	sh $(srcdir)/mksignal $(SIGFILES) > sigmsgs.c
 
 prims.h	: sigmsgs.c token.h
-	env CPP="${CPP}" CFLAGS="$(CFLAGS)" sh $(srcdir)/mkprims ${CFILES} > prims.h.out && \
+	sh $(srcdir)/mkprims '${CPP}' '$(CFLAGS)' ${CFILES} > prims.h.out && \
 	mv -f prims.h.out prims.h
 
 config.h  : config.h.in
