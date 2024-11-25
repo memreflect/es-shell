@@ -31,7 +31,7 @@ static void checkfd(int fd, OpenKind r) {
 static void initpath(void) {
 	int i;
 	static const char * const path[] = { INITIAL_PATH };
-	
+
 	Ref(List *, list, NULL);
 	for (i = arraysize(path); i-- > 0;) {
 		Term *t = mkstr((char *) path[i]);
@@ -71,14 +71,15 @@ static void runesrc(void) {
 static Noreturn usage(void) {
 	eprint(
 		"usage: es [-c command] [-silevxnpo] [file [args ...]]\n"
+		"%s%s%s",
 		"	-c cmd	execute argument\n"
 		"	-s	read commands from standard input; stop option parsing\n"
 		"	-i	interactive shell\n"
-		"	-l	login shell\n"
+		"	-l	login shell\n",
 		"	-e	exit if any command exits with false status\n"
 		"	-v	print input to standard error\n"
 		"	-x	print commands to standard error before executing\n"
-		"	-n	just parse; don't execute\n"
+		"	-n	just parse; don't execute\n",
 		"	-p	don't load functions from the environment\n"
 		"	-o	don't open stdin, stdout, and stderr if they were closed\n"
 		"	-d	don't ignore SIGQUIT or SIGTERM\n"
@@ -177,18 +178,18 @@ getopt_done:
 		initinput();
 		initprims();
 		initvars();
-	
+
 		runinitial();
-	
+
 		initpath();
 		initpid();
 		initsignals(runflags & run_interactive, allowquit);
 		hidevariables();
 		initenv(environ, protected);
-	
+
 		if (loginshell)
 			runesrc();
-	
+
 		if (cmd == NULL && !cmd_stdin && argp != NULL) {
 			int fd;
 			char *file = getstr(argp->term);
@@ -201,7 +202,7 @@ getopt_done:
 			vardef("0", NULL, mklist(mkstr(file), NULL));
 			return exitstatus(runfd(fd, file, runflags));
 		}
-	
+
 		vardef("*", NULL, argp);
 		vardef("0", NULL, mklist(mkstr(argv[0]), NULL));
 		if (cmd != NULL)
