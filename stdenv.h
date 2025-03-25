@@ -114,6 +114,7 @@ extern void *qsort(
 #endif
 
 #include <sys/wait.h>
+#include <locale.h>
 #include <time.h>
 
 /*

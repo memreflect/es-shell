@@ -251,59 +251,56 @@ static Boolean Econv(Format *f) {
 
 /* %S -- print a string with conservative quoting rules */
 static Boolean Sconv(Format *f) {
-	int c;
-	enum { Begin, Quoted, Unquoted } state = Begin;
+	enum { Begin, Printable, Unprintable } state = Begin;
 	const unsigned char *s, *t;
 	extern const char nw[];
+	Boolean quoted = FALSE;
 
 	s = va_arg(f->args, const unsigned char *);
-	if (f->flags & FMT_altform || *s == '\0')
-		goto quoteit;
-	for (t = s; (c = *t) != '\0'; t++)
-		if (nw[c] || c == '@')
-			goto quoteit;
-	fmtprint(f, "%s", s);
-	return FALSE;
+	if (f->flags & FMT_altform || *s == '\0') {
+		quoted = TRUE;
+		goto work;
+	}
+	for (t = s; *t != '\0'; t++)
+		if (nw[*t] || *t == '@') {
+			quoted = TRUE;
+			goto work;
+		}
 
-quoteit:
-
-	for (t = s; (c = *t); t++)
-		if (!isprint(c)) {
-			if (state == Quoted)
+work:
+	for (; *s != '\0'; s++)
+		if (isprint(*s)) {
+			if (state == Unprintable)
+				fmtputc(f, '^');
+			if (state != Printable && quoted)
+				fmtputc(f, '\'');
+			if (*s == '\'')
+				fmtputc(f, *s);
+			fmtputc(f, *s);
+			state = Printable;
+		} else {
+			if (state == Printable && quoted)
 				fmtputc(f, '\'');
 			if (state != Begin)
 				fmtputc(f, '^');
-			switch (c) {
-			    case '\a':	fmtprint(f, "\\a");	break;
-			    case '\b':	fmtprint(f, "\\b");	break;
-			    case '\f':	fmtprint(f, "\\f");	break;
-			    case '\n':	fmtprint(f, "\\n");	break;
-			    case '\r':	fmtprint(f, "\\r");	break;
-			    case '\t':	fmtprint(f, "\\t");	break;
-		            case '\33':	fmtprint(f, "\\e");	break;
-			    default:	fmtprint(f, "\\%o", c);	break;
+			switch (*s) {
+			case '\a':  fmtprint(f, "\\a"); break;
+			case '\b':  fmtprint(f, "\\b"); break;
+			case '\f':  fmtprint(f, "\\f"); break;
+			case '\n':  fmtprint(f, "\\n"); break;
+			case '\r':  fmtprint(f, "\\r"); break;
+			case '\t':  fmtprint(f, "\\t"); break;
+			case '\33': fmtprint(f, "\\e"); break;
+			default:    fmtprint(f, "\\%o", *s); break;
 			}
-			state = Unquoted;
-		} else {
-			if (state == Unquoted)
-				fmtputc(f, '^');
-			if (state != Quoted)
-				fmtputc(f, '\'');
-			if (c == '\'')
-				fmtputc(f, '\'');
-			fmtputc(f, c);
-			state = Quoted;
+			state = Unprintable;
 		}
 
-	switch (state) {
-	    case Begin:
-		fmtprint(f, "''");
-		break;
-	    case Quoted:
-		fmtputc(f, '\'');
-		break;
-	    case Unquoted:
-		break;
+	if (quoted) {
+		if (state == Begin)
+			fmtprint(f, "''");
+		else if (state == Printable)
+			fmtputc(f, '\'');
 	}
 
 	return FALSE;
