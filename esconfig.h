@@ -169,6 +169,18 @@
  *		BSD-style wait3(2) system call.  by default, it is on.
  *		if this option is false and the BUILTIN_TIME is true,
  *		the times(2) call must exist.
+ *
+ *	WIDE_SCONV
+ *		if this is off (the default), Sconv() is only capable of
+ *		working with locales that use single-byte character sets
+ *		such as ISO/IEC 8859-15, and bytes that are considered
+ *		unprintable will be emitted using octal backslash escape
+ *		sequences:
+ *			; local (x = HELLO\x7fWORLD HELLO\tWORLD) { var x }
+ *			x = HELLO^\177^WORLD 'HELLO'^\t^'WORLD'
+ *		this should only be turned on if mbtowc() on your system is
+ *		capable of converting all multi-byte character sequences in
+ *		your locale to a single wchar_t value.
  */
 
 
@@ -325,6 +337,10 @@
 
 #ifndef	USE_SIG_ATOMIC_T
 #define	USE_SIG_ATOMIC_T	0
+#endif
+
+#ifndef	WIDE_SCONV
+#define	WIDE_SCONV		0
 #endif
 
 /*

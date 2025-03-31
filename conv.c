@@ -3,6 +3,11 @@
 #include "es.h"
 #include "print.h"
 
+#if WIDE_SCONV
+# include <wchar.h>
+# include <wctype.h>
+#endif
+
 
 /* %L -- print a list */
 static Boolean Lconv(Format *f) {
@@ -250,59 +255,87 @@ static Boolean Econv(Format *f) {
 }
 
 /* %S -- print a string with conservative quoting rules */
-static Boolean Sconv(Format *f) {
-	enum { Begin, Printable, Unprintable } state = Begin;
-	const unsigned char *s, *t;
+static Boolean Sconvc(const unsigned char *s, size_t *n) {
+	*n = (*s != '\0');
+	return isprint(*s);
+}
+static Boolean Sconvwc(const unsigned char *s, size_t *n) {
+#if WIDE_SCONV
+	mbstate_t mbs;
+	wchar_t wc;
+
+	/* avoid issues on systems with single-byte character sets/encodings
+	 * where iswprint() is potentially useless
+	 */
+	if (MB_CUR_MAX == 1)
+		return Sconvc(s, n);
+
+	memset(&mbs, 0, sizeof mbs);
+	*n = mbrtowc(&wc, (const char *)s, MB_CUR_MAX, &mbs);
+	if (*n >= (size_t)-2)
+		return FALSE;
+	return iswprint(wc);
+#else
+	return Sconvc(s, n);
+#endif
+}
+static const unsigned char *Sconvp(Format *f, const unsigned char *s) {
+	enum { Raw, Quoted, Escape } state;
+	const unsigned char *t;
 	extern const char nw[];
-	Boolean quoted = FALSE;
+	size_t n;
+
+	if (!Sconvwc(s, &n))
+		state = Escape;
+	else {
+		if ((f->flags & FMT_altform) || *s == '@' || nw[*s])
+			state = Quoted;
+		else
+			state = Raw;
+		for (t = &s[n]; Sconvwc(t, &n) && n != 0; t += n)
+			if ((f->flags & FMT_altform) || *t == '@' || nw[*t])
+				state = Quoted;
+	}
+
+	switch (state) {
+	case Raw:
+		for (; s != t; s++)
+			fmtputc(f, *s);
+		break;
+	case Quoted:
+		fmtputc(f, '\'');
+		for (; s != t; s++) {
+			if (*s == '\'')
+				fmtputc(f, '\'');
+			fmtputc(f, *s);
+		}
+		fmtputc(f, '\'');
+		break;
+	case Escape:
+		switch (*s) {
+		case '\a': fmtprint(f, "\\a"); break;
+		case '\b': fmtprint(f, "\\b"); break;
+		case '\f': fmtprint(f, "\\f"); break;
+		case '\n': fmtprint(f, "\\n"); break;
+		case '\r': fmtprint(f, "\\r"); break;
+		case '\t': fmtprint(f, "\\t"); break;
+		case '\033': fmtprint(f, "\\e"); break;
+		default: fmtprint(f, "\\%o", *s); break;
+		}
+		s++;
+		break;
+	}
+	return s;
+}
+static Boolean Sconv(Format *f) {
+	const unsigned char *s;
 
 	s = va_arg(f->args, const unsigned char *);
-	if (f->flags & FMT_altform || *s == '\0') {
-		quoted = TRUE;
-		goto work;
-	}
-	for (t = s; *t != '\0'; t++)
-		if (nw[*t] || *t == '@') {
-			quoted = TRUE;
-			goto work;
-		}
-
-work:
-	for (; *s != '\0'; s++)
-		if (isprint(*s)) {
-			if (state == Unprintable)
-				fmtputc(f, '^');
-			if (state != Printable && quoted)
-				fmtputc(f, '\'');
-			if (*s == '\'')
-				fmtputc(f, *s);
-			fmtputc(f, *s);
-			state = Printable;
-		} else {
-			if (state == Printable && quoted)
-				fmtputc(f, '\'');
-			if (state != Begin)
-				fmtputc(f, '^');
-			switch (*s) {
-			case '\a':  fmtprint(f, "\\a"); break;
-			case '\b':  fmtprint(f, "\\b"); break;
-			case '\f':  fmtprint(f, "\\f"); break;
-			case '\n':  fmtprint(f, "\\n"); break;
-			case '\r':  fmtprint(f, "\\r"); break;
-			case '\t':  fmtprint(f, "\\t"); break;
-			case '\33': fmtprint(f, "\\e"); break;
-			default:    fmtprint(f, "\\%o", *s); break;
-			}
-			state = Unprintable;
-		}
-
-	if (quoted) {
-		if (state == Begin)
-			fmtprint(f, "''");
-		else if (state == Printable)
-			fmtputc(f, '\'');
-	}
-
+	if (*s == '\0')
+		fmtprint(f, "''");
+	else
+		while (*(s = Sconvp(f, s)) != '\0')
+			fmtputc(f, '^');
 	return FALSE;
 }
 
