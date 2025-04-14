@@ -254,21 +254,24 @@ static Boolean Econv(Format *f) {
 	return FALSE;
 }
 
-/* %S -- print a string with conservative quoting rules */
-static Boolean Sconvc(const unsigned char *s, size_t *n) {
-	*n = (*s != '\0');
-	return isprint(*s);
+/* Sconvc -- return whether a single-byte char is printable */
+static Boolean Sconvc(int c, size_t *n) {
+	/* *n matches semantics of mbrtowc() in Sconvwc(). */
+	*n = (c != '\0');
+	return isprint(c);
 }
+
+/* Sconvwc -- convert to a wide char and return whether the char is printable */
 static Boolean Sconvwc(const unsigned char *s, size_t *n) {
 #if WIDE_SCONV
 	mbstate_t mbs;
 	wchar_t wc;
 
-	/* avoid issues on systems with single-byte character sets/encodings
-	 * where iswprint() is potentially useless
+	/* avoid issues on systems using single-byte character sets/encodings
+	 * where iswprint() is potentially useless.
 	 */
 	if (MB_CUR_MAX == 1)
-		return Sconvc(s, n);
+		return Sconvc(*s, n);
 
 	memset(&mbs, 0, sizeof mbs);
 	*n = mbrtowc(&wc, (const char *)s, MB_CUR_MAX, &mbs);
@@ -276,35 +279,73 @@ static Boolean Sconvwc(const unsigned char *s, size_t *n) {
 		return FALSE;
 	return iswprint(wc);
 #else
-	return Sconvc(s, n);
+	return Sconvc(*s, n);
 #endif
 }
-static const unsigned char *Sconvp(Format *f, const unsigned char *s) {
-	enum { Raw, Quoted, Escape } state;
-	const unsigned char *t;
+
+/* Sconvpsub -- print an initial substring of unquoted, quoted, or escaped bytes */
+static const unsigned char *Sconvpsub(Format *f, const unsigned char *s) {
+	/* this classifies an initial substring of 's' as an unquoted, quoted,
+	 * or backslash-escaped sequence of bytes and prints the substring
+	 * accordingly.
+	 *
+	 * note: Sconv() correctly handles the empty string,
+	 *       so this function can focus on non-empty strings.
+	 */
+	enum { Unquoted, Quoted, Escape } state;
+	const unsigned char *end;
 	extern const char nw[];
 	size_t n;
 
-	if (!Sconvwc(s, &n))
+	/* determine whether the first byte sequence is printable.
+	 * if it is printable, determine whether it requires quoting.
+	 */
+	if (!Sconvwc(s, &n)) {
 		state = Escape;
-	else {
-		if ((f->flags & FMT_altform) || *s == '@' || nw[*s])
-			state = Quoted;
-		else
-			state = Raw;
-		for (t = &s[n]; Sconvwc(t, &n) && n != 0; t += n)
-			if ((f->flags & FMT_altform) || *t == '@' || nw[*t])
+		if (n >= (size_t)-2)
+			n = 1;
+	} else if ((f->flags & FMT_altform) || *s == '@' || nw[*s])
+		state = Quoted;
+	else
+		state = Unquoted;
+
+	/* initialize "end" pointer.
+	 * if first byte sequence was not printable, "end" is iterated up to the
+	 * next printable byte sequence, which is where the substring of
+	 * non-printable chars actually ends.
+	 * similarly, if it was printable, "end" is iterated up to the next
+	 * non-printable byte sequence, and if any printable char in that
+	 * substring requires quoting, the entire substring must be quoted.
+	 */
+	end = &s[n];
+	if (state == Unquoted) {
+		for (; Sconvwc(end, &n); end += n)
+			if ((f->flags & FMT_altform) || *end == '@' || nw[*end]) {
+				end += n;
 				state = Quoted;
+				break;
+			}
+	}
+	if (state == Quoted)
+		while (Sconvwc(end, &n))
+			end += n;
+	else if (state == Escape) {
+		while (!Sconvwc(end, &n) && n != 0)
+			if (n >= (size_t)-2)
+				end++;
+			else
+				end += n;
 	}
 
+	/* print the substring appropriately. */
 	switch (state) {
-	case Raw:
-		for (; s != t; s++)
+	case Unquoted:
+		for (; s != end; s++)
 			fmtputc(f, *s);
 		break;
 	case Quoted:
 		fmtputc(f, '\'');
-		for (; s != t; s++) {
+		for (; s != end; s++) {
 			if (*s == '\'')
 				fmtputc(f, '\'');
 			fmtputc(f, *s);
@@ -322,11 +363,32 @@ static const unsigned char *Sconvp(Format *f, const unsigned char *s) {
 		case '\033': fmtprint(f, "\\e"); break;
 		default: fmtprint(f, "\\%o", *s); break;
 		}
-		s++;
+		/* while Sconv() prints the '^' for us, doing things that way
+		 * means unnecessary calls to Sconvpsub() when n > 1 already
+		 * implies there is more than one byte to print.
+		 * for the sake of performance, we print '^' before additional
+		 * bytes here when necessary.
+		 */
+		while (++s != end) {
+			switch (*s) {
+			case '\a': fmtprint(f, "^\\a"); break;
+			case '\b': fmtprint(f, "^\\b"); break;
+			case '\f': fmtprint(f, "^\\f"); break;
+			case '\n': fmtprint(f, "^\\n"); break;
+			case '\r': fmtprint(f, "^\\r"); break;
+			case '\t': fmtprint(f, "^\\t"); break;
+			case '\033': fmtprint(f, "^\\e"); break;
+			default: fmtprint(f, "^\\%o", *s); break;
+			}
+		}
 		break;
 	}
+
+	/* return pointer to next byte sequence, printable or not */
 	return s;
 }
+
+/* %S -- print a string with conservative quoting rules */
 static Boolean Sconv(Format *f) {
 	const unsigned char *s;
 
@@ -334,7 +396,11 @@ static Boolean Sconv(Format *f) {
 	if (*s == '\0')
 		fmtprint(f, "''");
 	else
-		while (*(s = Sconvp(f, s)) != '\0')
+		/* if the result of Sconvpsub() does not point to a null byte,
+		 * then there are more bytes to process.
+		 * '^' is printed between printable and nonprintable substrings.
+		 */
+		while (*(s = Sconvpsub(f, s)) != '\0')
 			fmtputc(f, '^');
 	return FALSE;
 }

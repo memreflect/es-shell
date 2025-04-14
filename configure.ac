@@ -58,8 +58,13 @@ ES_WITH_READLINE
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(fcntl.h limits.h sys/ioctl.h sys/time.h unistd.h memory.h stdarg.h sys/cdefs.h wctype.h)
+AC_CHECK_HEADERS(fcntl.h limits.h sys/ioctl.h sys/time.h unistd.h memory.h stdarg.h sys/cdefs.h)
 
+AC_ARG_ENABLE([mbcs],
+              [AS_HELP_STRING([--enable-mbcs],
+                              [support multi-byte character encodings @<:@default=check@:>@])],
+              [],
+              [enable_mbcs=check])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -72,24 +77,28 @@ AC_FUNC_MMAP
 
 AC_CHECK_FUNCS(strerror strtol lstat setrlimit sigrelse sighold sigaction \
 sysconf sigsetjmp getrusage mmap mprotect)
-if test "$ac_cv_header_wctype_h" = yes; then
-	AC_FUNC_MBRTOWC
-	if test "$ac_cv_func_mbrtowc" = yes; then
-		AC_CACHE_CHECK([if wchar_t can store U+10FFFF], [es_cv_decl_wchar_t], [
-			AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-#include <limits.h>
-#include <wchar.h>
-#ifndef WCHAR_MAX
+
+AS_CASE(["$enable_mbcs"],
+        [no], [],
+        [auto|check|yes], [AC_CHECK_HEADER([wctype.h], [AC_FUNC_MBRTOWC])],
+        [AC_MSG_ERROR([--enable-mbcs: valid values are "yes", "no", "check" -- got "$enable_mbcs"])])
+if test "${ac_cv_func_mbrtowc-no}" = yes; then
+  AC_CACHE_CHECK([if wchar_t can store U+10FFFF], [es_cv_decl_wchar_t], [
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+@%:@include <limits.h>
+@%:@include <wchar.h>
+@%:@ifndef WCHAR_MAX
 choke me
-#elif WCHAR_MAX < 0x10ffffL
+@%:@elif WCHAR_MAX < 0x10ffffL
 choke me
-#endif
-			]])], [es_cv_decl_wchar_t=yes], [es_cv_decl_wchar_t=no])
-		])
-		if test "$es_cv_decl_wchar_t" = yes; then
-			AC_DEFINE([WIDE_SCONV], [1], [wchar_t can store any Unicode code point.])
-		fi
-	fi
+@%:@endif
+    ]])], [es_cv_decl_wchar_t=yes], [es_cv_decl_wchar_t=no])
+  ])
+fi
+if test "${es_cv_decl_wchar_t-no}" = yes; then
+  AC_DEFINE([WIDE_SCONV], [1], [wchar_t can store any Unicode code point.])
+elif test "$enable_mbcs" = yes; then
+  AC_MSG_FAILURE([multi-byte character support is unavailable for your system])
 fi
 
 AC_CACHE_CHECK(whether getenv can be redefined, es_cv_local_getenv,
