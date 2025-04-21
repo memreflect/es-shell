@@ -28,7 +28,10 @@ Boolean ignoreeof = FALSE;
 Boolean resetterminal = FALSE;
 
 #if HAVE_READLINE
-#include <readline/readline.h>
+# include <readline/readline.h>
+# if RL_READLINE_VERSION < 0x0501
+#  include <sys/ioctl.h>
+# endif
 #endif
 
 
@@ -137,6 +140,20 @@ static int eoffill(Input UNUSED *in) {
 }
 
 #if HAVE_READLINE
+/* updatewinsize -- update LINES and COLUMNS */
+static void updatewinsize(void) {
+#if RL_READLINE_VERSION >= 0x0501
+	rl_reset_screen_size();
+#else
+	struct winsize w;
+	if (-1 == ioctl(fileno(rl_instream), TIOCGWINSZ, &w))
+		return;
+	rl_set_screen_size(w.ws_row, w.ws_col);
+	vardef("LINES", NULL, mklist(mkstr(str("%d", w.ws_row)), NULL));
+	vardef("COLUMNS", NULL, mklist(mkstr(str("%d", w.ws_col)), NULL));
+#endif
+}
+
 /* callreadline -- readline wrapper */
 static char *callreadline(char *prompt0) {
 	char *volatile prompt = prompt0;
@@ -148,7 +165,7 @@ static char *callreadline(char *prompt0) {
 		rl_reset_terminal(NULL);
 		resetterminal = FALSE;
 	}
-	rl_reset_screen_size();
+	updatewinsize();
 	interrupted = FALSE;
 	if (!setjmp(slowlabel)) {
 		slow = TRUE;
