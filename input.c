@@ -148,8 +148,7 @@ static char *callreadline(char *prompt0) {
 		rl_reset_terminal(NULL);
 		resetterminal = FALSE;
 	}
-	if (RL_ISSTATE(RL_STATE_INITIALIZED))
-		rl_reset_screen_size();
+	rl_reset_screen_size();
 	interrupted = FALSE;
 	if (!setjmp(slowlabel)) {
 		slow = TRUE;
@@ -296,10 +295,13 @@ extern List *runinput(Input *in, int runflags) {
 		}
 		varpush(&push, "fn-%dispatch", dispatch);
 
-		repl = varlookup((flags & run_interactive)
-				   ? "fn-%interactive-loop"
-				   : "fn-%batch-loop",
-				 NULL);
+		if (flags & run_interactive) {
+			repl = varlookup("fn-%interactive-loop", NULL);
+#if HAVE_READLINE
+			rl_initialize();
+#endif
+		} else
+			repl = varlookup("fn-%batch-loop", NULL);
 		result = (repl == NULL)
 				? prim("batchloop", NULL, NULL, flags)
 				: eval(repl, NULL, flags);
