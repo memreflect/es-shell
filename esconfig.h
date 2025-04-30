@@ -178,7 +178,7 @@
  *		sequences:
  *			; local (x = HELLO\x7fWORLD HELLO\tWORLD) { var x }
  *			x = HELLO^\177^WORLD 'HELLO'^\t^'WORLD'
- *		this should only be turned on if mbtowc() on your system is
+ *		this should only be turned on if mbrtowc() on your system is
  *		capable of converting all multi-byte character sequences in
  *		your locale to a single wchar_t value.
  */
