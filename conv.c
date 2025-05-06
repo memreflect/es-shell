@@ -422,13 +422,41 @@ static Boolean Zconv(Format *f) {
 /* %F -- protect an exported name from brain-dead shells */
 static Boolean Fconv(Format *f) {
 	int c;
-	unsigned char *name, *s;
+	unsigned char *next;
 
-	name = va_arg(f->args, unsigned char *);
+	/* 0=encode as __XX, 1=ASCII alphabetic, 2=ASCII digit */
+	static const char xdw[] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/*   0 -  15 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/*  16 -  32 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* ' ' - '/' */
+		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,		/* '0' - '?' */
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		/* '@' - 'O' */
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,		/* 'P' - '_' */
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		/* '`' - 'o' */
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,		/* 'p' - DEL */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 128 - 143 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 144 - 159 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 160 - 175 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 176 - 191 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 192 - 207 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 208 - 223 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 224 - 239 */
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,		/* 240 - 255 */
+	};
+	/* praw1 - char is [A-Za-z] or char is '_' and not followed by '_'
+	   praw  - char may also be [0-9] */
+#define praw1	(xdw[c] == 1 || (c == '_' && *next != '_'))
+#define praw	(xdw[c] != 0 || (c == '_' && *next != '_'))
 
-	for (s = name; (c = *s) != '\0'; s++)
-		if ((s == name ? isalpha(c) : isalnum(c))
-		    || (c == '_' && s[1] != '_'))
+	next = va_arg(f->args, unsigned char *);
+	c = *next++;
+
+	if (praw1)
+		fmtputc(f, c);
+	else
+		fmtprint(f, "__%02x", c);
+	while ((c = *next++) != '\0')
+		if (praw)
 			fmtputc(f, c);
 		else
 			fmtprint(f, "__%02x", c);
