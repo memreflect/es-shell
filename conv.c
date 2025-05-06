@@ -254,15 +254,15 @@ static Boolean Econv(Format *f) {
 	return FALSE;
 }
 
-/* Sconvc -- return whether a single-byte char is printable */
-static Boolean Sconvc(int c, size_t *n) {
-	/* *n matches semantics of mbrtowc() in Sconvwc(). */
+/* bisprint -- return whether a single-byte char is printable */
+static Boolean bisprint(int c, size_t *n) {
+	/* *n matches semantics of mbrtowc() in chisprint(). */
 	*n = (c != '\0');
 	return isprint(c);
 }
 
-/* Sconvwc -- convert to a wide char and return whether the char is printable */
-static Boolean Sconvwc(const unsigned char *s, size_t *n) {
+/* chisprint -- return whether a (possibly multibyte) character is printable */
+static Boolean chisprint(const unsigned char *s, size_t *n) {
 #if WIDE_SCONV
 	mbstate_t mbs;
 	wchar_t wc;
@@ -271,7 +271,7 @@ static Boolean Sconvwc(const unsigned char *s, size_t *n) {
 	 * where iswprint() is potentially useless.
 	 */
 	if (MB_CUR_MAX == 1)
-		return Sconvc(*s, n);
+		return bisprint(*s, n);
 
 	memset(&mbs, 0, sizeof mbs);
 	*n = mbrtowc(&wc, (const char *)s, MB_CUR_MAX, &mbs);
@@ -279,18 +279,18 @@ static Boolean Sconvwc(const unsigned char *s, size_t *n) {
 		return FALSE;
 	return iswprint(wc);
 #else
-	return Sconvc(*s, n);
+	return bisprint(*s, n);
 #endif
 }
 
-/* Sconvpsub -- print an initial substring of unquoted, quoted, or escaped bytes */
-static const unsigned char *Sconvpsub(Format *f, const unsigned char *s) {
-	/* this classifies an initial substring of 's' as an unquoted, quoted,
-	 * or backslash-escaped sequence of bytes and prints the substring
-	 * accordingly.
+/* subprint -- print an initial substring of unquoted, quoted, or escaped bytes */
+static const unsigned char *subprint(Format *f, const unsigned char *s) {
+	/* this classifies an initial substring of 's'
+	 * as an unquoted, quoted, or backslash-escaped sequence of bytes
+	 * and prints the substring accordingly.
 	 *
 	 * note: Sconv() correctly handles the empty string,
-	 *       so this function can focus on non-empty strings.
+	 *       so this function assumes it received a non-empty string.
 	 */
 	enum { Unquoted, Quoted, Escape } state;
 	const unsigned char *end;
@@ -300,7 +300,7 @@ static const unsigned char *Sconvpsub(Format *f, const unsigned char *s) {
 	/* determine whether the first byte sequence is printable.
 	 * if it is printable, determine whether it requires quoting.
 	 */
-	if (!Sconvwc(s, &n)) {
+	if (!chisprint(s, &n)) {
 		state = Escape;
 		if (n >= (size_t)-2)
 			n = 1;
@@ -319,7 +319,7 @@ static const unsigned char *Sconvpsub(Format *f, const unsigned char *s) {
 	 */
 	end = &s[n];
 	if (state == Unquoted) {
-		for (; Sconvwc(end, &n); end += n)
+		for (; chisprint(end, &n); end += n)
 			if ((f->flags & FMT_altform) || *end == '@' || nw[*end]) {
 				end += n;
 				state = Quoted;
@@ -327,10 +327,10 @@ static const unsigned char *Sconvpsub(Format *f, const unsigned char *s) {
 			}
 	}
 	if (state == Quoted)
-		while (Sconvwc(end, &n))
+		while (chisprint(end, &n))
 			end += n;
 	else if (state == Escape) {
-		while (!Sconvwc(end, &n) && n != 0)
+		while (!chisprint(end, &n) && n != 0)
 			if (n >= (size_t)-2)
 				end++;
 			else
@@ -364,7 +364,7 @@ static const unsigned char *Sconvpsub(Format *f, const unsigned char *s) {
 		default: fmtprint(f, "\\%o", *s); break;
 		}
 		/* while Sconv() prints the '^' for us, doing things that way
-		 * means unnecessary calls to Sconvpsub() when n > 1 already
+		 * means unnecessary calls to subprint() when n > 1 already
 		 * implies there is more than one byte to print.
 		 * for the sake of performance, we print '^' before additional
 		 * bytes here when necessary.
@@ -396,11 +396,11 @@ static Boolean Sconv(Format *f) {
 	if (*s == '\0')
 		fmtprint(f, "''");
 	else
-		/* if the result of Sconvpsub() does not point to a null byte,
+		/* if the result of subprint() does not point to a null byte,
 		 * then there are more bytes to process.
 		 * '^' is printed between printable and nonprintable substrings.
 		 */
-		while (*(s = Sconvpsub(f, s)) != '\0')
+		while (*(s = subprint(f, s)) != '\0')
 			fmtputc(f, '^');
 	return FALSE;
 }
