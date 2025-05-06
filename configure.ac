@@ -82,24 +82,6 @@ AS_CASE(["$enable_mbcs"],
         [no], [],
         [auto|check|yes], [AC_CHECK_HEADER([wctype.h], [AC_FUNC_MBRTOWC])],
         [AC_MSG_ERROR([--enable-mbcs: valid values are "yes", "no", "check" -- got "$enable_mbcs"])])
-if test "${ac_cv_func_mbrtowc-no}" = yes; then
-  AC_CACHE_CHECK([if wchar_t can store U+10FFFF], [es_cv_decl_wchar_t], [
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-@%:@include <limits.h>
-@%:@include <wchar.h>
-@%:@ifndef WCHAR_MAX
-choke me
-@%:@elif WCHAR_MAX < 0x10ffffL
-choke me
-@%:@endif
-    ]])], [es_cv_decl_wchar_t=yes], [es_cv_decl_wchar_t=no])
-  ])
-fi
-if test "${es_cv_decl_wchar_t-no}" = yes; then
-  AC_DEFINE([WIDE_SCONV], [1], [wchar_t can store any Unicode code point.])
-elif test "$enable_mbcs" = yes; then
-  AC_MSG_FAILURE([multi-byte character support is unavailable for your system])
-fi
 
 AC_CACHE_CHECK(whether getenv can be redefined, es_cv_local_getenv,
 [if test "$ac_cv_header_stdlib_h" = no || test "$ac_cv_header_stdc" = no; then

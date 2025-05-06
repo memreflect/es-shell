@@ -3,10 +3,8 @@
 #include "es.h"
 #include "print.h"
 
-#if WIDE_SCONV
-# include <wchar.h>
-# include <wctype.h>
-#endif
+#include <wchar.h>
+#include <wctype.h>
 
 
 /* %L -- print a list */
@@ -263,7 +261,9 @@ static Boolean bisprint(int c, size_t *n) {
 
 /* chisprint -- return whether a (possibly multibyte) character is printable */
 static Boolean chisprint(const unsigned char *s, size_t *n) {
-#if WIDE_SCONV
+#if !HAVE_MBRTOWC
+	return bisprint(*s, n);
+#else
 	mbstate_t mbs;
 	wchar_t wc;
 
@@ -278,8 +278,6 @@ static Boolean chisprint(const unsigned char *s, size_t *n) {
 	if (*n >= (size_t)-2)
 		return FALSE;
 	return iswprint(wc);
-#else
-	return bisprint(*s, n);
 #endif
 }
 
