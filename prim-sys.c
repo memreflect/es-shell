@@ -5,6 +5,8 @@
 #include "es.h"
 #include "prim.h"
 
+#include <locale.h>
+
 #ifdef HAVE_SETRLIMIT
 # define BSD_LIMITS 1
 #else
@@ -126,6 +128,52 @@ PRIM(setsignals) {
 	setsigeffects(effects);
 	unblocksignals();
 	return mksiglist();
+}
+
+PRIM(setlocale) {
+#define exit_usage() \
+	fail("$&setlocale", "usage: $&setlocale {LC_COLLATE|LC_CTYPE|LC_MESSAGES|LC_ALL} locale...")
+
+	/* only the locale categories used by the shell matter. */
+	const struct {
+		int lc;
+		const char *name;
+	} *catptr, categories[] = {
+		{LC_ALL, "ALL"},
+		{LC_COLLATE, "COLLATE"},
+		{LC_CTYPE, "CTYPE"},
+		{LC_MESSAGES, "MESSAGES"},
+	};
+	if (list == NULL)
+		exit_usage();
+	Ref(List *, result, NULL);
+	Ref(List *, lp, list);
+	Ref(char *, category, getstr(lp->term));
+	if (!hasprefix(category, "LC_"))
+		exit_usage();
+	else {
+		category += 3;
+		for (catptr = categories; catptr->name != NULL; catptr++)
+			if (streq(category, catptr->name))
+				break;
+		category -= 3;
+		if (catptr->name == NULL)
+			exit_usage();
+	}
+	for (lp = lp->next; lp != NULL; lp = lp->next) {
+		char *p = getstr(lp->term);
+		if (p == NULL || *p == '\0')
+			continue;
+		p = setlocale(catptr->lc, p);
+		if (p != NULL) {
+			result = mklist(mkstr(str("%s", p)), NULL);
+			break;
+		}
+	}
+	if (lp == NULL)
+		fail("$&setlocale", "no valid locales provided");
+	RefEnd2(category, lp);
+	RefReturn(result);
 }
 
 /*
@@ -457,6 +505,7 @@ extern Dict *initprims_sys(Dict *primdict) {
 	X(fork);
 	X(run);
 	X(setsignals);
+	X(setlocale);
 #if BSD_LIMITS
 	X(limit);
 #endif

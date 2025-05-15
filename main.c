@@ -113,8 +113,6 @@ int main(int argc, char **argv0) {
 	Boolean keepclosed = FALSE;		/* -o */
 	Ref(const char *volatile, cmd, NULL);	/* -c */
 
-	setlocale(LC_ALL, "");
-
 	initconv();
 	initgc();
 
