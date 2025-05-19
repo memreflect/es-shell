@@ -36,9 +36,12 @@ static Dict *cvars, *strings;
 
 static Boolean allprintable(const char *s) {
 	int c;
-	for (; (c = *(unsigned char *) s) != '\0'; s++)
-		if (!isprint(c) || c == '"' || c == '\\')
+	size_t n;
+	for (; (c = *(const unsigned char *) s) != '\0'; s+=n) {
+		n = 1;
+		if (c == '"' || c == '\\' || !chisprint((const unsigned char *)s, &n))
 			return FALSE;
+	}
 	return TRUE;
 }
 
@@ -57,22 +60,35 @@ static char *dumpstring(char *string) {
 		else {
 			int c;
 			char *s;
-			print("{ ");
-			for (s = string; (c = *(unsigned char *) s) != '\0'; s++) {
+			const char *fmt;
+			size_t n;
+			print("\"");
+			for (s = string; (c = *(const unsigned char *) s) != '\0';) {
+				n = (size_t)-1;
 				switch (c) {
-				case '\a':	print("'\\a'");		break;
-				case '\b':	print("'\\b'");		break;
-				case '\f':	print("'\\f'");		break;
-				case '\n':	print("'\\n'");		break;
-				case '\r':	print("'\\r'");		break;
-				case '\t':	print("'\\t'");		break;
-				case '\'':	print("'\\''");		break;
-				case '\\':	print("'\\\\'");	break;
-				default:	print(isprint(c) ? "'%c'" :"%d", c); break;
+				case '\a':	print("\\a");	break;
+				case '\b':	print("\\b");	break;
+				case '\f':	print("\\f");	break;
+				case '\n':	print("\\n");	break;
+				case '\r':	print("\\r");	break;
+				case '\t':	print("\\t");	break;
+				case '"':	print("\\\"");	break;
+				case '\\':	print("\\\\");	break;
+				default:
+					if (chisprint((const unsigned char *)s, &n))
+						fmt = "%c";
+					else {
+						if (n >= (size_t)-2)
+							n = 1;
+						fmt = "\\%o";
+					}
+					s += n;
+					for (; n > 0; n--)
+						print(fmt, (unsigned char)s[-n]);
 				}
-				print(", ");
+				s += -n;
 			}
-			print("'\\0', };\n");
+			print("\";\n");
 		}
 		strings = dictput(strings, string, name);
 	}

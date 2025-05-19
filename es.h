@@ -249,6 +249,8 @@ extern void *dictget2(Dict *dict, const char *name1, const char *name2);
 
 /* conv.c */
 
+extern Boolean bisprint(int c, size_t *n);
+extern Boolean chisprint(const unsigned char *s, size_t *n);
 extern void initconv(void);
 
 

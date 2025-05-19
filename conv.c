@@ -253,14 +253,14 @@ static Boolean Econv(Format *f) {
 }
 
 /* bisprint -- return whether a single-byte char is printable */
-static Boolean bisprint(int c, size_t *n) {
+extern Boolean bisprint(int c, size_t *n) {
 	/* *n matches semantics of mbrtowc() in chisprint(). */
 	*n = (c != '\0');
 	return isprint(c);
 }
 
 /* chisprint -- return whether a (possibly multibyte) character is printable */
-static Boolean chisprint(const unsigned char *s, size_t *n) {
+extern Boolean chisprint(const unsigned char *s, size_t *n) {
 #if !HAVE_MBRTOWC
 	return bisprint(*s, n);
 #else
