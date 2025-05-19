@@ -82,7 +82,7 @@ static Boolean iscounting(const char *name) {
 	if (*name == '\0')
 		return FALSE;
 	for (; *name != '\0'; name++)
-		if (!isdigit(*name))
+		if (memchr("0123456789", *name, 10) == NULL)
 			return FALSE;
 	return TRUE;
 }

@@ -5,7 +5,14 @@
 #include "syntax.h"
 #include "token.h"
 
+static const char es_alpha[52] =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	;
+
 #define	isodigit(c)	('0' <= (c) && (c) < '8')
+#define	isalnuma(c)	\
+	(('0' <= (c) && (c) <= '9') \
+	 || memchr(es_alpha, (c), sizeof(es_alpha)) != NULL)
 
 #define	BUFSIZE	((size_t) 2048)
 #define	BUFMAX	(8 * BUFSIZE)
@@ -141,6 +148,19 @@ static Boolean getfds(int fd[2], int c, int default0, int default1) {
 	return TRUE;
 }
 
+/* fromxchr - decode a single hexadecimal char */
+static int fromxchr(unsigned char c) {
+	int i;
+	const char *p, key[22] = "0123456789abcdefABCDEF";
+	p = memchr(key, c, sizeof(key));
+	if (p == NULL)
+		return -1;
+	i = (int)(p - key);
+	if (i > 15)
+		i -= 6;
+	return i;
+}
+
 extern int yylex(void) {
 	static Boolean dollar = FALSE;
 	int c;
@@ -272,11 +292,12 @@ top:	while ((c = GETC()) == ' ' || c == '\t')
 		case 'x': case 'X': {
 			int n = 0;
 			for (;;) {
+				int i;
 				c = GETC();
-				if (!isxdigit(c))
+				i = fromxchr(c);
+				if (i == -1)
 					break;
-				n = (n << 4)
-				  | (c - (isdigit(c) ? '0' : ((islower(c) ? 'a' : 'A') - 0xA)));
+				n = (n << 4) | i;
 			}
 			if (n == 0)
 				goto badescape;
@@ -297,7 +318,7 @@ top:	while ((c = GETC()) == ' ' || c == '\t')
 			break;
 		}
 		default:
-			if (isalnum(c)) {
+			if (isalnuma(c)) {
 			badescape:
 				scanerror(c, "bad backslash escape");
 				return ERROR;

@@ -218,7 +218,7 @@ static long parselimit(const Limit *limit, char *s) {
 	const Suffix *suf = limit->suffix;
 	if (streq(s, "unlimited"))
 		return RLIM_INFINITY;
-	if (!isdigit(*s))
+	if (memchr("0123456789", *s, 10) == NULL)
 		fail("$&limit", "%s: bad limit value", s);
 	if (suf == timesuf && (t = strchr(s, ':')) != NULL) {
 		char *u;
