@@ -1630,6 +1630,14 @@ The initial value of
 .Cr ifs
 is space-tab-newline.
 .TP
+.Cr "LANG, LC_COLLATE, LC_CTYPE, LC_MESSAGES, and LC_ALL"
+Controls the shell's locale using the
+.Cr setlocale
+builtin.
+For more information, see the
+.Cr setlocale
+builtin.
+.TP
 .Cr max-eval-depth
 Limits the maximum depth of the internal
 .I es
@@ -2153,6 +2161,47 @@ identity function.
 Causes the current function to exit,
 returning the named
 .IR value .
+.TP
+.Cr "setlocale \fIcategory [locale ...]\fP"
+With no arguments, unset the locale for
+.IR category .
+Otherwise, set the locale for
+.IR category
+to the first working locale in the list.
+Valid categories are:
+.IS
+.TP
+.Cr LANG
+The default locale if a category other than
+.Cr LC_ALL
+is unset.
+If unset, the default locale is
+.IR C .
+.TP
+.Cr LC_COLLATE
+(readline only) The locale used to determine the order of readline completion entries
+.TP
+.Cr LC_CTYPE
+The locale used to convert sequences of one or more bytes to characters
+(only unibyte locales are supported if not compiled with
+.Cr "--enable-mbcs" ")."
+.TP
+.Cr LC_MESSAGES
+The locale used by
+.Cr "strerror(3)"
+to provide OS error messages in your native language
+(may not be available in all locales or on all systems)
+.TP
+.Cr LC_ALL
+The locale used to override all other categories
+.sp
+.in -7m
+NOTE: Locale behavior is highly platform-dependent, so consider reviewing the
+.Cr "locale(1)"
+and/or
+.Cr "setlocale(3)"
+manuals for your platform.
+.IE
 .TP
 .Cr "throw \fIexception arg ...\fP"
 Raise the named exception, passing all of the arguments to
@@ -2694,6 +2743,16 @@ and
 primitives are used by the implementation of the
 .Cr vars
 builtin.
+The
+.Cr setlocale
+primitive is used in the implementation of the
+.Cr setlocale
+builtin,
+but does not handle any of the logic necessary to make the
+.Cr LANG ", " LC_ALL ", etc."
+variables interact as necessary and does not understand the
+.Cr LANG
+category.
 .PP
 The following primitives implement the hook functions
 of the same names, with
