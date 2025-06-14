@@ -298,6 +298,8 @@ fn setlocale var locales {
 			'usage: '^$0^' category locale...'\n\
 			'category is one of: LANG LC_COLLATE LC_CTYPE LC_MESSAGES LC_ALL'
 	}
+
+	local (set-$var = ())
 	if {~ $locales ()} {
 		#
 		# unset locale
@@ -305,12 +307,12 @@ fn setlocale var locales {
 
 		match $var (
 			# unsetting LC_ALL makes the other vars take effect.
-			# the order of precedence is $value $LANG 'C'.
+			# the order of precedence for LC_xxx is $LC_xxx $LANG 'C'.
 			LC_ALL {
 				$&setlocale LC_ALL $LANG 'C'
 				for (cat = LC_^(COLLATE CTYPE MESSAGES))
 					if {!~ $$cat ()} {
-						$&setlocale $cat $$cat $LANG 'C'
+						$&setlocale $cat $$cat
 					}
 			}
 
@@ -331,53 +333,40 @@ fn setlocale var locales {
 				if {~ $LC_ALL ()} {
 					$&setlocale LC_ALL 'C'
 					for (cat = LC_^(COLLATE CTYPE MESSAGES))
-						$&setlocale $cat $$cat 'C'
+						if {!~ $$cat ()} {
+							$&setlocale $cat $$cat
+						}
 				}
 			}
 		)
-		result ()
+		$var = ()
 	} {
 		#
 		# set locale
 		#
 
-		match $var (
-			# setting LC_ALL makes it override everything else.
-			LC_ALL { $&setlocale $var $locales }
-
-			# setting one of these ensures they take precedence over
-			# LANG.
-			# we first need to use $&setlocale to obtain a working
-			# locale, even if LC_ALL is set, then re-apply LC_ALL.
-			LC_^(COLLATE CTYPE MESSAGES) {
-				unwind-protect {
-					$&setlocale $var $locales
-				} {
-					if {!~ $LC_ALL ()} {
-						$&setlocale LC_ALL $LC_ALL
-					}
+		let (result = ) {
+			if {!~ $var LANG} {
+				result = <={$&setlocale $var $locales}
+			} {
+				# LANG is special.
+				# it sets LC_ALL, then corrects things for the individual locales.
+				result = <={$&setlocale LC_ALL $locales}
+				if {!~ $result () && ~ $LC_ALL ()} {
+					for (cat = LC_^(COLLATE CTYPE MESSAGES))
+						if {!~ $$cat ()} {
+							$&setlocale $cat $$cat
+						}
 				}
 			}
-
-			# LANG is the fallback locale used for all unset locale
-			# categories.
-			LANG {
-				unwind-protect {
-					locales = <={$&setlocale LC_ALL $locales}
-					if {~ $LC_ALL ()} {
-						for (cat = LC_^(COLLATE CTYPE MESSAGES))
-							if {!~ $$cat ()} {
-								$&setlocale $cat $$cat
-							}
-					}
-					result $locales
-				} {
-					if {!~ $LC_ALL ()} {
-						$&setlocale LC_ALL $LC_ALL
-					}
-				}
+			if {!~ $var LC_ALL && !~ $LC_ALL ()} {
+				$&setlocale LC_ALL $LC_ALL
 			}
-		)
+			if {~ $result ()} {
+				throw error setlocale 'no valid locales provided -- tried' $locales
+			}
+			$var = $result
+		}
 	}
 }
 
@@ -824,12 +813,21 @@ set-noexport		= $&setnoexport
 set-max-eval-depth	= $&setmaxevaldepth
 
 #	These settor functions affect the global locale used inside of es.
+#	that the settors catch any exception and simply return an empty list
+#	to allow the shell to start up.
+#	The lambda is also defined outside the for loop to prevent it from
+#	becoming a closure.
 
-set-LANG		= setlocale LANG
-set-LC_ALL		= setlocale LC_ALL
-set-LC_COLLATE		= setlocale LC_COLLATE
-set-LC_CTYPE		= setlocale LC_CTYPE
-set-LC_MESSAGES		= setlocale LC_MESSAGES
+let (set = @ locales {
+	catch @ - from msg {
+		echo >[1=2] warning: $from $0: $msg
+		result ()
+	} {
+		setlocale $0 $locales
+	}
+})
+for (var = LANG LC_^(ALL COLLATE CTYPE MESSAGES))
+	set-$var = $set
 
 #	If the primitives $&sethistory or $&resetterminal are defined (meaning
 #	that readline or editline is being used), setting the variables $TERM,

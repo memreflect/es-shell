@@ -140,6 +140,7 @@ static int eoffill(Input UNUSED *in) {
 /* callreadline -- readline wrapper */
 static char *callreadline(char *prompt0) {
 	char *r;
+	int lines, cols;
 	Ref(char *volatile, prompt, prompt0);
 	if (prompt == NULL)
 		prompt = ""; /* bug fix for readline 2.0 */
@@ -150,6 +151,9 @@ static char *callreadline(char *prompt0) {
 	}
 	if (RL_ISSTATE(RL_STATE_INITIALIZED))
 		rl_reset_screen_size();
+	rl_get_screen_size(&lines, &cols);
+	vardef("LINES", NULL, mklist(mkstr(str("%d", lines)), NULL));
+	vardef("COLS", NULL, mklist(mkstr(str("%d", cols)), NULL));
 	interrupted = FALSE;
 	if (!setjmp(slowlabel)) {
 		slow = TRUE;

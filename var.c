@@ -506,47 +506,6 @@ static char *stdgetenv(const char *name) {
 char *getenv(const char *name) {
 	return realgetenv(name);
 }
-
-extern int setenv(const char *name, const char *value, int overwrite) {
-	assert(vars != NULL);
-	if (name == NULL || name[0] == '\0' || strchr(name, '=') != NULL) {
-		errno = EINVAL;
-		return -1;
-	}
-	Ref(char *, envname, str(ENV_DECODE, name));
-	if (overwrite || varlookup(envname, NULL) == NULL)
-		importvar(envname, (char *)value);
-	RefEnd(envname);
-	return 0;
-}
-
-extern int unsetenv(const char *name) {
-	assert(vars != NULL);
-	if (name[0] == '\0' || strchr(name, '=') != NULL) {
-		errno = EINVAL;
-		return -1;
-	}
-	vardef0(str(ENV_DECODE, name), NULL, NULL, TRUE);
-	return 0;
-}
-
-extern int putenv(char *envstr) {
-	size_t n = strcspn(envstr, "=");
-	char *envname;
-	int status;
-	assert(vars != NULL);
-	if (n == 0 || envstr[n] != '=') {
-		/* null variable name or missing '=' char */
-		errno = EINVAL;
-		return -1;
-	}
-	envname = ealloc(n+1);
-	memcpy(envname, envstr, n);
-	envname[n] = '\0';
-	status = setenv(envname, envstr + n + 1, 1);
-	efree(envname);
-	return status;
-}
 #endif
 
 /* initenv -- load variables from the environment */

@@ -9,6 +9,10 @@ Boolean gcverbose	= FALSE;	/* -G */
 Boolean gcinfo		= FALSE;	/* -I */
 #endif
 
+#if HAVE_READLINE
+# include <readline/readline.h>
+#endif
+
 /* #if 0 && !HPUX && !defined(linux) && !defined(sgi) */
 /* extern int getopt (int argc, char **argv, const char *optstring); */
 /* #endif */
@@ -216,8 +220,16 @@ getopt_done:
 		vardef("0", NULL, mklist(mkstr(argv[0]), NULL));
 		if (cmd != NULL)
 			status = exitstatus(runstring(cmd, NULL, runflags));
-		else
+		else {
+#if HAVE_READLINE
+			Ref(List *, lc_all, varlookup("LC_ALL", NULL));
+			setenv("LC_ALL", "C", 1);
+			rl_initialize();
+			vardef("LC_ALL", NULL, lc_all);
+			RefEnd(lc_all);
+#endif
 			status = exitstatus(runfd(0, "stdin", runflags));
+		}
 
 	CatchException (e)
 

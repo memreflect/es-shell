@@ -170,8 +170,6 @@ PRIM(setlocale) {
 			break;
 		}
 	}
-	if (lp == NULL)
-		fail("$&setlocale", "no valid locales provided");
 	RefEnd2(category, lp);
 	RefReturn(result);
 }
