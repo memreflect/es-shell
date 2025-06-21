@@ -297,6 +297,7 @@ extern Tree *parsestring(const char *str);
 extern Boolean isinteractive(void);
 extern Boolean isfromfd(void);
 extern void initinput(void);
+extern void initreadline(void);
 extern void resetparser(void);
 
 extern List *runfd(int fd, const char *name, int flags);
@@ -342,6 +343,10 @@ extern List *esoptend(void);
 extern List *prim(char *s, List *list, Binding *binding, int evalflags);
 extern void initprims(void);
 extern List *primswithprefix(char *prefix);
+
+/* prim-sys.c */
+
+extern void initlocale(void);
 
 
 /* split.c */

@@ -536,7 +536,7 @@ static char *list_completion_function(const char *text, int state) {
 	return result;
 }
 
-char **builtin_completion(const char *text, int UNUSED start, int UNUSED end) {
+static char **builtin_completion(const char *text, int UNUSED start, int UNUSED end) {
 	char **matches = NULL;
 
 	if (*text == '$') {
@@ -559,6 +559,34 @@ char **builtin_completion(const char *text, int UNUSED start, int UNUSED end) {
 
 	return matches;
 }
+
+/* initreadline -- initialize readline properly */
+extern void initreadline(void) {
+	rl_readline_name = "es";
+
+	/* these two word_break_characters exclude '&' due to primitive completion */
+	rl_completer_word_break_characters = " \t\n\\'`$><=;|{()}";
+	rl_basic_word_break_characters = " \t\n\\'`$><=;|{()}";
+	rl_completer_quote_characters = "'";
+	rl_special_prefixes = "$";
+
+	rl_attempted_completion_function = builtin_completion;
+
+	rl_filename_quote_characters = " \t\n\\`'$><=;|&{()}";
+	rl_filename_quoting_function = quote;
+	rl_filename_dequoting_function = unquote;
+
+	/* initialize readline, assuming the C locale, then restore the locale */
+	Ref(List *, origlocale, NULL);
+	origlocale = varlookup("LC_ALL", NULL);
+	Ref(List *, setlocale, mklist(mkstr("C"), NULL));
+	vardef("LC_ALL", NULL, setlocale);
+	rl_initialize();
+	setlocale = mklist(mkstr("LC_ALL"), origlocale);
+	setlocale = mklist(mkstr("setlocale"), setlocale);
+	eval(setlocale, NULL, 0);
+	RefEnd2(setlocale, origlocale);
+}
 #endif /* HAVE_READLINE */
 
 
@@ -574,20 +602,4 @@ extern void initinput(void) {
 	globalroot(&error);		/* parse errors */
 	globalroot(&prompt);		/* main prompt */
 	globalroot(&prompt2);		/* secondary prompt */
-
-#if HAVE_READLINE
-	rl_readline_name = "es";
-
-	/* these two word_break_characters exclude '&' due to primitive completion */
-	rl_completer_word_break_characters = " \t\n\\'`$><=;|{()}";
-	rl_basic_word_break_characters = " \t\n\\'`$><=;|{()}";
-	rl_completer_quote_characters = "'";
-	rl_special_prefixes = "$";
-
-	rl_attempted_completion_function = builtin_completion;
-
-	rl_filename_quote_characters = " \t\n\\`'$><=;|&{()}";
-	rl_filename_quoting_function = quote;
-	rl_filename_dequoting_function = unquote;
-#endif
 }

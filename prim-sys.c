@@ -130,47 +130,141 @@ PRIM(setsignals) {
 	return mksiglist();
 }
 
-PRIM(setlocale) {
-#define exit_usage() \
-	fail("$&setlocale", "usage: $&setlocale {LC_COLLATE|LC_CTYPE|LC_MESSAGES|LC_ALL} locale...")
+/* keep the order of these synchronized with locale_info */
+enum {
+	/* must come first */
+	LI_LANG,
+	LI_ALL,
 
-	/* only the locale categories used by the shell matter. */
-	const struct {
-		int lc;
-		const char *name;
-	} *catptr, categories[] = {
-		{LC_ALL, "ALL"},
-		{LC_COLLATE, "COLLATE"},
-		{LC_CTYPE, "CTYPE"},
-		{LC_MESSAGES, "MESSAGES"},
-	};
-	if (list == NULL)
-		exit_usage();
+	/* add locale categories here */
+	LI_COLLATE,
+	LI_CTYPE,
+	LI_MESSAGES,
+
+	/* must come last */
+	LI_END
+};
+static struct locale_info {
+	char *name;
+	char *value;
+	int   lc;
+} locale_info[] = {
+	{"LANG",	NULL, LC_ALL},
+	{"LC_ALL",	NULL, LC_ALL},
+	{"LC_COLLATE",	NULL, LC_COLLATE},
+	{"LC_CTYPE",	NULL, LC_CTYPE},
+	{"LC_MESSAGES", NULL, LC_MESSAGES},
+};
+
+static void effect_locale(const struct locale_info *const p) {
+	if (p->value != NULL)
+		setlocale(p->lc, p->value);
+	else if (locale_info[LI_LANG].value != NULL)
+		setlocale(p->lc, locale_info[LI_LANG].value);
+	else
+		setlocale(p->lc, "C");
+}
+
+PRIM(getlocale) {
+	int c;
+	struct locale_info *lip;
+	char *value = locale_info[LI_ALL].value;
+	Boolean real = FALSE;
+
 	Ref(List *, result, NULL);
-	Ref(List *, lp, list);
-	Ref(char *, category, getstr(lp->term));
-	if (!hasprefix(category, "LC_"))
-		exit_usage();
-	else {
-		category += 3;
-		for (catptr = categories; catptr->name != NULL; catptr++)
-			if (streq(category, catptr->name))
-				break;
-		category -= 3;
-		if (catptr->name == NULL)
-			exit_usage();
-	}
-	for (lp = lp->next; lp != NULL; lp = lp->next) {
-		char *p = getstr(lp->term);
-		if (p == NULL || *p == '\0')
-			continue;
-		p = setlocale(catptr->lc, p);
-		if (p != NULL) {
-			result = mklist(mkstr(str("%s", p)), NULL);
-			break;
+	Ref(List *, args, list);
+	esoptbegin(args, "$&getlocale", "$&getlocale [-r]", TRUE);
+	while ((c = esopt("r")) != EOF)
+		real = TRUE;
+	esoptend();
+	RefEnd(args);
+	if (value != NULL && !real) {
+		result = mklist(mkstr(str("%s=%s",
+		                          locale_info[LI_ALL].name,
+		                          value)),
+		                result);
+		for (lip = &locale_info[LI_END-1]; lip->lc != LC_ALL; lip--)
+			result = mklist(mkstr(str("%s=%s", lip->name, value)),
+			                result);
+	} else {
+		if (value == NULL)
+			value = "";
+		result = mklist(mkstr(str("%s=%s",
+		                          locale_info[LI_ALL].name,
+		                          value)),
+		                result);
+		for (lip = &locale_info[LI_END-1]; lip->lc != LC_ALL; lip--) {
+			value = lip->value;
+			if (value == NULL) {
+				value = "";
+				if (!real) {
+					value = locale_info[LI_LANG].value;
+					if (value == NULL)
+						value = "C";
+				}
+			}
+			result = mklist(mkstr(str("%s=%s", lip->name, value)),
+			                result);
 		}
 	}
-	RefEnd2(category, lp);
+	value = locale_info[LI_LANG].value;
+	if (value == NULL)
+		value = "";
+	result = mklist(mkstr(str("%s=%s",
+	                          locale_info[LI_LANG].name,
+	                          value)),
+	                result);
+	RefReturn(result);
+}
+
+PRIM(setlocale) {
+#define exit_usage() \
+	fail("$&setlocale", "usage: $&setlocale {LANG|LC_COLLATE|LC_CTYPE|LC_MESSAGES|LC_ALL} locale...")
+
+	char *var;
+	struct locale_info *lip;
+	if (list == NULL)
+		exit_usage();
+
+	Ref(List *, result, NULL);
+	Ref(List *, lp, list);
+	var = getstr(lp->term);
+	for (lip = &locale_info[0]; lip != &locale_info[LI_END]; lip++)
+		if (streq(lip->name, var))
+			break;
+	if (lip == &locale_info[LI_END])
+		exit_usage();
+	lp = lp->next;
+
+	if (lp == NULL)
+		lip->value = NULL;
+	else {
+		for (; lp != NULL; lp = lp->next) {
+			size_t plen;
+			char *p = getstr(lp->term);
+			if (*p == '\0')
+				continue;
+			p = setlocale(LC_ALL, p);
+			if (p == NULL)
+				continue;
+			plen = 1+strlen(p);
+			lip->value = erealloc(lip->value, plen);
+			memcpy(lip->value, p, plen);
+			result = mklist(mkstr(lip->value), NULL);
+			break;
+		}
+		if (result == NULL)
+			fail("$&setlocale", "no valid locales provided -- tried %#L", list->next, " ");
+	}
+	if (locale_info[LI_ALL].value != NULL)
+		setlocale(LC_ALL, locale_info[LI_ALL].value);
+	else {
+		effect_locale(&locale_info[LI_COLLATE]);
+		effect_locale(&locale_info[LI_CTYPE]);
+		effect_locale(&locale_info[LI_MESSAGES]);
+	}
+
+	RefEnd(lp);
 	RefReturn(result);
 }
 
@@ -503,6 +597,7 @@ extern Dict *initprims_sys(Dict *primdict) {
 	X(fork);
 	X(run);
 	X(setsignals);
+	X(getlocale);
 	X(setlocale);
 #if BSD_LIMITS
 	X(limit);
@@ -514,4 +609,30 @@ extern Dict *initprims_sys(Dict *primdict) {
 	X(execfailure);
 #endif /* !KERNEL_POUNDBANG */
 	return primdict;
+}
+
+extern void initlocale(void) {
+	struct locale_info *lip;
+
+	Ref(List *, errors, NULL);
+	Ref(List *, value, NULL);
+	for (lip = &locale_info[0]; lip != &locale_info[LI_END]; lip++) {
+		value = varlookup(lip->name, NULL);
+		if (value == NULL)
+			continue;
+		value = mklist(mkstr(str("%s", lip->name)), value);
+		ExceptionHandler
+			eval(mklist(mkstr("setlocale"), value), NULL, 0);
+		CatchException(e)
+			Ref(List *, name, mklist(mkstr(str("$%s", lip->name)), NULL));
+			errors = append(errors, name);
+			RefEnd(name);
+			(void)e;
+		EndExceptionHandler
+	}
+	RefEnd(value);
+	if (errors != NULL)
+		eprint("warning: locale initialization failed for the following:\n\t%L\n",
+		       errors, "\n\t");
+	RefEnd(errors);
 }

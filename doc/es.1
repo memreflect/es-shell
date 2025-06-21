@@ -1631,12 +1631,20 @@ The initial value of
 is space-tab-newline.
 .TP
 .Cr "LANG, LC_COLLATE, LC_CTYPE, LC_MESSAGES, and LC_ALL"
-Controls the shell's locale using the
+Used in initializing the shell's locale.
+If you wish to change the shell's locale while the shell is running, use the
 .Cr setlocale
 builtin.
-For more information, see the
+Changing these variables has no effect upon the current shell,
+so these variables may not always reflect the actual shell locale.
+The
+.Cr getlocale
+builtin may be used to accurately determine the shell locale settings instead.
+See the
+.Cr getlocale
+and
 .Cr setlocale
-builtin.
+builtins for more information.
 .TP
 .Cr max-eval-depth
 Limits the maximum depth of the internal
@@ -2061,6 +2069,42 @@ in the parent directory
 .Rc ( .. ),
 but leaves the shell in the current directory.
 .TP
+.Cr "getlocale \fR[\fP\-r\fR]\fP"
+Prints the locale settings, one per line.
+.sp
+If
+.Cr "\-r"
+is omitted, the effective locale settings are printed in the form
+.Cr "\fIname\fP=\fIvalue\fP" .
+Individual locale settings overridden by
+.Cr LC_ALL
+will use the value of
+.Cr LC_ALL
+instead of their real value,
+and locale settings that are unset will print the value of
+.Cr LANG ,
+or the string
+.Cr "'C'"
+if
+.Cr LANG
+is unset.
+.sp
+If
+.Cr "\-r"
+is present, the real locale settings are printed,
+meaning no value is printed for an unset locale setting.
+This can be used to accurately reset the locale in the event that the shell
+variables no longer accurately reflect their corresponding locale settings.
+.sp
+The
+.Cr LANG " and " LC_ALL
+special locale settings are always printed as if
+.Cr "\-r"
+is present.
+See the
+.Cr setlocale
+builtin for information about the locale categories.
+.TP
 .Cr "if \fR[\fP\fItest then\fR]\fP ... \fR[\fPelse\fR]\fP"
 Evaluates the command
 .IR test .
@@ -2162,12 +2206,12 @@ Causes the current function to exit,
 returning the named
 .IR value .
 .TP
-.Cr "setlocale \fIcategory [locale ...]\fP"
-With no arguments, unset the locale for
+.Cr "setlocale \fIcategory \fP\fR[\fP\fIlocale ...\fP\fR]\fP"
+With no \fIlocale\fP arguments, unset the locale for
 .IR category .
-Otherwise, set the locale for
-.IR category
-to the first working locale in the list.
+Otherwise, set the locale for \fIcategory\fP
+to the first working locale in the list,
+along with the corresponding shell variable.
 Valid categories are:
 .IS
 .TP
@@ -2176,10 +2220,11 @@ The default locale if a category other than
 .Cr LC_ALL
 is unset.
 If unset, the default locale is
-.IR C .
+.Cr "'C'" .
 .TP
 .Cr LC_COLLATE
-(readline only) The locale used to determine the order of readline completion entries
+(readline only)
+The locale used to determine the order of readline completion entries
 .TP
 .Cr LC_CTYPE
 The locale used to convert sequences of one or more bytes to characters
@@ -2193,7 +2238,7 @@ to provide OS error messages in your native language
 (may not be available in all locales or on all systems)
 .TP
 .Cr LC_ALL
-The locale used to override all other categories
+The locale used to override all individual locale categories
 .sp
 .in -7m
 NOTE: Locale behavior is highly platform-dependent, so consider reviewing the
@@ -2744,15 +2789,9 @@ primitives are used by the implementation of the
 .Cr vars
 builtin.
 The
-.Cr setlocale
-primitive is used in the implementation of the
-.Cr setlocale
-builtin,
-but does not handle any of the logic necessary to make the
-.Cr LANG ", " LC_ALL ", etc."
-variables interact as necessary and does not understand the
-.Cr LANG
-category.
+.Cr getlocale " and " setlocale
+primitives are used in the implementations of their corresponding builtins,
+but do not actually print anything or set any shell variables.
 .PP
 The following primitives implement the hook functions
 of the same names, with
