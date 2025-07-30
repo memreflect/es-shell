@@ -165,26 +165,40 @@ test 'exceptions + signals' {
 			was-blocked = false
 			thrown = ()
 			thrown2 = ()
+			thrown3 = ()
 		) {
-			catch @ {
+			sigcatch @ {
 				thrown = $*
 			} {
-				catch @ e {
-					kill -INT $pid
-					was-blocked = true
+				sigcatch @ {
+					sigcatch @ e {
+					} {
+						kill -INT $pid
+						was-blocked = true
+					}
 				} {
-					throw exception
+					kill -INT $pid
 				}
 			}
-			catch @ {
+			sigcatch @ {
 				thrown2 = $*
 			} {
 				catch @ e {kill -INT $pid} {throw exception2}
 			}
+			catch @ e {
+				thrown3 = $e
+			} {
+				sigcatch @ {
+					throw fail
+				} {
+					throw exception3
+				}
+			}
 
-			assert $was-blocked signal is blocked during catcher
-			assert {~ $thrown(1) signal} signal exception during catcher is thrown
-			assert {~ $thrown2(1) signal} second signal is caught
+			assert $was-blocked signal is blocked during sigcatcher
+			assert {~ $thrown(1) sigint} signal exception during catcher is blocked
+			assert {~ $thrown2(1) sigint} second signal is caught
+			assert {~ $thrown3(1) exception3} sigcatcher does not block other exceptions
 		}
 	}
 }

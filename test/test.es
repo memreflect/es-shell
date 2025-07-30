@@ -120,7 +120,12 @@ let (status = ()) {
 						fail-case $title $message $e
 						return
 					} {
-						result = <={$cmd}
+						sigcatch @ sig {
+							fail-case $title $message signal $sig
+							return
+						} {
+							result = <={$cmd}
+						}
 					}
 					if {result $result} {
 						pass-case $title $message
@@ -134,7 +139,11 @@ let (status = ()) {
 			catch @ e {
 				test-execution-failure = $e
 			} {
-				$testbody
+				sigcatch @ sig {
+					test-execution-failure = signal $sig
+				} {
+					$testbody
+				}
 			}
 			status = $status <=report
 		}

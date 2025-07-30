@@ -113,12 +113,29 @@ fn-catch = $&noreturn @ catcher body {
 			throw error catch 'usage: catch [exception] catcher body'
 		}
 		$&catch @ e rest {
-			if {~ $#exception 0} {
+			if {~ $e signal} {
+				throw $e $rest
+			} {~ $#exception 0} {
 				$&noreturn $catcher $e $rest
 			} {~ $exception $e} {
 				$&noreturn $catcher $rest
 			} {
 				throw $e $rest
+			}
+		} $body
+	}
+}
+
+fn-sigcatch = $&noreturn @ catcher body {
+	let (exception = ()) {
+		if {!~ $#body 0 1} {
+			throw error sigcatch 'usage: sigcatch catcher body'
+		}
+		$&catch -S @ e rest {
+			if {!~ $e signal} {
+				throw $e $rest
+			} {
+				$&noreturn $catcher $rest
 			}
 		} $body
 	}
@@ -139,7 +156,11 @@ fn-unwind-protect = $&noreturn @ body cleanup {
 				catch @ e {
 					exception = caught $e
 				} {
-					$body
+					sigcatch @ sig {
+						exception = caught signal $sig
+					} {
+						$body
+					}
 				}
 			}
 		) {
@@ -180,10 +201,7 @@ fn var		{ for (i = $*) echo <={%var $i} }
 fn whatis {
 	let (result = ) {
 		for (i = $*) {
-			catch @ e from message {
-				if {!~ $e error} {
-					throw $e $from $message
-				}
+			catch error @ e from message {
 				echo >[1=2] $message
 				result = $result 1
 			} {
@@ -200,10 +218,7 @@ fn whatis {
 #	does not catch the return exception.  It does, however, catch break.
 
 fn-while = $&noreturn @ cond body {
-	catch @ e value {
-		if {!~ $e break} {
-			throw $e $value
-		}
+	catch break @ value {
 		result $value
 	} {
 		let (result = <=true)
@@ -676,30 +691,32 @@ fn-%is-interactive	= $&isinteractive
 
 fn %interactive-loop {
 	let (result = <=true) {
-		catch @ e type msg {
-			if {~ $e eof} {
-				return $result
-			} {~ $e exit} {
-				throw $e $type $msg
-			} {~ $e error} {
-				echo >[1=2] $msg
-				$fn-%dispatch false
-			} {~ $e signal} {
-				if {!~ $type sigint sigterm sigquit} {
-					echo >[1=2] caught unexpected signal: $type
+		forever {
+			catch @ e type msg {
+				if {~ $e eof} {
+					return $result
+				} {~ $e exit} {
+					throw $e $type $msg
+				} {~ $e error} {
+					echo >[1=2] $msg
+					$fn-%dispatch false
+				} {
+					echo >[1=2] uncaught exception: $e $type $msg
 				}
+				throw retry # restart forever loop
 			} {
-				echo >[1=2] uncaught exception: $e $type $msg
-			}
-			throw retry # restart forever loop
-		} {
-			forever {
-				if {!~ $#fn-%prompt 0} {
-					%prompt
-				}
-				let (code = <={%parse $prompt}) {
-					if {!~ $#code 0} {
-						result = <={$fn-%dispatch $code}
+				sigcatch @ sig {
+					if {!~ $sig sigint sigterm sigquit} {
+						echo >[1=2] caught unexpected signal: $sig
+					}
+				} {
+					if {!~ $#fn-%prompt 0} {
+						%prompt
+					}
+					let (code = <={%parse $prompt}) {
+						if {!~ $#code 0} {
+							result = <={$fn-%dispatch $code}
+						}
 					}
 				}
 			}
