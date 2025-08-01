@@ -263,10 +263,6 @@ extern int printfmt(Format *format, const char *fmt) {
  * the public entry points
  */
 
-#ifndef va_copy
-#define	va_copy	__va_copy
-#endif
-
 extern int fmtprint VARARGS2(Format *, format, const char *, fmt) {
 	va_list args;
 	va_list *save = format->pargs;
