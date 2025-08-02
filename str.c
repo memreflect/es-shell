@@ -43,20 +43,18 @@ extern char *strv(const char *fmt, va_list *pargs) {
 /* str -- create a string (in garbage collection space) by printing to it */
 extern char *str VARARGS1(const char *, fmt) {
 	char *s;
-	va_list args;
-	VA_START(args, fmt);
+	VA_BEGIN(args, fmt);
 	s = strv(fmt, &args);
-	va_end(args);
+	VA_END(args);
 	return s;
 }
 
 /* pstr -- create a string (in pspace) by printing to it */
 extern char *pstr VARARGS1(const char *, fmt) {
 	char *s;
-	va_list args;
-	VA_START(args, fmt);
+	VA_BEGIN(args, fmt);
 	s = sstrv(psealbuffer, fmt, &args);
-	va_end(args);
+	VA_END(args);
 	return s;
 }
 
@@ -80,9 +78,7 @@ static int mprint_grow(Format *format, size_t more) {
 /* mprint -- create a string in ealloc space by printing to it */
 extern char *mprint VARARGS1(const char *, fmt) {
 	Format format;
-	va_list args;
-	VA_START(args, fmt);
-
+	VA_BEGIN(args, fmt);
 	format.u.n	= 1;
 	format.pargs	= &args;
 	format.buf	= ealloc(PRINT_ALLOCSIZE);
@@ -92,7 +88,7 @@ extern char *mprint VARARGS1(const char *, fmt) {
 	format.flushed	= 0;
 
 	printfmt(&format, fmt);
-	va_end(args);
+	VA_END(args);
 	fmtputc(&format, '\0');
 	return format.bufbegin;
 }

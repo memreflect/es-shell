@@ -264,15 +264,14 @@ extern int printfmt(Format *format, const char *fmt) {
  */
 
 extern int fmtprint VARARGS2(Format *, format, const char *, fmt) {
-	va_list args;
-	va_list *save = format->pargs;
 	int n = -format->flushed;
 
-	VA_START(args, fmt);
+	VA_SAVE(save, format->pargs);
+	VA_BEGIN(args, fmt);
 	format->pargs = &args;
 	n += printfmt(format, fmt);
-	format->pargs = save;
-	va_end(args);
+	VA_END(args);
+	VA_RESTORE(format->pargs, save);
 
 	return n + format->flushed;
 }
@@ -316,10 +315,9 @@ static int fdprint(int fd, const char *fmt, va_list *pargs) {
 
 extern int fprint VARARGS2(int, fd, const char *, fmt) {
 	int err;
-	va_list args;
-	VA_START(args, fmt);
+	VA_BEGIN(args, fmt);
 	err = fdprint(fd, fmt, &args);
-	va_end(args);
+	VA_END(args);
 	if (err != 0)
 		fail("es:fprint", "fprint: %s", esstrerror(err));
 	return format.flushed;
@@ -327,10 +325,9 @@ extern int fprint VARARGS2(int, fd, const char *, fmt) {
 
 extern int print VARARGS1(const char *, fmt) {
 	int err;
-	va_list args;
-	VA_START(args, fmt);
+	VA_BEGIN(args, fmt);
 	err = fdprint(1, fmt, &args);
-	va_end(args);
+	VA_END(args);
 	if (err != 0)
 		fail("es:print", "print: %s", esstrerror(err));
 	return format.flushed;
@@ -338,25 +335,23 @@ extern int print VARARGS1(const char *, fmt) {
 
 extern int eprint VARARGS1(const char *, fmt) {
 	int err;
-	va_list args;
-	VA_START(args, fmt);
+	VA_BEGIN(args, fmt);
 	err = fdprint(2, fmt, &args);
-	va_end(args);
+	VA_END(args);
 	if (err != 0)
 		fail("es:eprint", "eprint: %s", esstrerror(err));
 	return format.flushed;
 }
 
 extern Noreturn panic VARARGS1(const char *, fmt) {
-	va_list args;
 	gcdisable();
 	/* ignore the exception, we're already busy dying */
 	ExceptionHandler
 		eprint("es panic: ");
 	EndExceptionHandler
-	VA_START(args, fmt);
+	VA_BEGIN(args, fmt);
 	fdprint(2, fmt, &args);
-	va_end(args);
+	VA_END(args);
 	eprint("\n");
 	esexit(1);
 }

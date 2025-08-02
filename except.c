@@ -50,11 +50,10 @@ extern Noreturn throw(List *e) {
 /* fail -- pass a user catchable error up the exception chain */
 extern Noreturn fail VARARGS2(const char *, from, const char *, fmt) {
 	char *s;
-	va_list args;
 
-	VA_START(args, fmt);
+	VA_BEGIN(args, fmt);
 	s = strv(fmt, &args);
-	va_end(args);
+	VA_END(args);
 
 	gcdisable();
 	Ref(List *, e, mklist(mkstr("error"),

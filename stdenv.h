@@ -213,6 +213,33 @@ typedef GETGROUPS_T gidset_t;
 
 #endif
 
+/* varargs block helpers */
+#define VA_BEGIN(ap, last)                           \
+	if (0) {                                     \
+	} else {                                     \
+		va_list ap;                          \
+		Boolean CONCAT(ok_bctx_, ap) = TRUE; \
+		VA_START(ap, last);
+#define VA_END(ap)                                                     \
+		if (! CONCAT(ok_bctx_, ap))                            \
+			panic("%s:%d: BUG: va_end(%s) already called", \
+			      __FILE__, __LINE__, STRING(ap));         \
+		CONCAT(ok_bctx_, ap) = FALSE;                          \
+		va_end(ap);                                            \
+	}
+#define VA_SAVE(save, pargs)           \
+	if (0) {                       \
+	} else {                       \
+		va_list *save = pargs; \
+		Boolean CONCAT(ok_sctx_, save) = TRUE;
+#define VA_RESTORE(pargs, save)                                  \
+		if (! CONCAT(ok_sctx_, save))                    \
+			panic("%s:%d: BUG: %s already restored", \
+			      __FILE__, __LINE__, STRING(save)); \
+		CONCAT(ok_sctx_, save) = FALSE;                  \
+		pargs = save;                                    \
+	}
+
 
 /*
  * assertion checking
