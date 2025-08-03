@@ -265,13 +265,12 @@ extern int printfmt(Format *format, const char *fmt) {
 
 extern int fmtprint VARARGS2(Format *, format, const char *, fmt) {
 	int n = -format->flushed;
+	va_list args, *save;
+	Boolean done;
 
-	VA_SAVE(save, format->pargs);
-	VA_BEGIN(args, fmt);
-	format->pargs = &args;
-	n += printfmt(format, fmt);
-	VA_END(args);
-	VA_RESTORE(format->pargs, save);
+	VA_WITH(args, fmt, done)
+		VA_WITH_TMP(save, format->pargs, &args)
+			n += printfmt(format, fmt);
 
 	return n + format->flushed;
 }
@@ -315,9 +314,10 @@ static int fdprint(int fd, const char *fmt, va_list *pargs) {
 
 extern int fprint VARARGS2(int, fd, const char *, fmt) {
 	int err;
-	VA_BEGIN(args, fmt);
-	err = fdprint(fd, fmt, &args);
-	VA_END(args);
+	va_list args;
+	Boolean done;
+	VA_WITH(args, fmt, done)
+		err = fdprint(fd, fmt, &args);
 	if (err != 0)
 		fail("es:fprint", "fprint: %s", esstrerror(err));
 	return format.flushed;
@@ -325,9 +325,10 @@ extern int fprint VARARGS2(int, fd, const char *, fmt) {
 
 extern int print VARARGS1(const char *, fmt) {
 	int err;
-	VA_BEGIN(args, fmt);
-	err = fdprint(1, fmt, &args);
-	VA_END(args);
+	va_list args;
+	Boolean done;
+	VA_WITH(args, fmt, done)
+		err = fdprint(1, fmt, &args);
 	if (err != 0)
 		fail("es:print", "print: %s", esstrerror(err));
 	return format.flushed;
@@ -335,23 +336,26 @@ extern int print VARARGS1(const char *, fmt) {
 
 extern int eprint VARARGS1(const char *, fmt) {
 	int err;
-	VA_BEGIN(args, fmt);
-	err = fdprint(2, fmt, &args);
-	VA_END(args);
+	va_list args;
+	Boolean done;
+	VA_WITH(args, fmt, done)
+		err = fdprint(2, fmt, &args);
 	if (err != 0)
 		fail("es:eprint", "eprint: %s", esstrerror(err));
 	return format.flushed;
 }
 
 extern Noreturn panic VARARGS1(const char *, fmt) {
+	va_list args;
+	Boolean done;
+
 	gcdisable();
 	/* ignore the exception, we're already busy dying */
 	ExceptionHandler
 		eprint("es panic: ");
 	EndExceptionHandler
-	VA_BEGIN(args, fmt);
-	fdprint(2, fmt, &args);
-	VA_END(args);
+	VA_WITH(args, fmt, done)
+		fdprint(2, fmt, &args);
 	eprint("\n");
 	esexit(1);
 }

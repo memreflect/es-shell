@@ -49,17 +49,19 @@ static Tree *gmk(void *(*alloc)(size_t, Tag *), NodeKind t, va_list ap) {
 
 extern Tree *mk VARARGS1(NodeKind, t) {
 	Tree *tree = NULL;
-	VA_BEGIN(ap, t);
-	tree = gmk(palloc, t, ap);
-	VA_END(ap);
+	va_list ap;
+	Boolean done;
+	VA_WITH(ap, t, done)
+		tree = gmk(palloc, t, ap);
 	return tree;
 }
 
 extern Tree *gcmk VARARGS1(NodeKind, t) {
+	va_list ap;
+	Boolean done;
 	Ref(Tree *, tree, NULL);
-	VA_BEGIN(ap, t);
-	tree = gmk(gcalloc, t, ap);
-	VA_END(ap);
+	VA_WITH(ap, t, done)
+		tree = gmk(gcalloc, t, ap);
 	RefReturn(tree);
 }
 
