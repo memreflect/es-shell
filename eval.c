@@ -386,25 +386,27 @@ restart:
 			list = prim(cp->tree->u[0].s, list->next, binding, flags);
 			break;
 		    case nThunk:
-			list = walk(cp->tree->u[0].p, cp->binding, flags);
+			Ref(Binding *, context, cp->binding);
+			if (funcname != NULL)
+				context = mkbinding("0",
+					    mklist(mkstr(funcname), NULL),
+					    context);
+			list = walk(cp->tree->u[0].p, context, flags);
+			RefEnd(context);
 			break;
 		    case nLambda:
 			ExceptionHandler
 
-				Push p;
 				Ref(Tree *, tree, cp->tree);
 				Ref(Binding *, context,
 					       bindargs(tree->u[0].p,
 							list->next,
 							cp->binding));
 				if (funcname != NULL)
-					varpush(&p, "0",
-						    mklist(mkterm(funcname,
-								  NULL),
-							   NULL));
+					context = mkbinding("0",
+						    mklist(mkstr(funcname), NULL),
+						    context);
 				list = walk(tree->u[1].p, context, flags);
-				if (funcname != NULL)
-					varpop(&p);
 				RefEnd2(context, tree);
 	
 			CatchException (e)
