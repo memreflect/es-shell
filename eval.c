@@ -383,6 +383,9 @@ restart:
 		switch (cp->tree->kind) {
 		    case nPrim:
 			assert(cp->binding == NULL);
+			if (funcname != NULL && streq(cp->tree->u[0].s, "noreturn"))
+				list->next = mklist(mkstr("-n"),
+						mklist(mkstr(funcname), list->next));
 			list = prim(cp->tree->u[0].s, list->next, binding, flags);
 			break;
 		    case nThunk:

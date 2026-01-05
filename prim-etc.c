@@ -270,16 +270,25 @@ PRIM(isinteractive) {
 #undef noreturn
 #endif
 PRIM(noreturn) {
-	if (list == NULL)
-		fail("$&noreturn", "usage: $&noreturn lambda args ...");
+	const char *usage = "$&noreturn [-n function-name] lambda args ...";
 	Ref(List *, lp, list);
-	Ref(Closure *, closure, getclosure(lp->term));
+	Ref(Term *, name, NULL);
+	Ref(Closure *, closure, NULL);
+	esoptbegin(lp, "$&noreturn", usage, TRUE);
+	while (esopt("n:") != EOF)
+		name = esoptarg();
+	lp = esoptend();
+	if (lp == NULL)
+		fail("$&noreturn", "usage: %s", usage);
+	closure = getclosure(lp->term);
 	if (closure == NULL || closure->tree->kind != nLambda)
 		fail("$&noreturn", "$&noreturn: %E is not a lambda", lp->term);
 	Ref(Tree *, tree, closure->tree);
 	Ref(Binding *, context, bindargs(tree->u[0].p, lp->next, closure->binding));
+	if (name != NULL)
+		context = mkbinding("0", mklist(name, NULL), context);
 	lp = walk(tree->u[1].p, context, evalflags);
-	RefEnd3(context, tree, closure);
+	RefEnd4(context, tree, closure, name);
 	RefReturn(lp);
 }
 
